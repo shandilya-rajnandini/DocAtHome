@@ -31,15 +31,12 @@ exports.createAppointment = async (req, res) => {
 };
 
 
-// @desc    Get appointments for the logged-in user (as patient or doctor)
+// @desc    Get appointments for the logged-in user (as patient)
 // @route   GET /api/appointments/my-appointments
 exports.getMyAppointments = async (req, res) => {
     try {
-        // Find appointments where the 'patient' OR 'doctor' field matches the logged-in user's ID
-        // This allows both patients and doctors to see their relevant appointments.
-        const appointments = await Appointment.find({
-            $or: [{ patient: req.user.id }, { doctor: req.user.id }]
-        })
+        // Find appointments where the 'patient' field matches the logged-in user's ID
+        const appointments = await Appointment.find({ patient: req.user.id })
         .populate('doctor', 'name specialty') // Get doctor's name and specialty
         .populate('patient', 'name') // Get patient's name
         .sort({ appointmentDate: -1 }); // Sort by most recent first
@@ -54,6 +51,22 @@ exports.getMyAppointments = async (req, res) => {
 // ... (keep the existing createAppointment and getMyAppointments functions)
 
 // --- ADD THIS NEW FUNCTION ---
+// @desc    Get appointments for the logged-in doctor
+// @route   GET /api/appointments/doctor
+exports.getDoctorAppointments = async (req, res) => {
+    try {
+        // Find appointments where the 'doctor' field matches the logged-in user's ID
+        const appointments = await Appointment.find({ doctor: req.user.id })
+        .populate('patient', 'name email') // Get patient's name and email
+        .sort({ appointmentDate: -1 }); // Sort by most recent first
+
+        res.json(appointments);
+    } catch (err) {
+        console.error('GET DOCTOR APPOINTMENTS ERROR:', err.message);
+        res.status(500).send('Server Error');
+    }
+};
+
 // @desc    Update an appointment's status (e.g., confirm or cancel)
 // @route   PUT /api/appointments/:id
 exports.updateAppointmentStatus = async (req, res) => {
