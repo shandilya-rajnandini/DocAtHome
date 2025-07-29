@@ -6,28 +6,30 @@ on:
       - main
 
 jobs:
-  eslint-review:
-    name: Run ESLint on PR
+  lint:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Set up Node.js
+      - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
           node-version: 18
 
-      - name: Install dependencies
+      - name: Install frontend dependencies
+        working-directory: ./frontend
         run: npm install
 
-      - name: Run ESLint and output to file
-        run: |
-          npx eslint . --ext .js,.jsx,.ts,.tsx -f json -o eslint-report.json
+      - name: Run ESLint on frontend
+        working-directory: ./frontend
+        run: npx eslint . --config eslint.config.js
 
-      - name: Annotate pull request with ESLint results
-        uses: ataylorme/eslint-annotate-action@v2
-        with:
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
-          report-json: eslint-report.json
+      - name: Install backend dependencies
+        working-directory: ./backend
+        run: npm install
+
+      - name: Run ESLint on backend
+        working-directory: ./backend
+        run: npx eslint . --config eslint.config.js
