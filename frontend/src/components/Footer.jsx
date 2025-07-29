@@ -1,21 +1,25 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { NavLink } from 'react-router-dom';
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
+  const navClass = ({ isActive }) =>{
+      return isActive? "text-red-700 font-bold hover:scale-105 hover:transition-all hover:duration-100":"hover:text-blue-800 hover:scale-105 hover:transition-all hover:duration-100";
+  }
 
   return (
     <footer className="bg-gradient-to-r from-blue-100 to-blue-200 text-primary-dark py-8 px-4 text-center border-t border-gray-300">
       {/* Logo / Title */}
-      <h3 className="text-3xl font-extrabold mb-4 text-blue-900">DocAtHome</h3>
+      <h3 className="text-3xl font-extrabold mb-4 text-blue-900 ">DocAtHome</h3>
       
       {/* Navigation Links */}
-      <nav className="flex flex-wrap justify-center gap-6 mb-6">
-        <Link to="/" className="hover:text-blue-700 transition duration-300">Home</Link>
-        <Link to="/about" className="hover:text-blue-700 transition duration-300">About</Link>
-        <Link to="/services" className="hover:text-blue-700 transition duration-300">Services</Link>
-        <Link to="/testimonials" className="hover:text-blue-700 transition duration-300">Testimonials</Link>
-        <Link to="/contact" className="hover:text-blue-700 transition duration-300">Contact</Link>
+      <nav className="flex flex-wrap justify-center gap-6 mb-6 text-xl">
+        <NavLink to="/" className={navClass}>Home</NavLink>
+        <NavLink to="/about" className={navClass}>About</NavLink>
+        <NavLink to="/services" className={navClass}>Services</NavLink>
+        <NavLink to="/testimonials" className={navClass}>Testimonials</NavLink>
+        <NavLink to="/contact" className={navClass}>Contact</NavLink>
       </nav>
 
       {/* Copyright */}
