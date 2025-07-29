@@ -16,6 +16,12 @@ import DoctorProfilePage from './pages/DoctorProfilePage.jsx';
 import NurseProfilePage from './pages/NurseProfilePage.jsx';
 import BookAmbulancePage from './pages/BookAmbulancePage.jsx';
 
+//Imported About,Services,Testimonials,Contact Page
+import About from './components/About.jsx';
+import Services from './components/Services.jsx';
+import Testimonials from './components/Testimonials.jsx';
+import Contact from './components/Contact.jsx';
+
 // Protected Patient Pages
 import PatientDashboard from './pages/PatientDashboard.jsx';
 import CareCirclePage from './pages/CareCirclePage.jsx';
@@ -53,6 +59,11 @@ function App() {
             <Route path="/doctors/:id" element={<DoctorProfilePage />} />
             <Route path="/nurses/:id" element={<NurseProfilePage />} />
             <Route path="/book-ambulance" element={<BookAmbulancePage />} />
+
+            <Route path='/about' element={<About/>}/>
+            <Route path='/services' element={<Services/>}/>
+            <Route path='/testimonials' element={<Testimonials/>}/>
+            <Route path='/contact' element={<Contact/>}/>
             
             {/* --- Protected Patient Routes --- */}
             <Route path="/dashboard" element={<ProtectedRoute><PatientDashboard /></ProtectedRoute>} />
