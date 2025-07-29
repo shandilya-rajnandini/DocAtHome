@@ -94,6 +94,7 @@ This project is a practical application of several important computer science co
 *   **Asynchronous Operations:** The entire application is built on asynchronous JavaScript (`async/await`). From fetching doctor data on the frontend with `useEffect` to database queries on the backend with Mongoose, handling promises correctly is essential for a non-blocking, responsive user experience.
 
 *   **State Management with React Context:** Instead of passing user login data down through many layers of components (prop drilling), the `AuthContext` provides global access to the user's authentication state. Any component can easily know if a user is logged in and what their role is.
+
 *   **RESTful API Design:** The backend API is designed following REST principles. Each resource (like `Users`, `Appointments`, `Doctors`) has its own set of endpoints (`/api/doctors`, `/api/appointments`). HTTP methods (`GET`, `POST`, `PUT`) are used logically to perform actions on these resources.
 ## 🌱 How to Contribute
 This is a capstone project, but collaboration and feedback are always welcome. Please feel free to fork the repository and submit a pull request for any improvements or new features.
@@ -102,4 +103,5 @@ This is a capstone project, but collaboration and feedback are always welcome. P
 3.  Commit your changes: `git commit -m 'Add: NewAwesomeFeature'`
 4.  Push to the branch: `git push origin feature/NewAwesomeFeature`
 5.  Open a **Pull Request**.
+
 Thank you for taking the time to learn about Doc@Home!
