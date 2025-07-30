@@ -112,6 +112,14 @@ To ensure a welcoming and inclusive environment for everyone, we have a Code of 
 
 ---
 
+## 👑 Project Mentor
+
+| Name | GitHub Profile |
+| :---: | :---: |
+| Nikhil Deshmukh | [![GitHub](https://img.shields.io/badge/GitHub-nikhil--deshmukh-blue?style=flat&logo=github)](https://github.com/nikhildeshmukh170) |
+
+---
+
 ## ✨ Our Amazing Contributors
 
 A huge thank you to all the wonderful people who have contributed to Doc@Home during GSSoC '24!
