@@ -1,9 +1,34 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useState,useEffect } from 'react';
+import { IoSunnySharp } from "react-icons/io5";
+import { BsFillMoonStarsFill } from "react-icons/bs";
+
 
 const Navbar = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+
+  //Dark and Light Mode
+  const [theme,setTheme] = useState(()=>{return localStorage.getItem('pagemode')||'light'});
+
+  useEffect(() => {
+    const html = document.getElementById('html');
+    if(theme==='dark'){
+      html.classList.add('dark')
+    }
+    else{
+      html.classList.remove('dark');
+    }
+    localStorage.setItem('pagemode',theme)
+  
+   
+  }, [theme]);
+
+  const toggleTheme = ()=>{
+    setTheme((prev)=>(prev==='light'?'dark':'light'));
+  }
+  
 
   const handleLogout = () => {
     logout();
@@ -11,12 +36,12 @@ const Navbar = () => {
   };
 
   return (
-    <nav className="bg-secondary-dark p-4 shadow-lg sticky top-0 z-50">
+    <nav className="bg-amber-100 text-black dark:bg-secondary-dark dark:text-white p-4 shadow-lg sticky top-0 z-50">
       <div className="container mx-auto flex justify-between items-center">
         <Link to={user && user.role === 'patient' ? '/dashboard' : (user ? '/doctor/dashboard' : '/')} className="text-2xl font-bold text-accent-blue">
           Doc@Home
         </Link>
-        <div className="space-x-4 md:space-x-6 flex items-center text-primary-text font-semibold">
+        <div className="space-x-4 md:space-x-6 flex items-center text-black dark:text-primary-text font-semibold">
           
           <Link to="/search" className="hover:text-accent-blue transition-colors">Search Doctors</Link>
           
@@ -41,7 +66,13 @@ const Navbar = () => {
               </Link>
             </>
           )}
+        <div className='text-white hover:cursor-pointer' onClick={toggleTheme}>
+           {theme === 'light' ? <BsFillMoonStarsFill className='text-xl text-accent-blue'/> : <IoSunnySharp className='text-xl text-accent-blue'/>}
+
+
         </div>
+        </div>
+
       </div>
     </nav>
   );
