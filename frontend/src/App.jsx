@@ -10,17 +10,13 @@ import ProtectedRoute from './components/ProtectedRoute.jsx';
 import HomePage from './pages/HomePage.jsx';
 import RegisterPage from './pages/RegisterPage.jsx';
 import LoginPage from './pages/LoginPage.jsx';
+import ForgotPasswordPage from './pages/ForgotPasswordPage.jsx';
+import ResetPasswordPage from './pages/ResetPasswordPage.jsx';
 import SearchDoctorsPage from './pages/SearchDoctorsPage.jsx';
 import SearchNursesPage from './pages/SearchNursesPage.jsx';
 import DoctorProfilePage from './pages/DoctorProfilePage.jsx';
 import NurseProfilePage from './pages/NurseProfilePage.jsx';
 import BookAmbulancePage from './pages/BookAmbulancePage.jsx';
-
-//Imported About,Services,Testimonials,Contact Page
-import About from './components/About.jsx';
-import Services from './components/Services.jsx';
-import Testimonials from './components/Testimonials.jsx';
-import Contact from './components/Contact.jsx';
 
 // Protected Patient Pages
 import PatientDashboard from './pages/PatientDashboard.jsx';
@@ -41,6 +37,13 @@ import ProfessionalAvailabilityPage from './pages/ProfessionalAvailabilityPage.j
 import AdminDashboard from './pages/AdminDashboard.jsx';
 
 
+/**
+ * Defines the main application layout and routing structure.
+ *
+ * Sets up public, protected patient, professional, and admin routes using React Router, and renders shared layout components such as the navigation bar and footer.
+ * Routes requiring authentication are wrapped with a protection component, and admin-only access is enforced where applicable.
+ * @returns {JSX.Element} The root application component with routing and layout.
+ */
 function App() {
   return (
     <Router>
@@ -54,16 +57,13 @@ function App() {
             <Route path="/" element={<HomePage />} />
             <Route path="/register" element={<RegisterPage />} />
             <Route path="/login" element={<LoginPage />} />
+            <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+            <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
             <Route path="/search" element={<SearchDoctorsPage />} />
             <Route path="/search-nurses" element={<SearchNursesPage />} />
             <Route path="/doctors/:id" element={<DoctorProfilePage />} />
             <Route path="/nurses/:id" element={<NurseProfilePage />} />
             <Route path="/book-ambulance" element={<BookAmbulancePage />} />
-
-            <Route path='/about' element={<About/>}/>
-            <Route path='/services' element={<Services/>}/>
-            <Route path='/testimonials' element={<Testimonials/>}/>
-            <Route path='/contact' element={<Contact/>}/>
             
             {/* --- Protected Patient Routes --- */}
             <Route path="/dashboard" element={<ProtectedRoute><PatientDashboard /></ProtectedRoute>} />
