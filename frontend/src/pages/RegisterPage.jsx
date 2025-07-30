@@ -30,16 +30,17 @@ const RegisterPage = () => {
   const { role, password, confirmPassword } = formData;
   const isProfessional = role === 'doctor' || role === 'nurse';
 
-  const validateField = (name, value) => {
-    let error = '';
-    if (name === 'confirmPassword' && password !== value) {
-      error = 'Passwords do not match.';
-    } else if (name === 'password' && confirmPassword && value !== confirmPassword) {
-      setErrors((prev) => ({ ...prev, confirmPassword: 'Passwords do not match.' }));
-    } else if (name === 'password' && value.length < 6) {
-      error = 'Password must be at least 6 characters.';
+  const validateField = (name, value, allFormData = formData) => {
+    switch (name) {
+      case 'password':
+        if (value.length < 6) return 'Password must be at least 6 characters.';
+        break;
+      case 'confirmPassword':
+        if (value.length < 6) return 'Password must be at least 6 characters.';
+        if (allFormData.password !== value) return 'Passwords do not match.';
+        break;
     }
-    return error;
+    return '';
   };
 
   const onChange = (e) => {
