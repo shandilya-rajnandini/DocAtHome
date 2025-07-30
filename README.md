@@ -112,7 +112,7 @@ To ensure a welcoming and inclusive environment for everyone, we have a Code of 
 
 ---
 
-## 👑 Project Mentor
+## 🧑‍💻 Project Mentor
 
 | Name | GitHub Profile |
 | :---: | :---: |
