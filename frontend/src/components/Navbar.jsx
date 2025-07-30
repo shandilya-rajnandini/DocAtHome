@@ -36,12 +36,12 @@ const Navbar = () => {
   };
 
   return (
-    <nav className="bg-amber-100 text-black dark:bg-secondary-dark dark:text-white p-4 shadow-lg sticky top-0 z-50">
+    <nav className="bg-amber-100 text-black dark:bg-secondary-dark dark:text-white p-4 shadow-lg sticky top-0 z-50 opacity-90">
       <div className="container mx-auto flex justify-between items-center">
         <Link to={user && user.role === 'patient' ? '/dashboard' : (user ? '/doctor/dashboard' : '/')} className="text-2xl font-bold text-accent-blue">
           Doc@Home
         </Link>
-        <div className="space-x-4 md:space-x-6 flex items-center text-black dark:text-primary-text font-semibold">
+        <div className=" space-x-4 md:space-x-6 flex items-center text-black dark:text-primary-text font-semibold">
           
           <Link to="/search" className="hover:text-accent-blue transition-colors">Search Doctors</Link>
           
@@ -61,13 +61,13 @@ const Navbar = () => {
           ) : (
             <>
               <Link to="/login" className="hover:text-accent-blue transition-colors">Login</Link>
-              <Link to="/register" className="bg-accent-blue px-4 py-2 rounded hover:bg-accent-blue-hover transition-colors">
+              <Link to="/register" className="bg-blue-400 dark:bg-accent-blue px-4 py-2 rounded hover:bg-accent-blue-hover dark:hover:bg-accent-blue-hover transition-colors">
                 Register
               </Link>
             </>
           )}
-        <div className='text-white hover:cursor-pointer' onClick={toggleTheme}>
-           {theme === 'light' ? <BsFillMoonStarsFill className='text-xl text-accent-blue'/> : <IoSunnySharp className='text-xl text-accent-blue'/>}
+        <div className='text-white hover:cursor-pointer border border-black p-2 rounded-full bg-slate-800 dark:bg-amber-200 hover:bg-slate-500 dark:hover:bg-amber-400' onClick={toggleTheme}>
+           {theme === 'light' ? <BsFillMoonStarsFill className='text-2xl text-cyan-200'/> : <IoSunnySharp className='text-2xl text-black'/>}
 
 
         </div>

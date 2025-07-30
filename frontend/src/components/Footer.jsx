@@ -9,7 +9,7 @@ const Footer = () => {
   }
 
   return (
-    <footer className="bg-gradient-to-r from-blue-100 to-blue-200 text-primary-dark py-8 px-4 text-center border-t border-gray-300">
+    <footer className="bg-gradient-to-r from-blue-200 to-blue-300 text-primary-dark py-8 px-4 text-center border-t border-gray-300">
       {/* Logo / Title */}
       <h3 className="text-3xl font-extrabold mb-4 text-blue-900 ">DocAtHome</h3>
       
