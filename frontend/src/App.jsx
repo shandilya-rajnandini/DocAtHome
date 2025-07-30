@@ -10,6 +10,8 @@ import ProtectedRoute from './components/ProtectedRoute.jsx';
 import HomePage from './pages/HomePage.jsx';
 import RegisterPage from './pages/RegisterPage.jsx';
 import LoginPage from './pages/LoginPage.jsx';
+import ForgotPasswordPage from './pages/ForgotPasswordPage.jsx';
+import ResetPasswordPage from './pages/ResetPasswordPage.jsx';
 import SearchDoctorsPage from './pages/SearchDoctorsPage.jsx';
 import SearchNursesPage from './pages/SearchNursesPage.jsx';
 import DoctorProfilePage from './pages/DoctorProfilePage.jsx';
@@ -54,6 +56,8 @@ function App() {
             <Route path="/" element={<HomePage />} />
             <Route path="/register" element={<RegisterPage />} />
             <Route path="/login" element={<LoginPage />} />
+            <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+            <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
             <Route path="/search" element={<SearchDoctorsPage />} />
             <Route path="/search-nurses" element={<SearchNursesPage />} />
             <Route path="/doctors/:id" element={<DoctorProfilePage />} />

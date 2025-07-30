@@ -42,7 +42,7 @@ const LoginPage = () => {
   };
 
   return (
-    <div className="flex justify-center items-center mt-20">
+    <div className="flex justify-center items-center mt-20 mb-20">
       <form onSubmit={onSubmit} className="bg-secondary-dark p-8 rounded-lg shadow-lg w-full max-w-md">
         <h2 className="text-3xl font-bold mb-6 text-center text-white">
           Login to Your Account
@@ -78,6 +78,12 @@ const LoginPage = () => {
         >
           Login
         </button>
+
+        <div className="text-center mt-4 text-secondary-text">
+          <Link to="/forgot-password" className="text-sm text-accent-blue hover:underline">
+            Forgot Password?
+          </Link>
+        </div>
 
         <p className="text-center mt-4 text-secondary-text">
             Don't have an account? <Link to="/register" className="text-accent-blue hover:underline">Register here</Link>
