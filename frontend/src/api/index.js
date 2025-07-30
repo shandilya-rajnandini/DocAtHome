@@ -14,7 +14,7 @@ API.interceptors.request.use((req) => {
 export const login = (formData) => API.post('/auth/login', formData);
 export const register = (formData) => API.post('/auth/register', formData);
 export const getMe = () => API.get('/auth/me');
-export const forgotPassword = (email) => API.post('/auth/forgot-password', email);
+export const forgotPassword = (emailData) => API.post('/auth/forgot-password', emailData);
 export const resetPassword = (token, password) => API.post(`/auth/reset-password/${token}`, password);
 
 // === Admin Routes ===
