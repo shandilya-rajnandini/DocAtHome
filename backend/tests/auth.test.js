@@ -9,12 +9,20 @@ beforeAll(async () => {
 })
 
 afterEach( async () => {
-    await User.deleteMany({});
+     try {
+        await User.deleteMany({});
+    } catch (error) {
+        console.error('Failed to clean up test data:', error);
+    }
 })  
 
 afterAll(async () => {
-    await mongoose.connection.dropDatabase();
-    await mongoose.connection.close();
+    try {
+        await mongoose.connection.dropDatabase();
+        await mongoose.connection.close();
+    } catch (error) {
+        console.error('❌ Failed to clean up test database:', error);
+    }
 })
 
 
