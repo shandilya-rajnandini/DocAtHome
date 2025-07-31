@@ -21,9 +21,19 @@ const connectDB = async () => {
 const importData = async () => {
     try {
         // Clear existing data before import
-        await User.deleteMany({ role: 'doctor' });
-        await Quest.deleteMany();
-        await UserQuest.deleteMany();
+        const deletePromises = [
+            User.deleteMany({ role: 'doctor' }),
+            Quest.deleteMany(),
+            UserQuest.deleteMany()
+        ];
+        
+        const deleteResults = await Promise.allSettled(deletePromises);
+        const failedDeletes = deleteResults.filter(result => result.status === 'rejected');
+        
+        if (failedDeletes.length > 0) {
+            console.warn('Some delete operations failed:', failedDeletes);
+        }
+        
         console.log('Cleared old doctors, quests, and user quests.');
 
         // Create Doctors
