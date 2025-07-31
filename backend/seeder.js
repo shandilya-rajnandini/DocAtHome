@@ -1,7 +1,10 @@
 const mongoose = require('mongoose');
-const dotenv = 'dotenv';
+const dotenv = require('dotenv');
 const { faker } = require('@faker-js/faker');
-const User = require('../models/User');
+const User = require('./models/User');
+const Quest = require('./models/Quest');
+const UserQuest = require('./models/UserQuest');
+const quests = require('./data/quests');
 
 dotenv.config();
 
@@ -16,11 +19,14 @@ const connectDB = async () => {
 };
 
 const importData = async () => {
-    await connectDB();
     try {
+        // Clear existing data before import
         await User.deleteMany({ role: 'doctor' });
-        console.log('Old doctors cleared.');
+        await Quest.deleteMany();
+        await UserQuest.deleteMany();
+        console.log('Cleared old doctors, quests, and user quests.');
 
+        // Create Doctors
         const specialties = ['Cardiologist', 'Dermatologist', 'Gynecologist', 'Dentist', 'Pediatrician', 'General Physician', 'Neurologist'];
         const cities = ['Mumbai', 'Delhi', 'Bangalore', 'Pune', 'Patna', 'Kolkata', 'Chennai'];
         
@@ -36,21 +42,44 @@ const importData = async () => {
                 experience: faker.number.int({ min: 2, max: 25 }),
                 licenseNumber: `DOC-${faker.string.alphanumeric(8).toUpperCase()}`,
                 govId: `GOV-${faker.string.alphanumeric(8).toUpperCase()}`,
-                isVerified: true, // Absolutely critical
+                isVerified: true,
             });
         }
-        
-        // Using create is safer as it triggers Mongoose validation and hooks for each doc
         await User.create(doctorsToCreate);
         console.log(`${doctorsToCreate.length} Doctors created successfully.`);
 
+        // Import Quests
+        await Quest.insertMany(quests);
+        console.log(`${quests.length} Quests imported successfully.`);
+
+        console.log('Data Imported!');
     } catch (error) {
-        console.error(`SEEDER SCRIPT ERROR: ${error}`);
-    } finally {
-        // Ensure the connection is closed and the process exits
-        await mongoose.connection.close();
-        process.exit();
+        console.error(`SEEDER IMPORT ERROR: ${error}`);
     }
 };
 
-importData();
+const destroyData = async () => {
+    try {
+        await User.deleteMany({ role: 'doctor' });
+        await Quest.deleteMany();
+        await UserQuest.deleteMany();
+        console.log('Destroyed doctors, quests, and user quests.');
+    } catch (error) {
+        console.error(`SEEDER DESTROY ERROR: ${error}`);
+    }
+};
+
+const run = async () => {
+    await connectDB();
+
+    if (process.argv[2] === '-d') {
+        await destroyData();
+    } else {
+        await importData();
+    }
+
+    await mongoose.connection.close();
+    process.exit();
+};
+
+run();
