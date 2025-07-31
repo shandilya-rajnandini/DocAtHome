@@ -39,7 +39,8 @@ export const updateMyProfile = (profileData) => API.put('/profile/me', profileDa
 // === Appointment Routes ===
 export const bookAppointment = (appointmentData) => API.post('/appointments', appointmentData);
 export const getMyAppointments = () => API.get('/appointments/my-appointments');
-export const updateAppointmentStatus = (id, status) => API.put(`/appointments/${id}`, { status });
+export const updateAppointmentStatus = (id, updateData) => API.put(`/appointments/${id}`, updateData);
+export const getAppointmentSummary = (id) => API.get(`/appointments/${id}/summary`);
 
 // === Care Circle Routes ===
 export const getMyCareCircle = () => API.get('/profile/my-care-circle');
