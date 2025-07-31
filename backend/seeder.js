@@ -59,9 +59,19 @@ const importData = async () => {
         console.log(`${doctorsToCreate.length} Doctors created successfully.`);
 
         // Import Quests
-        await Quest.insertMany(quests);
-        console.log(`${quests.length} Quests imported successfully.`);
+        // Validate quest data structure
+        const validQuests = quests.filter(quest =>
+            quest.title && quest.description &&
+            typeof quest.points === 'number' &&
+            typeof quest.durationDays === 'number'
+        );
 
+        if (validQuests.length !== quests.length) {
+            console.warn(`${quests.length - validQuests.length} invalid quests filtered out`);
+        }
+
+        await Quest.insertMany(validQuests);
+        console.log(`${validQuests.length} Quests imported successfully.`);
         console.log('Data Imported!');
     } catch (error) {
         console.error(`SEEDER IMPORT ERROR: ${error}`);

@@ -74,11 +74,25 @@ exports.logQuestProgress = async (req, res) => {
     }
 
     // Logic to prevent logging more than once a day
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    if (userQuest.lastLoggedDate && userQuest.lastLoggedDate >= today) {
-      return res.status(400).json({ msg: 'Progress already logged for today' });
-    }
+// Logic to prevent logging more than once a day (UTC-based)
+const today = new Date();
+const todayUTC = new Date(Date.UTC(
+  today.getUTCFullYear(),
+  today.getUTCMonth(),
+  today.getUTCDate()
+));
+
+if (userQuest.lastLoggedDate) {
+  const lastLoggedUTC = new Date(Date.UTC(
+    userQuest.lastLoggedDate.getUTCFullYear(),
+    userQuest.lastLoggedDate.getUTCMonth(),
+    userQuest.lastLoggedDate.getUTCDate()
+  ));
+
+  if (lastLoggedUTC.getTime() === todayUTC.getTime()) {
+    return res.status(400).json({ msg: 'Progress already logged for today' });
+  }
+}
 
     userQuest.progress += 1;
     userQuest.lastLoggedDate = new Date();
@@ -88,9 +102,20 @@ exports.logQuestProgress = async (req, res) => {
       userQuest.status = 'completed';
       userQuest.completedAt = new Date();
       
-      // Award points ONLY when the status changes to completed
-      await User.findByIdAndUpdate(req.user.id, { $inc: { healthPoints: userQuest.quest.points } });
+      // Use atomic operations to prevent race conditions
+      const [savedUserQuest, updatedUser] = await Promise.all([
+        userQuest.save(),
+        User.findByIdAndUpdate(
+          req.user.id,
+          { $inc: { healthPoints: userQuest.quest.points } },
+          { new: true }
+        )
+      ]);
+      
+      return res.status(200).json({ success: true, data: savedUserQuest });
     }
+    
+    await userQuest.save();
 
     await userQuest.save();
 
