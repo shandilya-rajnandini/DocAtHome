@@ -14,6 +14,7 @@ const UserQuestSchema = new mongoose.Schema({
   progress: {
     type: Number,
     default: 0,
+    min: 0,
   },
   status: {
     type: String,
