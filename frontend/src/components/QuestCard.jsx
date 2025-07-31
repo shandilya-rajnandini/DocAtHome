@@ -79,6 +79,6 @@ const QuestCard = ({ quest, onAccept, onLogProgress }) => {
     )}
   </div>
 </div>
-};
+)};
 
 export default QuestCard;
