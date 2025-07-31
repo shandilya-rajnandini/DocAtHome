@@ -35,36 +35,36 @@ const Contact = () => {
             </div>
 
             {/* Column 2: Contact Form */}
-            <form className="bg-primary-dark p-8 rounded-lg shadow-lg shadow-black dark:shadow-white">
+            <form className="bg-white dark:bg-secondary-dark p-8 rounded-lg shadow-lg shadow-black dark:shadow-white">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
                     <input 
                       type="text" 
                       placeholder="Name" 
-                      className="p-3 bg-secondary-dark rounded-md border border-gray-700 focus:outline-none focus:ring-2 focus:ring-accent-blue text-white" 
+                      className="p-3 bg-gray-200 dark:bg-secondary-dark text-black dark:text-white rounded-md border border-gray-700 focus:outline-none focus:ring-2 focus:ring-accent-blue " 
                     />
                     <input 
                       type="text" 
                       placeholder="Phone" 
-                      className="p-3 bg-secondary-dark rounded-md border border-gray-700 focus:outline-none focus:ring-2 focus:ring-accent-blue text-white" 
+                      className="p-3 bg-gray-200 dark:bg-secondary-dark text-black dark:text-white rounded-md border border-gray-700 focus:outline-none focus:ring-2 focus:ring-accent-blue " 
                     />
                 </div>
                 <div className="mb-4">
                     <input 
                       type="email" 
                       placeholder="Email address" 
-                      className="w-full p-3 bg-secondary-dark rounded-md border border-gray-700 focus:outline-none focus:ring-2 focus:ring-accent-blue text-white" 
+                      className="w-full p-3 bg-gray-200 dark:bg-secondary-dark text-black dark:text-white rounded-md border border-gray-700 focus:outline-none focus:ring-2 focus:ring-accent-blue " 
                     />
                 </div>
                 <div className="mb-4">
                     <textarea 
                       placeholder="Message" 
                       rows="5" 
-                      className="w-full p-3 bg-secondary-dark rounded-md border border-gray-700 focus:outline-none focus:ring-2 focus:ring-accent-blue text-white"
+                      className="w-full p-3 bg-gray-200 dark:bg-secondary-dark text-black dark:text-white rounded-md border border-gray-700 focus:outline-none focus:ring-2 focus:ring-accent-blue "
                     ></textarea>
                 </div>
                 <button 
                   type="submit" 
-                  className="w-full bg-accent-cream text-primary-dark font-bold py-3 rounded-md hover:bg-yellow-100 transition duration-300"
+                  className="w-full bg-gray-500 dark:bg-accent-cream text-primary-dark font-bold py-3 rounded-md hover:bg-yellow-100 transition duration-300"
                 >
                   CONTACT US
                 </button>

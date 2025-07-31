@@ -53,7 +53,7 @@ const Navbar = () => {
               <span className="hidden md:inline">Welcome, {user.name}</span>
               <button
                 onClick={handleLogout}
-                className="bg-red-600 px-4 py-2 rounded hover:bg-red-700 transition-colors"
+                className="bg-red-600 px-4 py-2 rounded hover:bg-red-700 transition-colors text-white dark:text-black"
               >
                 Logout
               </button>
