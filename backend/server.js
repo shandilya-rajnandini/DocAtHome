@@ -21,6 +21,17 @@ io.on('connection', (socket) => {
   socket.on('disconnect', () => console.log('User Disconnected', socket.id));
 });
 
+// API Route Definitions
+app.use('/api/auth', require('./routes/authRoutes'));
+app.use('/api/admin', require('./routes/adminRoutes'));
+app.use('/api/doctors', require('./routes/doctorRoutes'));
+app.use('/api/nurses', require('./routes/nurseRoutes'));
+app.use('/api/profile', require('./routes/profileRoutes'));
+app.use('/api/appointments', require('./routes/appointmentRoutes'));
+app.use('/api/lab-tests', require('./routes/labTestRoutes')); // <-- New Lab Test Route
+app.use('/api/payment', require('./routes/paymentRoutes'));
+app.use('/api/quests', require('./routes/questRoutes'));
+
 // Server Port
 const PORT = process.env.PORT || 5000;
 
