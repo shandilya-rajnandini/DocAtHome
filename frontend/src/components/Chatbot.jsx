@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { MessageCircle, X, Send, Bot, User, Loader2, Heart } from "lucide-react";
 
-const genAI = new GoogleGenerativeAI("genai_api_key");
+const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GOOGLE_AI_API_KEY);
 
 const Chatbot = () => {
   const [open, setOpen] = useState(false);
@@ -45,34 +45,39 @@ const Chatbot = () => {
     }
   };
 
-  const sendMessage = async () => {
-    if (!input.trim() || isLoading) return;
+const sendMessage = async () => {
+  const trimmedInput = input.trim();
+  if (!trimmedInput || isLoading || trimmedInput.length > 1000) return;
 
-    const userMessage = { 
-      from: "user", 
-      text: input.trim(), 
-      timestamp: Date.now() 
-    };
-    setMessages(prev => [...prev, userMessage]);
-    setInput("");
-    setIsLoading(true);
+  const userMessage = { 
+    from: "user", 
+    text: trimmedInput, 
+    timestamp: Date.now() 
+  };
+  setMessages(prev => [...prev, userMessage]);
+  setInput("");
+  setIsLoading(true);
 
     try {
-      const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
-      const result = await model.generateContent(input.trim());
+      const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash-preview" });
+      const result = await model.generateContent(trimmedInput);
       const response = await result.response;
       const text = response.text();
 
+      if (!text || text.trim().length === 0) throw new Error("Empty response from AI");
+
       setMessages(prev => [...prev, { 
         from: "bot", 
-        text: text, 
+        text: text.trim(), 
         timestamp: Date.now() 
       }]);
     } catch (err) {
       console.error("Chatbot error:", err);
       setMessages(prev => [...prev, { 
         from: "bot", 
-        text: "I apologize, but I'm having trouble connecting right now. Please try again in a moment.", 
+        text: err.message?.includes("API key") 
+          ? "Configuration error. Please contact support." 
+          : "I’m having trouble responding right now. Please try again shortly.", 
         timestamp: Date.now() 
       }]);
     } finally {
