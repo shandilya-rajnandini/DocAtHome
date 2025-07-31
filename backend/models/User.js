@@ -93,6 +93,12 @@ const UserSchema = new mongoose.Schema({
   // --- Password Reset Fields ---
   passwordResetToken: String,
   passwordResetExpires: Date,
+
+  // --- Gamification Fields ---
+  healthPoints: {
+    type: Number,
+    default: 0,
+  },
 });
 
 

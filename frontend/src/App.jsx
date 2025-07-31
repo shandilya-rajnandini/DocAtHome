@@ -31,6 +31,7 @@ import BookLabTestPage from './pages/BookLabTestPage.jsx';
 import VideoConsultPage from './pages/VideoConsultPage.jsx';
 import MyAppointmentsPage from './pages/MyAppointmentsPage.jsx';
 import MyPrescriptionsPage from './pages/MyPrescriptionsPage.jsx';
+import HealthQuestsPage from './pages/HealthQuestsPage.jsx';
 
 // Protected Professional Pages
 import DoctorDashboard from './pages/DoctorDashboard.jsx';
@@ -76,6 +77,7 @@ function App() {
             <Route path="/video-consult" element={<ProtectedRoute><VideoConsultPage /></ProtectedRoute>} />
             <Route path="/my-appointments" element={<ProtectedRoute><MyAppointmentsPage /></ProtectedRoute>} />
             <Route path="/my-prescriptions" element={<ProtectedRoute><MyPrescriptionsPage /></ProtectedRoute>} />
+            <Route path="/health-quests" element={<ProtectedRoute><HealthQuestsPage /></ProtectedRoute>} />
             
             {/* --- Protected Professional (Doctor/Nurse) Routes --- */}
             <Route path="/doctor/dashboard" element={<ProtectedRoute><DoctorDashboard /></ProtectedRoute>} />

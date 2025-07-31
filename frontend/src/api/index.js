@@ -52,3 +52,8 @@ export const bookLabTest = (testData) => API.post('/lab-tests', testData);
 // === Payment Routes ===
 export const createRazorpayOrder = (orderData) => API.post('/payment/create-order', orderData);
 export const verifyRazorpayPayment = (paymentData) => API.post('/payment/verify', paymentData);
+
+// === Quest Routes ===
+export const getQuests = () => API.get('/quests');
+export const acceptQuest = (questId) => API.post(`/quests/${questId}/accept`);
+export const logQuestProgress = (userQuestId) => API.post(`/quests/${userQuestId}/log`);

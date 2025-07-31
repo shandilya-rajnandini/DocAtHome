@@ -44,9 +44,10 @@ const Navbar = () => {
         <div className=" space-x-4 md:space-x-6 flex items-center text-black dark:text-primary-text font-semibold">
           
           <Link to="/search" className="hover:text-accent-blue transition-colors">Search Doctors</Link>
-          
-          {/* --- THIS IS THE NEW LINK --- */}
           <Link to="/book-ambulance" className="hover:text-accent-blue transition-colors">Ambulance</Link>
+          {user && user.role === 'patient' && (
+            <Link to="/health-quests" className="hover:text-accent-blue transition-colors">Health Quests</Link>
+          )}
           
           {user ? (
             <>
