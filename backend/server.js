@@ -5,11 +5,14 @@ const dotenv = require('dotenv');
 const cors = require('cors');
 const connectDB = require('./config/db');
 
+
 // Load environment variables from .env file
 dotenv.config();
 
 const app = express();
 const server = http.createServer(app);
+const careCircle = require("./routes/careCircle");
+
 
 // Configure Socket.IO with CORS settings
 const io = new Server(server, {
@@ -40,6 +43,8 @@ app.use('/api/profile', require('./routes/profileRoutes'));
 app.use('/api/appointments', require('./routes/appointmentRoutes'));
 app.use('/api/lab-tests', require('./routes/labTestRoutes')); // <-- New Lab Test Route
 app.use('/api/payment', require('./routes/paymentRoutes'));
+app.use("/api/profile", require("./routes/careCircle"));
+
 // Server Port
 const PORT = process.env.PORT || 5000;
 
