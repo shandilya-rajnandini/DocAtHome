@@ -66,11 +66,17 @@ const Navbar = () => {
               </Link>
             </>
           )}
-        <div className='text-white hover:cursor-pointer border border-black p-2 rounded-full bg-slate-800 dark:bg-amber-200 hover:bg-slate-500 dark:hover:bg-amber-400' onClick={toggleTheme}>
-           {theme === 'light' ? <BsFillMoonStarsFill className='text-2xl text-cyan-200'/> : <IoSunnySharp className='text-2xl text-black'/>}
-
-
-        </div>
+       <button 
+          onClick={toggleTheme}
+          aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
+          className="border border-black p-2 rounded-full bg-slate-800 dark:bg-amber-200 hover:bg-slate-600 dark:hover:bg-amber-400 transition-colors focus:outline-none focus:ring-2 focus:ring-accent-blue"
+        >
+          {theme === 'light' ? (
+            <BsFillMoonStarsFill className="text-2xl text-cyan-200" />
+          ) : (
+            <IoSunnySharp className="text-2xl text-black" />
+          )}
+        </button>
         </div>
 
       </div>
