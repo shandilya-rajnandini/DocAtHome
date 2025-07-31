@@ -114,12 +114,10 @@ if (userQuest.lastLoggedDate) {
       
       return res.status(200).json({ success: true, data: savedUserQuest });
     }
-    
-    await userQuest.save();
 
-    await userQuest.save();
+    const savedUserQuest = await userQuest.save();
 
-    res.status(200).json({ success: true, data: userQuest });
+    res.status(200).json({ success: true, data: savedUserQuest });
   } catch (err) {
     console.error('LOG PROGRESS ERROR:', err.message);
     res.status(500).send('Server Error');
