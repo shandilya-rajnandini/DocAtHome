@@ -122,21 +122,21 @@ To ensure a welcoming and inclusive environment for everyone, we have a Code of 
 
 ## ✨ Our Amazing Contributors
 
-A huge thank you to all the wonderful people who have contributed to Doc@Home during GSSoC '24!
+A huge thank you to all the wonderful people who have contributed to Doc@Home during GSSoC '25!
 
 <!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
 <!-- prettier-ignore-start -->
 <!-- markdownlint-disable -->
-<table>
-  <tbody>
-    <tr>
-      <td align="center" valign="top" width="14.28%"><a href="https://github.com/shandilya-rajnandini"><img src="https://avatars.githubusercontent.com/u/104881234?v=4?s=100" width="100px;" alt="shandilya-rajnandini"/><br /><sub><b>shandilya-rajnandini</b></sub></a><br /><a href="#maintenance-shandilya-rajnandini" title="Maintenance">🚧</a> <a href="https://github.com/shandilya-rajnandini/DocAtHome/commits?author=shandilya-rajnandini" title="Code">💻</a></td>
-      <!-- Add more contributors here using the All Contributors bot -->
-    </tr>
-  </tbody>
-</table>
+
+
+<a href="https://github.com/shandilya-rajnandini/DocAtHome/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=shandilya-rajnandini/DocAtHome" />
+</a>
+
+---
+
 <!-- markdownlint-restore -->
 <!-- prettier-ignore-end -->
 <!-- ALL-CONTRIBUTORS-LIST:END -->
 
-This project follows the [all-contributors](https://github.com/all-contributors/all-contributors) specification. Contributions of any kind are welcome!
+This project follows the [all-contributors](https://github.com/shandilya-rajnandini/DocAtHome/graphs/contributors) specification. Contributions of any kind are welcome!
