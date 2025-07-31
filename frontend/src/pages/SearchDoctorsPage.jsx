@@ -68,9 +68,13 @@ const SearchDoctorsPage = () => {
                             {cities.map(city => <option key={city} value={city}>{city}</option>)}
                         </select>
                     </div>
-                    <button type="submit" className="w-full bg-accent-blue text-white p-3 rounded font-bold hover:bg-accent-blue-hover">
-                        Apply Filters
-                    </button>
+                <button
+  type="submit"
+  className="w-full bg-accent-blue text-white p-3 rounded font-bold hover:bg-accent-blue-hover disabled:opacity-50"
+  disabled={isLoading}
+>
+  {isLoading ? 'Searching...' : 'Apply Filters'}
+</button>
                 </form>
 
                 {/* Results Section */}
