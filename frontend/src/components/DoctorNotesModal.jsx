@@ -1,7 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 const DoctorNotesModal = ({ isOpen, onClose, onSubmit }) => {
   const [notes, setNotes] = useState('');
+
+  useEffect(() => {
+    if (!isOpen) {
+      setNotes('');
+    }
+  }, [isOpen]);
 
   if (!isOpen) {
     return null;
