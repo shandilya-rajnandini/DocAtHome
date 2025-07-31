@@ -42,33 +42,33 @@ const LoginPage = () => {
   };
 
   return (
-    <div className="flex justify-center items-center mt-20 mb-20">
-      <form onSubmit={onSubmit} className="bg-secondary-dark p-8 rounded-lg shadow-lg w-full max-w-md">
-        <h2 className="text-3xl font-bold mb-6 text-center text-white">
+    <div className="bg-amber-200 dark:!bg-primary-dark flex justify-center items-center mt-20 mb-20">
+      <form onSubmit={onSubmit} className="bg-white dark:bg-secondary-dark p-8 rounded-lg shadow-lg w-full max-w-md">
+        <h2 className="text-3xl font-bold mb-6 text-center text-black dark:text-white">
           Login to Your Account
         </h2>
         
         <div className="mb-4">
-          <label className="block text-secondary-text mb-2">Email Address</label>
+          <label className="block text-slate-700 dark:text-secondary-text mb-2">Email Address</label>
           <input
             type="email"
             name="email"
             value={email}
             onChange={onChange}
             required
-            className="w-full p-3 bg-primary-dark rounded border border-gray-700 focus:outline-none focus:ring-2 focus:ring-accent-blue"
+            className="w-full p-3 bg-gray-200 dark:bg-primary-dark rounded border  border-gray-700 focus:outline-none focus:ring-2 focus:ring-accent-blue text-black dark:text-white"
           />
         </div>
 
         <div className="mb-6">
-          <label className="block text-secondary-text mb-2">Password</label>
+          <label className="block text-slate-700 dark:text-secondary-text mb-2">Password</label>
           <input
             type="password"
             name="password"
             value={password}
             onChange={onChange}
             required
-            className="w-full p-3 bg-primary-dark rounded border border-gray-700 focus:outline-none focus:ring-2 focus:ring-accent-blue"
+            className="w-full p-3 bg-gray-200 dark:bg-primary-dark rounded border border-gray-700 focus:outline-none focus:ring-2 focus:ring-accent-blue"
           />
         </div>
 

@@ -1,21 +1,31 @@
 import React, { useState, useEffect } from 'react';
-import { getMyAppointments, updateAppointmentStatus } from '../api';
+import { getMyAppointments, updateAppointmentStatus, getAppointmentSummary } from '../api';
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
+import DoctorNotesModal from '../components/DoctorNotesModal';
+import Modal from '../components/Modal';
 
 const DoctorAppointmentsPage = () => {
     const [appointments, setAppointments] = useState([]);
     const [loading, setLoading] = useState(true);
     const { user } = useAuth();
     const [filter, setFilter] = useState('Pending'); // To filter by status
+    const [isNotesModalOpen, setIsNotesModalOpen] = useState(false);
+    const [selectedApptId, setSelectedApptId] = useState(null);
+    const [isSummaryModalOpen, setIsSummaryModalOpen] = useState(false);
+    const [summary, setSummary] = useState('');
+    const [summaryLoading, setSummaryLoading] = useState(false);
 
     const fetchAppointments = async () => {
         setLoading(true);
         try {
             const { data } = await getMyAppointments();
-            setAppointments(data);
+            // The API returns an object like { success, count, data: [...] }
+            // We need to set the inner 'data' array to the state.
+            setAppointments(data.data || []);
         } catch (error) {
             toast.error("Could not fetch appointments.");
+            setAppointments([]); // Ensure state is an array even on error
         } finally {
             setLoading(false);
         }
@@ -25,22 +35,46 @@ const DoctorAppointmentsPage = () => {
         fetchAppointments();
     }, []);
 
-    const handleStatusUpdate = async (id, newStatus) => {
+    const handleStatusUpdate = async (id, newStatus, doctorNotes = '') => {
         const originalAppointments = [...appointments];
         
-        // Optimistically update the UI for a faster user experience
+        // Optimistically update the UI
         const updatedAppointments = appointments.map(appt => 
-            appt._id === id ? { ...appt, status: newStatus } : appt
+            appt._id === id ? { ...appt, status: newStatus, doctorNotes } : appt
         );
         setAppointments(updatedAppointments);
         
         try {
-            await updateAppointmentStatus(id, newStatus);
+            await updateAppointmentStatus(id, { status: newStatus, doctorNotes });
             toast.success(`Appointment successfully ${newStatus.toLowerCase()}!`);
         } catch (error) {
             toast.error("Failed to update status. Please try again.");
-            // Revert the UI if the API call fails
             setAppointments(originalAppointments);
+        }
+    };
+
+    const openNotesModal = (id) => {
+        setSelectedApptId(id);
+        setIsNotesModalOpen(true);
+    };
+
+    const handleNotesSubmit = (notes) => {
+        if (selectedApptId) {
+            handleStatusUpdate(selectedApptId, 'Completed', notes);
+        }
+    };
+
+    const handleViewSummary = async (id) => {
+        setSummaryLoading(true);
+        setIsSummaryModalOpen(true);
+        try {
+            const { data } = await getAppointmentSummary(id);
+            setSummary(data.summary);
+        } catch (error) {
+            toast.error("Could not fetch summary.");
+            setSummary('Failed to load summary.');
+        } finally {
+            setSummaryLoading(false);
         }
     };
 
@@ -91,6 +125,11 @@ const DoctorAppointmentsPage = () => {
                                         </div>
                                         {/* Actions */}
                                         <div className="flex flex-col md:flex-row gap-2 justify-end">
+                                            {appt.status !== 'Cancelled' && (
+                                                <button onClick={() => handleViewSummary(appt._id)} className="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold py-2 px-3 rounded">
+                                                    View Summary
+                                                </button>
+                                            )}
                                             {appt.status === 'Pending' && (
                                                 <>
                                                     <button onClick={() => handleStatusUpdate(appt._id, 'Confirmed')} className="bg-green-600 hover:bg-green-700 text-white text-sm font-bold py-2 px-3 rounded">Confirm</button>
@@ -98,10 +137,17 @@ const DoctorAppointmentsPage = () => {
                                                 </>
                                             )}
                                             {appt.status === 'Confirmed' && (
-                                                 <button onClick={() => handleStatusUpdate(appt._id, 'Completed')} className="bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold py-2 px-3 rounded">Mark as Complete</button>
+                                                 <button onClick={() => openNotesModal(appt._id)} className="bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold py-2 px-3 rounded">Mark as Complete</button>
                                             )}
                                         </div>
                                     </div>
+                                    {/* --- Display Doctor's Notes for Completed Appointments --- */}
+                                    {appt.status === 'Completed' && appt.doctorNotes && (
+                                        <div className="border-t border-gray-700 mt-4 pt-4">
+                                            <h4 className="font-bold text-white mb-2">Your Notes:</h4>
+                                            <p className="text-secondary-text bg-primary-dark p-3 rounded">{appt.doctorNotes}</p>
+                                        </div>
+                                    )}
                                 </div>
                             ))
                         ) : (
@@ -112,6 +158,16 @@ const DoctorAppointmentsPage = () => {
                     </div>
                 )}
             </div>
+
+            <DoctorNotesModal
+                isOpen={isNotesModalOpen}
+                onClose={() => setIsNotesModalOpen(false)}
+                onSubmit={handleNotesSubmit}
+            />
+
+            <Modal isOpen={isSummaryModalOpen} onClose={() => setIsSummaryModalOpen(false)} title="AI-Generated Patient Summary">
+                {summaryLoading ? <p>Loading summary...</p> : <pre className="whitespace-pre-wrap font-sans">{summary}</pre>}
+            </Modal>
         </div>
     );
 };

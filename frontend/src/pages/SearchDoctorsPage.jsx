@@ -50,27 +50,31 @@ const SearchDoctorsPage = () => {
             </div>
 
             {/* Main Content Area */}
-            <div className="container mx-auto p-8 grid grid-cols-1 lg:grid-cols-4 gap-8">
+            <div className="container  mx-auto p-8 grid grid-cols-1 lg:grid-cols-4 gap-8">
                 {/* Filters Sidebar */}
-                <form onSubmit={handleApplyFilters} className="lg:col-span-1 bg-secondary-dark p-6 rounded-lg shadow-lg h-fit">
-                    <h2 className="text-2xl font-bold text-white mb-6">Filters</h2>
+                <form onSubmit={handleApplyFilters} className="lg:col-span-1 bg-white dark:bg-secondary-dark p-6 rounded-lg shadow-lg h-fit">
+                    <h2 className="text-2xl font-bold text-slate-800 dark:text-white mb-6">Filters</h2>
                     <div className="mb-6">
-                        <label className="block text-secondary-text mb-2 font-semibold">Specialty</label>
-                        <select name="specialty" value={filters.specialty} onChange={handleFilterChange} className="w-full p-3 bg-primary-dark rounded border-gray-700 text-white">
+                        <label className="block text-slate-700 dark:text-secondary-text mb-2 font-semibold">Specialty</label>
+                        <select name="specialty" value={filters.specialty} onChange={handleFilterChange} className="w-full p-3 bg-gray-200 dark:bg-primary-dark text-black dark:text-white rounded border-gray-700 ">
                             <option value="">All Specialties</option>
                             {doctorSpecialties.map(spec => <option key={spec} value={spec}>{spec}</option>)}
                         </select>
                     </div>
                     <div className="mb-6">
-                        <label className="block text-secondary-text mb-2 font-semibold">City</label>
-                        <select name="city" value={filters.city} onChange={handleFilterChange} className="w-full p-3 bg-primary-dark rounded border-gray-700 text-white">
+                        <label className="block text-slate-700 dark:text-secondary-text mb-2 font-semibold">City</label>
+                        <select name="city" value={filters.city} onChange={handleFilterChange} className="w-full p-3 bg-gray-200 dark:bg-primary-dark text-black dark:text-white rounded border-gray-700 ">
                             <option value="">All Cities</option>
                             {cities.map(city => <option key={city} value={city}>{city}</option>)}
                         </select>
                     </div>
-                    <button type="submit" className="w-full bg-accent-blue text-white p-3 rounded font-bold hover:bg-accent-blue-hover">
-                        Apply Filters
-                    </button>
+                <button
+  type="submit"
+  className="w-full bg-accent-blue text-white p-3 rounded font-bold hover:bg-accent-blue-hover disabled:opacity-50"
+  disabled={isLoading}
+>
+  {isLoading ? 'Searching...' : 'Apply Filters'}
+</button>
                 </form>
 
                 {/* Results Section */}
@@ -82,8 +86,8 @@ const SearchDoctorsPage = () => {
                             {doctors.map(doctor => <DoctorCard key={doctor._id} doctor={doctor} />)}
                         </div>
                     ) : (
-                        <div className="text-center bg-secondary-dark p-10 rounded-lg">
-                            <p className="text-secondary-text text-xl">No doctors found matching your criteria.</p>
+                        <div className="text-center bg-white  dark:bg-secondary-dark p-10 rounded-lg">
+                            <p className="text-black dark:text-secondary-text text-xl">No doctors found matching your criteria.</p>
                         </div>
                     )}
                 </main>
