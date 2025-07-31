@@ -13,7 +13,7 @@ const Navbar = () => {
   const [theme,setTheme] = useState(()=>{return localStorage.getItem('pagemode')||'light'});
 
   useEffect(() => {
-    const html = document.getElementById('html');
+    const html =  document.documentElement;
     if(theme==='dark'){
       html.classList.add('dark')
     }

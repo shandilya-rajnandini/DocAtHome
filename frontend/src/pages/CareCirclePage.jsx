@@ -75,7 +75,7 @@ const CareCirclePage = () => {
                                     value={inviteEmail}
                                     onChange={(e) => setInviteEmail(e.target.value)}
                                     placeholder="Enter member's email" 
-                                    className="w-full p-3 !bg-gray-300 dark:!bg-primary-dark text-black dark:text-white rounded-md border-gray-700 "
+                                    className="w-full p-3 bg-gray-300 dark:bg-primary-dark text-black dark:text-white rounded-md border-gray-700 "
                                 />
                             </div>
                             <div>
