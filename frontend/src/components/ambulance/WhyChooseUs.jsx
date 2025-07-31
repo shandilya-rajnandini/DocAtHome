@@ -13,7 +13,7 @@ const WhyChooseUs = () => {
     return (
         <section className="bg-amber-100 py-20 px-4 dark:bg-primary-dark text-white">
             <div className="container mx-auto text-center">
-                <h2 className="text-3xl font-bold mb-12 !text-black dark:!text-white">WHY <span className="text-red-500">CHOOSE US ?</span></h2>
+                <h2 className="text-3xl font-bold mb-12 text-black dark:text-white">WHY <span className="text-red-500">CHOOSE US ?</span></h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
                     {reasons.map(reason => (
                         <div key={reason.title} className="bg-amber-100 dark:bg-gray-900 p-8 rounded-lg text-black dark:text-white">

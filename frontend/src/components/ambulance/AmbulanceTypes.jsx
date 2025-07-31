@@ -11,9 +11,9 @@ const types = [
 
 const AmbulanceTypes = () => {
   return (
-    <section className=" bg-amber-100 py-20 px-4 dark:bg-gray-900 text-white">
+    <section className=" bg-amber-100 py-20 px-4 dark:bg-gray-900 dark:text-white">
       <div className="container mx-auto text-center">
-        <h2 className="text-3xl font-bold mb-12 !text-black dark:!text-white">TYPE OF <span className="text-red-500">AMBULANCE</span></h2>
+        <h2 className="text-3xl font-bold mb-12 text-black dark:text-white">TYPE OF <span className="text-red-500">AMBULANCE</span></h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
           {types.map(type => (
             <div key={type.name} className={`relative rounded-lg overflow-hidden h-64 ${type.bg} bg-cover bg-center group`}>
