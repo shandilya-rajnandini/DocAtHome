@@ -56,6 +56,16 @@ const UserSchema = new mongoose.Schema({
     type: String,
     required: function() { return this.role === 'doctor' || this.role === 'nurse'; }
   },
+
+  // --- Patient-Specific Medical Info ---
+  allergies: {
+    type: [String],
+    default: [],
+  },
+  chronicConditions: {
+    type: [String],
+    default: [],
+  },
   
   // --- Status & Ratings ---
   isVerified: {
@@ -71,7 +81,10 @@ const UserSchema = new mongoose.Schema({
     type: Number,
     default: 0,
   },
-
+  profilePictureUrl: {
+  type: String,
+  default: "",
+},
   createdAt: {
     type: Date,
     default: Date.now
