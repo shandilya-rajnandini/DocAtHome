@@ -39,6 +39,15 @@ const AppointmentCard = ({ appointment }) => {
                     <p>{appointment.bookingType}</p>
                 </div>
             </div>
+            {appointment.status === 'Completed' && appointment.doctorNotes && (
+                <>
+                    <div className="border-t border-gray-700 my-4"></div>
+                    <div>
+                        <h4 className="font-bold text-white mb-2">Doctor's Notes:</h4>
+                        <p className="text-secondary-text bg-primary-dark rounded">{appointment.doctorNotes}</p>
+                    </div>
+                </>
+            )}
         </div>
     );
 };
