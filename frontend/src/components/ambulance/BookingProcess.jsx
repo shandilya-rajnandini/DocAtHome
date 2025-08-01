@@ -10,18 +10,18 @@ const steps = [
 
 const BookingProcess = () => {
     return (
-        <section className="py-20 px-4 bg-gray-900 text-white">
+        <section className="bg-amber-100 py-20 px-4 dark:bg-gray-900 text-white">
             <div className="container mx-auto text-center">
-                <h2 className="text-3xl font-bold mb-12">PROCESS TO BOOK <span className="text-red-500">AN AMBULANCE</span></h2>
+                <h2 className="text-3xl font-bold mb-12 !text-black dark:!text-white">PROCESS TO BOOK <span className="text-red-500">AN AMBULANCE</span></h2>
                 <div className="flex flex-col md:flex-row justify-center items-center gap-8">
                     {steps.map((step, index) => (
                         <React.Fragment key={step.title}>
-                            <div className="flex flex-col items-center">
+                            <div className="flex flex-col items-center text-black dark:text-white">
                                 <div className="w-24 h-24 rounded-full border-2 border-green-500 flex items-center justify-center text-4xl mb-4">
                                     {step.icon}
                                 </div>
                                 <h3 className="text-xl font-bold text-red-500">{step.title}</h3>
-                                <p className="mt-2 text-gray-400 max-w-xs">{step.text}</p>
+                                <p className="mt-2 text-gray-800 dark:text-gray-400 max-w-xs">{step.text}</p>
                             </div>
                             {index < steps.length - 1 && <div className="text-green-500 text-4xl hidden md:block">→</div>}
                         </React.Fragment>
