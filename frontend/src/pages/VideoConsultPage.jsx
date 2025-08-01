@@ -43,7 +43,7 @@ const VideoConsultPage = () => {
     }, []);
 
     return (
-        <div className="bg-primary-dark">
+        <div className="bg-amber-300 dark:bg-primary-dark">
             {/* Header */}
             <div className="relative bg-[url('/video-consult-bg.jpg')] bg-cover bg-center h-72">
                 <div className="absolute inset-0 bg-black bg-opacity-60 flex flex-col justify-center items-center text-center text-white p-4">
@@ -55,34 +55,34 @@ const VideoConsultPage = () => {
             <div className="container mx-auto p-8">
                 {/* How it Works Section */}
                 <section className="mb-16">
-                    <h2 className="text-3xl font-bold text-center text-white mb-8">How It Works</h2>
+                    <h2 className="text-3xl font-bold text-center text-black dark:text-white mb-8">How It Works</h2>
                     <div className="grid md:grid-cols-3 gap-8 text-center text-white">
-                        <div className="bg-secondary-dark p-6 rounded-lg">
+                        <div className="bg-white dark:bg-secondary-dark p-6 rounded-lg">
                             <h3 className="text-xl font-semibold text-accent-blue mb-2">1. Select a Doctor</h3>
-                            <p className="text-secondary-text">Choose from our list of verified and experienced specialists.</p>
+                            <p className="text-black dark:text-secondary-text">Choose from our list of verified and experienced specialists.</p>
                         </div>
-                        <div className="bg-secondary-dark p-6 rounded-lg">
+                        <div className="bg-white dark:bg-secondary-dark p-6 rounded-lg">
                             <h3 className="text-xl font-semibold text-accent-blue mb-2">2. Book a Slot</h3>
-                            <p className="text-secondary-text">Pick a convenient date and time on the doctor's profile.</p>
+                            <p className="text-black dark:text-secondary-text">Pick a convenient date and time on the doctor's profile.</p>
                         </div>
-                        <div className="bg-secondary-dark p-6 rounded-lg">
+                        <div className="bg-white dark:bg-secondary-dark p-6 rounded-lg">
                             <h3 className="text-xl font-semibold text-accent-blue mb-2">3. Start Your Call</h3>
-                            <p className="text-secondary-text">Join the secure video call at the scheduled time from your dashboard.</p>
+                            <p className="text-black dark:text-secondary-text">Join the secure video call at the scheduled time from your dashboard.</p>
                         </div>
                     </div>
                 </section>
 
                 {/* Available Doctors Section */}
                 <section>
-                    <h2 className="text-3xl font-bold text-center text-white mb-8">Doctors Available for Video Consultation</h2>
+                    <h2 className="text-3xl font-bold text-center text-black dark:text-white mb-8">Doctors Available for Video Consultation</h2>
                     {loading ? (
-                        <p className="text-center text-white">Loading doctors...</p>
+                        <p className="text-center text-black dark:text-white">Loading doctors...</p>
                     ) : (
                         <div className="space-y-4 max-w-4xl mx-auto">
                             {doctors.length > 0 ? (
                                 doctors.map(doc => <VideoDoctorCard key={doc._id} doctor={doc} />)
                             ) : (
-                                <p className="text-center text-secondary-text">No doctors are currently available.</p>
+                                <p className="text-center text-black dark:text-secondary-text">No doctors are currently available.</p>
                             )}
                         </div>
                     )}

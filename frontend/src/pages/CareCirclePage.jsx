@@ -62,25 +62,25 @@ const CareCirclePage = () => {
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                     
                     {/* Left Column: Invite Form */}
-                    <div className="lg:col-span-1 bg-secondary-dark p-6 rounded-lg shadow-lg h-fit">
-                        <h2 className="text-2xl font-bold text-white mb-4 flex items-center">
+                    <div className="lg:col-span-1 bg-accent-cream dark:bg-secondary-dark p-6 rounded-lg shadow-lg h-fit">
+                        <h2 className="text-2xl font-bold text-black dark:text-white mb-4 flex items-center">
                             <IconUserPlus className="mr-3 text-accent-blue"/> Invite a Member
                         </h2>
                         <p className="text-secondary-text text-sm mb-4">Add family members, doctors, or nurses to your circle to collaboratively manage your health.</p>
                         <form onSubmit={handleInvite} className="space-y-4">
                             <div>
-                                <label className="block text-secondary-text mb-1">Email Address</label>
+                                <label className="block  text-black dark:text-secondary-text  mb-1">Email Address</label>
                                 <input 
                                     type="email" 
                                     value={inviteEmail}
                                     onChange={(e) => setInviteEmail(e.target.value)}
                                     placeholder="Enter member's email" 
-                                    className="w-full p-3 bg-primary-dark rounded-md border-gray-700 text-white"
+                                    className="w-full p-3 bg-gray-300 dark:bg-primary-dark text-black dark:text-white rounded-md border-gray-700 "
                                 />
                             </div>
                             <div>
-                                <label className="block text-secondary-text mb-1">Role in Circle</label>
-                                <select value={inviteRole} onChange={(e) => setInviteRole(e.target.value)} className="w-full p-3 bg-primary-dark rounded-md border-gray-700 text-white">
+                                <label className="block text-black dark:text-secondary-text mb-1">Role in Circle</label>
+                                <select value={inviteRole} onChange={(e) => setInviteRole(e.target.value)} className="w-full p-3 bg-gray-300 dark:bg-primary-dark rounded-md border-gray-700 text-black dark:text-white">
                                     <option>Family</option>
                                     <option>Doctor</option>
                                     <option>Nurse</option>
@@ -92,8 +92,8 @@ const CareCirclePage = () => {
 
                     {/* Right Column: Members List & Vitals */}
                     <div className="lg:col-span-2 space-y-8">
-                        <div className="bg-secondary-dark p-6 rounded-lg shadow-lg">
-                            <h2 className="text-2xl font-bold text-white mb-4">Circle Members ({circle?.members.length || 0})</h2>
+                        <div className=" bg-accent-cream dark:bg-secondary-dark p-6 rounded-lg shadow-lg">
+                            <h2 className="text-2xl font-bold text-black dark:text-white mb-4">Circle Members ({circle?.members.length || 0})</h2>
                             <div className="space-y-3">
                                 {circle?.members.length > 0 ? (
                                     circle.members.map(member => (
@@ -116,9 +116,9 @@ const CareCirclePage = () => {
                             </div>
                         </div>
 
-                        <div className="bg-secondary-dark p-6 rounded-lg shadow-lg">
-                            <h2 className="text-2xl font-bold text-white mb-4">Recent Vitals & Trends</h2>
-                            <div className="text-center text-secondary-text py-16 border-2 border-dashed border-gray-700 rounded-lg">
+                        <div className="bg-accent-cream dark:bg-secondary-dark p-6 rounded-lg shadow-lg">
+                            <h2 className="text-2xl font-bold text-black dark:text-white mb-4">Recent Vitals & Trends</h2>
+                            <div className="text-center text-black dark:text-secondary-text py-16 border-2 border-dashed border-gray-700 rounded-lg">
                                <p>Vitals logged by your doctor or nurse will appear here.</p>
                                <p className="mt-2 text-sm">(A chart visualizing health trends will be available soon)</p>
                             </div>
