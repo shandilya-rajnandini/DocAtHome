@@ -6,9 +6,11 @@ const asyncHandler = require('../middleware/asyncHandler');
 exports.getMyProfile = asyncHandler(async (req, res) => {
     // req.user.id comes from the 'protect' middleware
     const profile = await User.findById(req.user.id).select('-password');
-    if (!profile) {
-      return res.status(404).json({ msg: 'Profile not found' });
-    }
+      if (!profile) {
+        const error = new Error('Profile not found');
+        error.statusCode = 404;
+        throw error;
+      }
     res.json(profile);
 });
 

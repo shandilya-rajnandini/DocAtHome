@@ -12,16 +12,10 @@ const errorHandler = require('./middleware/errorMiddleware');
 // ... your existing routes and middlewares here ...
 
 
-const express = require('express');
-
 const connectDB = require('./config/db');
 const app = require('./app');  // if app is already created there
 
 
-
-
-// If you don't have an existing app export, then:
-// const app = express();
 
 const server = http.createServer(app);
 

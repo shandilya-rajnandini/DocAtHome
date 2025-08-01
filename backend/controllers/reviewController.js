@@ -9,9 +9,11 @@ exports.createReview = asyncHandler(async (req, res) => {
   req.body.patient = req.user.id; // from protect middleware
 
     const doctor = await User.findById(req.params.doctorId);
-    if (!doctor || doctor.role !== 'doctor') {
-      return res.status(404).json({ msg: 'Doctor not found' });
-    }
+      if (!doctor || doctor.role !== 'doctor') {
+        const error = new Error('Doctor not found');
+        error.statusCode = 404;
+        throw error;
+      }
     const review = await Review.create(req.body);
 
     // After creating the review, we must update the doctor's average rating
