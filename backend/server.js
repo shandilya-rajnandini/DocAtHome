@@ -3,7 +3,16 @@ const { Server } = require('socket.io');
 const connectDB = require('./config/db');
 const app = require('./app');
 
+
+// Load environment variables from .env file
+dotenv.config();
+
+const app = express();
+
+
 const server = http.createServer(app);
+const careCircle = require("./routes/careCircle");
+
 
 // Configure Socket.IO with CORS settings
 const io = new Server(server, {
@@ -30,7 +39,11 @@ app.use('/api/profile', require('./routes/profileRoutes'));
 app.use('/api/appointments', require('./routes/appointmentRoutes'));
 app.use('/api/lab-tests', require('./routes/labTestRoutes')); // <-- New Lab Test Route
 app.use('/api/payment', require('./routes/paymentRoutes'));
+
+app.use("/api/profile", require("./routes/careCircle"));
+
 app.use('/api/quests', require('./routes/questRoutes'));
+
 
 // Server Port
 const PORT = process.env.PORT || 5000;
