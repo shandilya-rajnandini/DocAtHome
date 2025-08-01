@@ -1,10 +1,20 @@
-const express = require("express");
-const cors = require("cors");
+const path = require("path");
 const dotenv = require('dotenv');
+if(process.env.NODE_ENV != "production"){
+    dotenv.config({ path: path.resolve(__dirname, '../.env') });
+}
 
-dotenv.config();
 
+
+
+
+
+
+const express = require("express");
 const app = express();
+const cors = require("cors");
+
+
 
 //  Cors Middleware
 app.use(cors());
