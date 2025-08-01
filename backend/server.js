@@ -1,18 +1,23 @@
+const path = require("path");
+const dotenv = require('dotenv');
+if(process.env.NODE_ENV != "production"){
+    dotenv.config({ path: path.resolve(__dirname, '../.env') });
+}
+
+
 const http = require('http');
 const { Server } = require('socket.io');
+const errorHandler = require('./middleware/errorMiddleware');
+
+// ... your existing routes and middlewares here ...
+
+
 const connectDB = require('./config/db');
-const app = require('./app');
+const app = require('./app');  // if app is already created there
 
-
-// Load environment variables from .env file
-dotenv.config();
-
-const app = express();
 
 
 const server = http.createServer(app);
-const careCircle = require("./routes/careCircle");
-
 
 // Configure Socket.IO with CORS settings
 const io = new Server(server, {
@@ -36,14 +41,17 @@ app.use('/api/admin', require('./routes/adminRoutes'));
 app.use('/api/doctors', require('./routes/doctorRoutes'));
 app.use('/api/nurses', require('./routes/nurseRoutes'));
 app.use('/api/profile', require('./routes/profileRoutes'));
+
+// Mount careCircle routes with distinct prefix to avoid conflict
+app.use('/api/careCircle', require('./routes/careCircle'));
+
 app.use('/api/appointments', require('./routes/appointmentRoutes'));
-app.use('/api/lab-tests', require('./routes/labTestRoutes')); // <-- New Lab Test Route
+app.use('/api/lab-tests', require('./routes/labTestRoutes'));
 app.use('/api/payment', require('./routes/paymentRoutes'));
-
-app.use("/api/profile", require("./routes/careCircle"));
-
 app.use('/api/quests', require('./routes/questRoutes'));
 
+// Centralized error handling middleware (must come after routes)
+app.use(errorHandler);
 
 // Server Port
 const PORT = process.env.PORT || 5000;
