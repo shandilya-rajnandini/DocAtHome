@@ -111,25 +111,25 @@ const Footer = () => {
             <h4 className="text-lg font-semibold text-white mb-4">Products</h4>
             <div className="space-y-3">
               <a
-                href="/frontend/src/pages/PatientDashboard.jsx"
+                href="/dashboard"
                 className="block text-sm text-gray-300 hover:text-blue-400 transition-colors duration-200"
               >
                 Dashboard
               </a>
               <a
-                href="/frontend/src/pages/SearchDoctorsPage.jsx"
+                href="/search"
                 className="block text-sm text-gray-300 hover:text-blue-400 transition-colors duration-200"
               >
                 Search Doctors
               </a>
               <a
-                href="/frontend/src/pages/BookAmbulancePage.jsx"
+                href="/book-ambulance"
                 className="block text-sm text-gray-300 hover:text-blue-400 transition-colors duration-200"
               >
                 Ambulance
               </a>
               <a
-                href="/frontend/src/pages/MyAppointmentsPage.jsx"
+                href="/my-appointments"
                 className="block text-sm text-gray-300 hover:text-blue-400 transition-colors duration-200"
               >
                 My Appointments
