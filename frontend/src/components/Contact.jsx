@@ -2,13 +2,13 @@ import React from 'react';
 
 const Contact = () => {
   return (
-    <section id="contact" className="bg-secondary-dark text-primary-text py-20 px-4">
+    <section id="contact" className="bg-amber-100 dark:bg-secondary-dark text-black dark:text-primary-text py-20 px-4">
       <div className="container mx-auto">
         
         {/* Section Header */}
         <div className="text-center mb-12">
-            <h2 className="text-4xl font-bold text-white">CONTACT</h2>
-            <div className="w-20 h-1 bg-accent-cream my-4 mx-auto"></div>
+            <h2 className="text-4xl font-bold text-black dark:text-white">CONTACT</h2>
+            <div className="w-20 h-1 bg-slate-800 dark:bg-accent-cream my-4 mx-auto"></div>
         </div>
 
         {/* Main Content Grid */}
@@ -17,54 +17,59 @@ const Contact = () => {
             {/* Column 1: Contact Information */}
             <div className="flex flex-col justify-center space-y-6">
                 <div>
-                    <h3 className="text-xl font-semibold mb-2 text-accent-cream">Address</h3>
-                    <p className="text-secondary-text">BIHTA , IIT PATNA</p>
+                    <h3 className="text-2xl font-semibold mb-2 text-slate-800 dark:text-accent-cream">Address</h3>
+                    <p className="text-slate-600 dark:text-secondary-text text-xl">BIHTA , IIT PATNA</p>
                 </div>
                 <div>
-                    <h3 className="text-xl font-semibold mb-2 text-accent-cream">Phone</h3>
-                    <p className="text-secondary-text">📞 +91 9608196520</p>
+                    <h3 className="text-2xl font-semibold mb-2 text-slate-800 dark:text-accent-cream">Phone</h3>
+                    <p className="text-slate-600 dark:text-secondary-text text-xl">📞 +91 9608196520</p>
                 </div>
                 <div>
-                    <h3 className="text-xl font-semibold mb-2 text-accent-cream">Email</h3>
-                    <p className="text-secondary-text">📧 singhrajnandini65@gmail.com</p>
+                    <h3 className="text-2xl font-semibold mb-2 text-slate-800 dark:text-accent-cream">Email</h3>
+                    <p className="text-slate-600 dark:text-secondary-text text-xl">📧 singhrajnandini65@gmail.com</p>
                 </div>
                 <div>
+<<<<<<< HEAD
                     <h3 className="text-xl font-semibold mb-2 text-accent-cream">Operating Hours</h3>
                     <p className="text-secondary-text">🕒 Mon-Fri - 08:00 A.M.-9:00 P.M.</p>
+=======
+                    <h3 className="text-2xl font-semibold mb-2 text-slate-800 dark:text-accent-cream">Operating Hours</h3>
+                    <p className="text-slate-600 dark:text-secondary-text text-xl">🕒 Mon-Fri - 08:00 A.M.-19:00 P.M.</p>
+>>>>>>> 7895a1ac95dd9ec20f9eac1f2bc3740396ee7f69
                 </div>
             </div>
 
             {/* Column 2: Contact Form */}
-            <form className="bg-primary-dark p-8 rounded-lg shadow-lg">
+            <form className="bg-white dark:bg-secondary-dark p-8 rounded-lg shadow-lg shadow-black dark:shadow-white">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
                     <input 
                       type="text" 
                       placeholder="Name" 
-                      className="p-3 bg-secondary-dark rounded-md border border-gray-700 focus:outline-none focus:ring-2 focus:ring-accent-blue" 
+                      className="p-3 bg-gray-200 dark:bg-secondary-dark text-black dark:text-white rounded-md border border-gray-700 focus:outline-none focus:ring-2 focus:ring-accent-blue " 
                     />
                     <input 
                       type="text" 
                       placeholder="Phone" 
-                      className="p-3 bg-secondary-dark rounded-md border border-gray-700 focus:outline-none focus:ring-2 focus:ring-accent-blue" 
+                      className="p-3 bg-gray-200 dark:bg-secondary-dark text-black dark:text-white rounded-md border border-gray-700 focus:outline-none focus:ring-2 focus:ring-accent-blue " 
                     />
                 </div>
                 <div className="mb-4">
                     <input 
                       type="email" 
                       placeholder="Email address" 
-                      className="w-full p-3 bg-secondary-dark rounded-md border border-gray-700 focus:outline-none focus:ring-2 focus:ring-accent-blue" 
+                      className="w-full p-3 bg-gray-200 dark:bg-secondary-dark text-black dark:text-white rounded-md border border-gray-700 focus:outline-none focus:ring-2 focus:ring-accent-blue " 
                     />
                 </div>
                 <div className="mb-4">
                     <textarea 
                       placeholder="Message" 
                       rows="5" 
-                      className="w-full p-3 bg-secondary-dark rounded-md border border-gray-700 focus:outline-none focus:ring-2 focus:ring-accent-blue"
+                      className="w-full p-3 bg-gray-200 dark:bg-secondary-dark text-black dark:text-white rounded-md border border-gray-700 focus:outline-none focus:ring-2 focus:ring-accent-blue "
                     ></textarea>
                 </div>
                 <button 
                   type="submit" 
-                  className="w-full bg-accent-cream text-primary-dark font-bold py-3 rounded-md hover:bg-yellow-100 transition duration-300"
+                  className="w-full bg-gray-500 dark:bg-accent-cream text-primary-dark font-bold py-3 rounded-md hover:bg-yellow-100 transition duration-300"
                 >
                   CONTACT US
                 </button>

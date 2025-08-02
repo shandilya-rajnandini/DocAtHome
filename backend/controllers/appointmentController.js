@@ -1,5 +1,6 @@
 const Appointment = require('../models/Appointment');
 const User = require('../models/User');
+const { generateSummary } = require('../utils/aiService');
 
 // @desc    Create a new appointment
 // @route   POST /api/appointments
@@ -31,22 +32,78 @@ exports.createAppointment = async (req, res) => {
 };
 
 
-// @desc    Get appointments for the logged-in user (as patient or doctor)
+// @desc    Get a smart summary for a specific appointment
+// @route   GET /api/appointments/:id/summary
+exports.getAppointmentSummary = async (req, res) => {
+  try {
+    const appointment = await Appointment.findById(req.params.id).populate('patient');
+
+    if (!appointment) {
+      return res.status(404).json({ msg: 'Appointment not found' });
+    }
+
+    // Authorization: Only the assigned doctor can get the summary
+    if (appointment.doctor.toString() !== req.user.id) {
+      return res.status(401).json({ msg: 'User not authorized' });
+    }
+
+    const patient = appointment.patient;
+
+    // Find the last 2 completed appointments for this patient with the same doctor
+    const pastAppointments = await Appointment.find({
+      patient: patient._id,
+      doctor: req.user.id,
+      status: 'Completed',
+      _id: { $ne: appointment._id },
+    })
+      .sort({ appointmentDate: -1, appointmentTime: -1 })
+      .limit(2);
+
+    // Structure the data for the AI service
+    const patientDataForAI = {
+      name: patient.name,
+      currentSymptoms: appointment.symptoms,
+      allergies: patient.allergies || [],
+      chronicConditions: patient.chronicConditions || [],
+      pastVisits: pastAppointments.map(appt => ({
+        date: appt.appointmentDate,
+        notes: appt.doctorNotes || 'No notes recorded.',
+      })),
+    };
+
+    // Generate the summary using the AI service
+    const summary = await generateSummary(patientDataForAI);
+
+    res.status(200).json({ success: true, summary });
+  } catch (err) {
+    console.error('SUMMARY_GENERATION_ERROR:', err.message);
+    res.status(500).send('Server Error');
+  }
+};
+
+// @desc    Get all appointments for the logged-in user (patient or professional)
 // @route   GET /api/appointments/my-appointments
 exports.getMyAppointments = async (req, res) => {
     try {
-        // Find appointments where the 'patient' OR 'doctor' field matches the logged-in user's ID
-        // This allows both patients and doctors to see their relevant appointments.
-        const appointments = await Appointment.find({
-            $or: [{ patient: req.user.id }, { doctor: req.user.id }]
-        })
-        .populate('doctor', 'name specialty') // Get doctor's name and specialty
-        .populate('patient', 'name') // Get patient's name
-        .sort({ appointmentDate: -1 }); // Sort by most recent first
+        let query;
+        // Check the role of the logged-in user to build the correct query
+        if (req.user.role === 'doctor' || req.user.role === 'nurse') {
+            query = { doctor: req.user.id };
+        } else {
+            query = { patient: req.user.id };
+        }
 
-        res.json(appointments);
+        const appointments = await Appointment.find(query)
+            .populate('doctor', 'name specialty')
+            .populate('patient', 'name allergies chronicConditions'); // Populate patient details for the doctor's view
+
+        res.status(200).json({
+            success: true,
+            count: appointments.length,
+            data: appointments
+        });
     } catch (err) {
-        console.error('GET MY APPOINTMENTS ERROR:', err.message);
+        console.error('GET_MY_APPOINTMENTS_ERROR:', err.message);
         res.status(500).send('Server Error');
     }
 };
@@ -55,7 +112,7 @@ exports.getMyAppointments = async (req, res) => {
 // @route   PUT /api/appointments/:id
 exports.updateAppointmentStatus = async (req, res) => {
   try {
-    const { status } = req.body; // Expecting { status: 'Confirmed' } or { status: 'Cancelled' }
+    const { status, doctorNotes } = req.body;
 
     // Find the appointment by its ID
     let appointment = await Appointment.findById(req.params.id);
@@ -71,6 +128,13 @@ exports.updateAppointmentStatus = async (req, res) => {
 
     // Update the status
     appointment.status = status;
+
+    // If doctorNotes is provided in the request, update the appointment
+    // This handles both new notes and clearing existing notes with an empty string
+    if (doctorNotes !== undefined) {
+      appointment.doctorNotes = doctorNotes;
+    }
+
     await appointment.save();
 
     res.json(appointment);

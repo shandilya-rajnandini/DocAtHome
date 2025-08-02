@@ -12,19 +12,65 @@ const experienceLevels = Array.from({ length: 30 }, (_, i) => i + 1); // Creates
 
 const RegisterPage = () => {
   const [formData, setFormData] = useState({
-    name: '', email: '', password: '', role: 'patient',
-    specialty: '', city: '', experience: '', licenseNumber: '', govId: ''
+    name: '',
+    email: '',
+    password: '',
+    confirmPassword: '', // Added for password confirmation
+    role: 'patient',
+    specialty: '',
+    city: '',
+    experience: '',
+    licenseNumber: '',
+    govId: '',
   });
+  const [errors, setErrors] = useState({});
   const navigate = useNavigate();
   const { login } = useAuth();
 
-  const { role } = formData;
+  const { role, password, confirmPassword } = formData;
   const isProfessional = role === 'doctor' || role === 'nurse';
 
-  const onChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
+  const validateField = (name, value, allFormData = formData) => {
+    switch (name) {
+      case 'password':
+        if (value.length < 6) return 'Password must be at least 6 characters.';
+        break;
+      case 'confirmPassword':
+        if (value.length < 6) return 'Password must be at least 6 characters.';
+        if (allFormData.password !== value) return 'Passwords do not match.';
+        break;
+    }
+    return '';
+  };
+
+  const onChange = (e) => {
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
+
+    // Real-time validation
+    const error = validateField(name, value);
+    setErrors((prev) => ({ ...prev, [name]: error }));
+
+    // If the password is changed, re-validate confirmPassword
+    if (name === 'password') {
+      const confirmPasswordError = validateField('confirmPassword', confirmPassword);
+      setErrors((prev) => ({ ...prev, confirmPassword: confirmPasswordError }));
+    }
+  };
 
   const onSubmit = async (e) => {
     e.preventDefault();
+
+    // Final validation check before submission
+    if (password !== confirmPassword) {
+      toast.error('Passwords do not match.');
+      return;
+    }
+    if (password.length < 6) {
+      toast.error('Password must be at least 6 characters.');
+      return;
+    }
+
     try {
       // Create a payload with only the necessary fields
       const payload = {
@@ -67,13 +113,13 @@ const RegisterPage = () => {
 
   return (
     <div className="flex justify-center items-center mt-10 mb-20">
-      <form onSubmit={onSubmit} className="bg-secondary-dark p-8 rounded-lg shadow-lg w-full max-w-2xl">
-        <h2 className="text-3xl font-bold mb-6 text-center text-white">Create Your Account</h2>
+      <form onSubmit={onSubmit} className="bg-white dark:bg-secondary-dark p-8 rounded-lg shadow-lg w-full max-w-2xl">
+        <h2 className="text-3xl font-bold mb-6 text-center text-black dark:text-white">Create Your Account</h2>
         
         {/* --- Core Fields --- */}
         <div className="mb-4">
-          <label className="block text-secondary-text mb-2">I am a...</label>
-          <select name="role" value={role} onChange={onChange} className="w-full p-3 bg-primary-dark rounded border-gray-700">
+          <label className="block text-slate-700 dark:text-secondary-text mb-2">I am a...</label>
+          <select name="role" value={role} onChange={onChange} className="w-full p-3 bg-gray-200 dark:bg-primary-dark rounded text-black dark:text-white border-gray-700">
             <option value="patient">Patient</option>
             <option value="doctor">Doctor</option>
             <option value="nurse">Nurse</option>
@@ -82,18 +128,42 @@ const RegisterPage = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="mb-4">
-                <label className="block text-secondary-text mb-2">Full Name</label>
-                <input type="text" name="name" value={formData.name} onChange={onChange} required className="w-full p-3 bg-primary-dark rounded border-gray-700" />
+                <label className="block text-slate-700 dark:text-secondary-text mb-2">Full Name</label>
+                <input type="text" name="name" value={formData.name} onChange={onChange} required className="w-full p-3 bg-gray-200 dark:bg-primary-dark rounded border  border-gray-700 text-black dark:text-white" />
             </div>
             <div className="mb-4">
-                <label className="block text-secondary-text mb-2">Email Address</label>
-                <input type="email" name="email" value={formData.email} onChange={onChange} required className="w-full p-3 bg-primary-dark rounded border-gray-700" />
+                <label className="block text-slate-700 dark:text-secondary-text mb-2">Email Address</label>
+                <input type="email" name="email" value={formData.email} onChange={onChange} required className="w-full p-3 bg-gray-200 dark:bg-primary-dark rounded border border-gray-700 text-black dark:text-white" />
             </div>
         </div>
         
-        <div className="mb-6">
-          <label className="block text-secondary-text mb-2">Password</label>
-          <input type="password" name="password" value={formData.password} onChange={onChange} required minLength="6" className="w-full p-3 bg-primary-dark rounded border-gray-700" />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+          <div>
+            <label className="block text-slate-700 dark:text-secondary-text mb-2">Password</label>
+            <input
+              type="password"
+              name="password"
+              value={formData.password}
+              onChange={onChange}
+              required
+              minLength="6"
+              className={`w-full p-3 bg-gray-200 dark:bg-primary-dark rounded border text-black dark:text-white  ${errors.password ? 'border-red-500' : 'border-gray-700'}`}
+            />
+            {errors.password && <p className="text-red-500 text-sm mt-1">{errors.password}</p>}
+          </div>
+          <div>
+            <label className="block text-slate-700 dark:text-secondary-text mb-2">Confirm Password</label>
+            <input
+              type="password"
+              name="confirmPassword"
+              value={formData.confirmPassword}
+              onChange={onChange}
+              required
+              minLength="6"
+              className={`w-full p-3 bg-gray-200 dark:bg-primary-dark rounded border text-black dark:text-white ${errors.confirmPassword ? 'border-red-500' : 'border-gray-700'}`}
+            />
+            {errors.confirmPassword && <p className="text-red-500 text-sm mt-1">{errors.confirmPassword}</p>}
+          </div>
         </div>
 
         {/* --- Professional Fields (Conditional) --- */}
@@ -103,8 +173,8 @@ const RegisterPage = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {/* Specialty Dropdown */}
                     <div className="mb-4">
-                        <label className="block text-secondary-text mb-2">{role === 'doctor' ? 'Specialty' : 'Nurse Category'}</label>
-                        <select name="specialty" value={formData.specialty} onChange={onChange} required className="w-full p-3 bg-primary-dark rounded border-gray-700">
+                        <label className="block text-slate-700 dark:text-secondary-text mb-2">{role === 'doctor' ? 'Specialty' : 'Nurse Category'}</label>
+                        <select name="specialty" value={formData.specialty} onChange={onChange} required className="w-full p-3 bg-gray-200 dark:bg-primary-dark text-black dark:text-white rounded border-gray-700">
                             <option value="">Select an option</option>
                             {(role === 'doctor' ? doctorSpecialties : nurseCategories).map(opt => <option key={opt} value={opt}>{opt}</option>)}
                         </select>
@@ -112,8 +182,8 @@ const RegisterPage = () => {
 
                     {/* City Dropdown */}
                     <div className="mb-4">
-                        <label className="block text-secondary-text mb-2">City</label>
-                        <select name="city" value={formData.city} onChange={onChange} required className="w-full p-3 bg-primary-dark rounded border-gray-700">
+                        <label className="block text-slate-700 dark:text-secondary-text mb-2">City</label>
+                        <select name="city" value={formData.city} onChange={onChange} required className="w-full p-3 bg-gray-200 dark:bg-primary-dark text-black dark:text-white rounded border-gray-700">
                             <option value="">Select City</option>
                             {cities.map(city => <option key={city} value={city}>{city}</option>)}
                         </select>
@@ -121,8 +191,8 @@ const RegisterPage = () => {
 
                     {/* Experience Dropdown */}
                     <div className="mb-4">
-                        <label className="block text-secondary-text mb-2">Experience (Years)</label>
-                        <select name="experience" value={formData.experience} onChange={onChange} required className="w-full p-3 bg-primary-dark rounded border-gray-700">
+                        <label className="block text-slate-700 dark:text-secondary-text mb-2">Experience (Years)</label>
+                        <select name="experience" value={formData.experience} onChange={onChange} required className="w-full p-3 bg-gray-200 dark:bg-primary-dark text-black dark:text-white rounded border-gray-700 ">
                             <option value="">Select Years</option>
                             {experienceLevels.map(exp => <option key={exp} value={exp}>{exp}</option>)}
                         </select>
@@ -130,20 +200,24 @@ const RegisterPage = () => {
 
                     {/* License Number Input */}
                     <div className="mb-4">
-                        <label className="block text-secondary-text mb-2">Medical License Number</label>
-                        <input type="text" name="licenseNumber" value={formData.licenseNumber} onChange={onChange} required className="w-full p-3 bg-primary-dark rounded border-gray-700" />
+                        <label className="block text-slate-700 dark:text-secondary-text mb-2">Medical License Number</label>
+                        <input type="text" name="licenseNumber" value={formData.licenseNumber} onChange={onChange} required className="w-full p-3 bg-gray-200 dark:bg-primary-dark rounded border-gray-700 text-black dark:text-white" />
                     </div>
 
                     {/* Government ID Input */}
                     <div className="mb-4 md:col-span-2">
-                        <label className="block text-secondary-text mb-2">Aadhaar / Voter ID / Government ID Number</label>
-                        <input type="text" name="govId" value={formData.govId} onChange={onChange} required className="w-full p-3 bg-primary-dark rounded border-gray-700" />
+                        <label className="block text-slate-700 dark:text-secondary-text mb-2">Aadhaar / Voter ID / Government ID Number</label>
+                        <input type="text" name="govId" value={formData.govId} onChange={onChange} required className="w-full p-3 bg-gray-200 dark:bg-primary-dark rounded border-gray-700 text-black dark:text-white" />
                     </div>
                 </div>
             </div>
         )}
 
-        <button type="submit" className="w-full bg-accent-blue text-white p-3 rounded font-bold hover:bg-accent-blue-hover mt-6">
+        <button
+          type="submit"
+          className="w-full bg-accent-blue text-white p-3 rounded font-bold hover:bg-accent-blue-hover mt-6 disabled:bg-gray-500 disabled:cursor-not-allowed "
+          disabled={Object.values(errors).some(e => e !== '') || password !== confirmPassword}
+        >
           Register
         </button>
 

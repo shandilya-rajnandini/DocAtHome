@@ -1,6 +1,8 @@
 const User = require('../models/User');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const crypto = require('crypto');
+const sendEmail = require('../utils/sendEmail');
 
 // (The 'register' and 'getMe' functions can remain as they are)
 // ...
@@ -100,5 +102,87 @@ exports.getMe = async (req, res) => {
   } catch (err) {
     console.error('GETME ERROR:', err.message);
     res.status(500).send('Server Error');
+  }
+};
+
+// @desc    Forgot password
+// @route   POST /api/auth/forgot-password
+exports.forgotPassword = async (req, res) => {
+  try {
+    const user = await User.findOne({ email: req.body.email });
+
+    if (!user) {
+      return res.status(404).json({ msg: 'User not found' });
+    }
+
+    // Generate token
+    const resetToken = crypto.randomBytes(20).toString('hex');
+
+    // Hash token and set to user
+    user.passwordResetToken = crypto
+      .createHash('sha256')
+      .update(resetToken)
+      .digest('hex');
+
+    // Set expire time to 10 minutes
+    user.passwordResetExpires = Date.now() + 10 * 60 * 1000;
+
+    await user.save();
+
+    // Create reset URL
+    const resetUrl = `${process.env.FRONTEND_URL}/reset-password/${resetToken}`;
+
+    const message = `You are receiving this email because you (or someone else) has requested the reset of a password. Please make a PUT request to: \n\n ${resetUrl}`;
+
+    try {
+      await sendEmail({
+        email: user.email,
+        subject: 'Password reset token',
+        message,
+      });
+
+      res.status(200).json({ success: true, data: 'Email sent' });
+    } catch (err) {
+      console.error('EMAIL ERROR:', err);
+      user.passwordResetToken = undefined;
+      user.passwordResetExpires = undefined;
+      await user.save();
+      res.status(500).send('Email could not be sent');
+    }
+  } catch (err) {
+    console.error('FORGOT PASSWORD ERROR:', err);
+    res.status(500).send('Server error');
+  }
+};
+
+// @desc    Reset password
+// @route   POST /api/auth/reset-password/:token
+exports.resetPassword = async (req, res) => {
+  try {
+    // Get hashed token
+    const passwordResetToken = crypto
+      .createHash('sha256')
+      .update(req.params.token)
+      .digest('hex');
+
+    const user = await User.findOne({
+      passwordResetToken,
+      passwordResetExpires: { $gt: Date.now() },
+    });
+
+    if (!user) {
+      return res.status(400).json({ msg: 'Invalid token' });
+    }
+
+    // Set new password
+    user.password = req.body.password;
+    user.passwordResetToken = undefined;
+    user.passwordResetExpires = undefined;
+    await user.save();
+
+    res.status(200).json({ success: true, data: 'Password updated' });
+  } catch (err) {
+    console.error('RESET PASSWORD ERROR:', err);
+    res.status(500).send('Server error');
   }
 };
