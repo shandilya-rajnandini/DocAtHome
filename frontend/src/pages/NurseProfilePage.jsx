@@ -90,7 +90,15 @@ const NurseProfilePage = () => {
                 <div className="bg-secondary-dark p-6 md:p-8 rounded-lg shadow-lg flex flex-col md:flex-row gap-8 items-center">
                     <img src="/nurse-avatar.jpg" alt={nurse.name} className="w-40 h-40 rounded-full object-cover border-4 border-teal-400" />
                     <div className="flex-grow text-center md:text-left">
-                        <h1 className="text-4xl font-bold text-white">{nurse.name}</h1>
+                        <h1 className="text-4xl font-bold text-white flex items-center justify-center md:justify-start gap-3">
+                            {nurse.name}
+                            {nurse.isVerified && (
+                                <span className="flex items-center gap-1 bg-green-700 bg-opacity-80 text-green-200 text-base font-semibold px-2 py-1 rounded ml-2">
+                                    <svg className="w-5 h-5 text-green-300" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 6.293a1 1 0 00-1.414 0L9 12.586l-2.293-2.293a1 1 0 00-1.414 1.414l3 3a1 1 0 001.414 0l7-7a1 1 0 000-1.414z" clipRule="evenodd" /></svg>
+                                    Verified Professional
+                                </span>
+                            )}
+                        </h1>
                         <p className="text-xl text-teal-400 mt-1">{nurse.specialty}</p>
                         <p className="text-md text-secondary-text">{nurse.experience} years experience in {nurse.city}</p>
                     </div>
