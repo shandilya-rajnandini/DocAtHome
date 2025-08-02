@@ -51,9 +51,6 @@ exports.getMyAppointments = async (req, res) => {
     }
 };
 
-// ... (keep the existing createAppointment and getMyAppointments functions)
-
-// --- ADD THIS NEW FUNCTION ---
 // @desc    Update an appointment's status (e.g., confirm or cancel)
 // @route   PUT /api/appointments/:id
 exports.updateAppointmentStatus = async (req, res) => {

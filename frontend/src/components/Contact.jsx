@@ -30,7 +30,7 @@ const Contact = () => {
                 </div>
                 <div>
                     <h3 className="text-xl font-semibold mb-2 text-accent-cream">Operating Hours</h3>
-                    <p className="text-secondary-text">🕒 Mon-Fri - 08:00 A.M.-19:00 P.M.</p>
+                    <p className="text-secondary-text">🕒 Mon-Fri - 08:00 A.M.-9:00 P.M.</p>
                 </div>
             </div>
 
@@ -75,7 +75,7 @@ const Contact = () => {
         <div className="mt-20">
             <iframe 
                 title="Google Map Location"
-                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d387190.2799160891!2d-74.25987368715421!3d40.69767006272509!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x89c24fa5d33f083b%3A0xc80b8f06e177fe62!2sNew%20York%2C%20NY%2C%20USA!5e0!3m2!1sen!2sin!4v1626343350294!5m2!1sen!2sin" 
+                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3597.316816745949!2d84.86999707553837!3d25.53647187748542!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x39f2a9e5c1f0e4b7%3A0x8a1e8a3b1e1f1c1a!2sIndian%20Institute%20of%20Technology%2C%20Patna!5e0!3m2!1sen!2sin!4v1710243350294!5m2!1sen!2sin" 
                 width="100%" 
                 height="450" 
                 style={{ border: 0 }} 

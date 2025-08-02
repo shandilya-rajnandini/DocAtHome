@@ -1,6 +1,6 @@
 import React from 'react';
-// We'll use text placeholders for icons for now
-// In a real app, you'd use <IconComponent /> here
+// We'll use text placeholders for icons 
+
 
 const reasons = [
     { icon: "💼", title: "Experience", text: "Asia's Largest Ambulance Operator with experience in managing large fleets of Ambulances. 15 years of experience in Emergency Response & Patient Transfer in India and UAE." },
