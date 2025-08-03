@@ -32,6 +32,7 @@ import VideoConsultPage from './pages/VideoConsultPage.jsx';
 import MyAppointmentsPage from './pages/MyAppointmentsPage.jsx';
 import MyPrescriptionsPage from './pages/MyPrescriptionsPage.jsx';
 import HealthQuestsPage from './pages/HealthQuestsPage.jsx';
+import CareNavigatorPage from './pages/CareNavigatorPage.jsx';
 
 // Protected Professional Pages
 import DoctorDashboard from './pages/DoctorDashboard.jsx';
@@ -48,10 +49,7 @@ function App() {
   return (
     <Router>
 
-//       <div className="bg-primary-dark min-h-screen text-primary-text flex flex-col">
-
       <div className="!bg-amber-200 dark:!bg-primary-dark min-h-screen text-primary-text flex flex-col">
-        
 
         <Navbar />
 
@@ -71,6 +69,7 @@ function App() {
             <Route path="/doctors/:id" element={<DoctorProfilePage />} />
             <Route path="/nurses/:id" element={<NurseProfilePage />} />
             <Route path="/book-ambulance" element={<BookAmbulancePage />} />
+            <Route path="/care-navigator" element={<CareNavigatorPage />} />
             <Route path="/care-circle" element={<CareCirclePage />} />
 
             <Route path="/about" element={<About />} />
