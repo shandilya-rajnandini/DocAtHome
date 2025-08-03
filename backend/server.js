@@ -1,13 +1,13 @@
+const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
+const dotenv = require('dotenv');
 const connectDB = require('./config/db');
 const app = require('./app');
 
 
 // Load environment variables from .env file
 dotenv.config();
-
-const app = express();
 
 
 const server = http.createServer(app);
