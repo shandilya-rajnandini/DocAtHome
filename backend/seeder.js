@@ -1,9 +1,9 @@
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
-<<<<<<< HEAD
+
 const User = require('./models/User'); // <-- This path is now correct
 const adminData = require('./data/admin');
-=======
+
 const { faker } = require('@faker-js/faker');
 const User = require('./models/User');
 const Quest = require('./models/Quest');
