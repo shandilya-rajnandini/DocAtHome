@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { NavLink } from "react-router-dom";
+import { Link } from "react-router-dom";
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
@@ -106,34 +107,13 @@ const Footer = () => {
             </div>
           </div>
 
-          {/* Products */}
           <div>
-            <h4 className="text-lg font-semibold text-white mb-4">Products</h4>
+            <h4 className="text-lg font-semibold text-white mb-4">For Patients</h4>
             <div className="space-y-3">
-              <a
-                href="/dashboard"
-                className="block text-sm text-gray-300 hover:text-blue-400 transition-colors duration-200"
-              >
-                Dashboard
-              </a>
-              <a
-                href="/search"
-                className="block text-sm text-gray-300 hover:text-blue-400 transition-colors duration-200"
-              >
-                Search Doctors
-              </a>
-              <a
-                href="/book-ambulance"
-                className="block text-sm text-gray-300 hover:text-blue-400 transition-colors duration-200"
-              >
-                Ambulance
-              </a>
-              <a
-                href="/my-appointments"
-                className="block text-sm text-gray-300 hover:text-blue-400 transition-colors duration-200"
-              >
-                My Appointments
-              </a>
+              <Link to="/dashboard" className="block text-sm text-gray-300 hover:text-white">Dashboard</Link>
+              <Link to="/search" className="block text-sm text-gray-300 hover:text-white">Search Doctors</Link>
+              <Link to="/book-ambulance" className="block text-sm text-gray-300 hover:text-white">Ambulance</Link>
+              <Link to="/my-appointments" className="block text-sm text-gray-300 hover:text-white">My Appointments</Link>
             </div>
           </div>
 
