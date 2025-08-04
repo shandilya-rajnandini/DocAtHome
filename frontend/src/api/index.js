@@ -10,6 +10,25 @@ API.interceptors.request.use((req) => {
   return req;
 });
 
+// api/prescriptions.js (frontend)
+export const takeDose = async (prescriptionId, medicineIndex) => {
+  try {
+    const response = await axios.post(
+      `/api/prescriptions/${prescriptionId}/take-dose`,
+      { medicineIndex },
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${localStorage.getItem('token')}`
+        }
+      }
+    );
+    return response.data;
+  } catch (error) {
+    throw error.response?.data?.error || 'Failed to record dose';
+  }
+};
+
 // === Authentication Routes ===
 export const login = (formData) => API.post('/auth/login', formData);
 export const register = (formData) => API.post('/auth/register', formData);

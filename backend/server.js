@@ -2,17 +2,18 @@ const http = require('http');
 const { Server } = require('socket.io');
 const connectDB = require('./config/db');
 const app = require('./app');
+const prescriptionRoutes = require('./routes/PrescriptionRoutes'); // adjust path
 
 
 // Load environment variables from .env file
+const dotenv = require('dotenv');
 dotenv.config();
 
-const app = express();
+// const app = express();
 
 
 const server = http.createServer(app);
 const careCircle = require("./routes/careCircle");
-
 
 // Configure Socket.IO with CORS settings
 const io = new Server(server, {
@@ -43,6 +44,7 @@ app.use('/api/payment', require('./routes/paymentRoutes'));
 app.use("/api/profile", require("./routes/careCircle"));
 
 app.use('/api/quests', require('./routes/questRoutes'));
+app.use('/api/prescriptions', prescriptionRoutes); // <-- Prescription Routes
 
 
 // Server Port

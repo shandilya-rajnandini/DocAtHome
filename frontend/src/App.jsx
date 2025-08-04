@@ -48,7 +48,7 @@ function App() {
   return (
     <Router>
 
-//       <div className="bg-primary-dark min-h-screen text-primary-text flex flex-col">
+       {/* <div className="bg-primary-dark min-h-screen text-primary-text flex flex-col"> */}
 
       <div className="!bg-amber-200 dark:!bg-primary-dark min-h-screen text-primary-text flex flex-col">
         
@@ -86,7 +86,7 @@ function App() {
             <Route path="/video-consult" element={<ProtectedRoute><VideoConsultPage /></ProtectedRoute>} />
             <Route path="/my-appointments" element={<ProtectedRoute><MyAppointmentsPage /></ProtectedRoute>} />
             <Route path="/my-prescriptions" element={<ProtectedRoute><MyPrescriptionsPage /></ProtectedRoute>} />
-//             <Route path="/health-quests" element={<ProtectedRoute><HealthQuestsPage /></ProtectedRoute>} />
+            <Route path="/health-quests" element={<ProtectedRoute><HealthQuestsPage /></ProtectedRoute>} />
             
 
             {/* --- Protected Professional (Doctor/Nurse) Routes --- */}
