@@ -1,19 +1,18 @@
+const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
+const dotenv = require('dotenv');
 const connectDB = require('./config/db');
 const app = require('./app');
-const prescriptionRoutes = require('./routes/PrescriptionRoutes'); // adjust path
 
 
 // Load environment variables from .env file
-const dotenv = require('dotenv');
 dotenv.config();
-
-// const app = express();
 
 
 const server = http.createServer(app);
 const careCircle = require("./routes/careCircle");
+
 
 // Configure Socket.IO with CORS settings
 const io = new Server(server, {
@@ -44,11 +43,19 @@ app.use('/api/payment', require('./routes/paymentRoutes'));
 app.use("/api/profile", require("./routes/careCircle"));
 
 app.use('/api/quests', require('./routes/questRoutes'));
-app.use('/api/prescriptions', prescriptionRoutes); // <-- Prescription Routes
 
 
 // Server Port
 const PORT = process.env.PORT || 5000;
+//error handling middleware
+app.use((req,res,next)=>{
+  res.status(404).json({message:'Not found'});
+});
+//global error handling middleware
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).json({ message: 'Internal Server Error' });
+});
 
 // Strict Server Startup Function
 const startServer = async () => {

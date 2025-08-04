@@ -2,7 +2,7 @@ import React from 'react';
 
 const Hero = () => {
   return (
-    // You will need a good background image. Replace 'hero-background.jpg'
+    
     <div className="relative bg-[url('/hero-background.jpg')] bg-cover bg-center h-[60vh] text-white">
       {/* Dark overlay for better text readability */}
       <div className="absolute inset-0 bg-black opacity-50"></div>
