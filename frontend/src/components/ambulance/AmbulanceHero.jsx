@@ -3,7 +3,6 @@ import toast from 'react-hot-toast';
 // We don't actually need to import the booking function here,
 // as the form is just a placeholder. But if we were to make it functional,
 // we would import 'bookAppointment'.
-// For now, let's just make a simple submit handler.
 
 const AmbulanceHero = () => {
 
