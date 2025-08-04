@@ -87,6 +87,14 @@ const PatientDashboard = () => {
                 color="from-red-500 to-red-700"
             />
 
+            <NewFeatureCard 
+                icon="💰"
+                title="Payment History"
+                description="Quick access to all your payment history."
+                link="/payment-history"
+                color="from-blue-500 to-blue-700"
+            />
+
         </div>
       </div>
     </div>

@@ -5,9 +5,10 @@ const app = require('./app');
 
 
 // Load environment variables from .env file
+const dotenv=require('dotenv');
 dotenv.config();
 
-const app = express();
+// const app = express();
 
 
 const server = http.createServer(app);
@@ -38,7 +39,7 @@ app.use('/api/nurses', require('./routes/nurseRoutes'));
 app.use('/api/profile', require('./routes/profileRoutes'));
 app.use('/api/appointments', require('./routes/appointmentRoutes'));
 app.use('/api/lab-tests', require('./routes/labTestRoutes')); // <-- New Lab Test Route
-app.use('/api/payment', require('./routes/paymentRoutes'));
+ app.use('/api/payment', require('./routes/paymentRoutes'));
 
 app.use("/api/profile", require("./routes/careCircle"));
 

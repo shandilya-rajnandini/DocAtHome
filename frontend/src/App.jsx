@@ -18,6 +18,7 @@ import DoctorProfilePage from './pages/DoctorProfilePage.jsx';
 import NurseProfilePage from './pages/NurseProfilePage.jsx';
 import BookAmbulancePage from './pages/BookAmbulancePage.jsx';
 
+
 //Imported About,Services,Testimonials,Contact Page
 import About from './components/About.jsx';
 import Services from './components/Services.jsx';
@@ -32,6 +33,7 @@ import VideoConsultPage from './pages/VideoConsultPage.jsx';
 import MyAppointmentsPage from './pages/MyAppointmentsPage.jsx';
 import MyPrescriptionsPage from './pages/MyPrescriptionsPage.jsx';
 import HealthQuestsPage from './pages/HealthQuestsPage.jsx';
+import PaymentHistoryPage from './pages/PaymentHistoryPage.jsx';
 
 // Protected Professional Pages
 import DoctorDashboard from './pages/DoctorDashboard.jsx';
@@ -48,7 +50,7 @@ function App() {
   return (
     <Router>
 
-//       <div className="bg-primary-dark min-h-screen text-primary-text flex flex-col">
+      {/* <div className="bg-primary-dark min-h-screen text-primary-text flex flex-col"> */}
 
       <div className="!bg-amber-200 dark:!bg-primary-dark min-h-screen text-primary-text flex flex-col">
         
@@ -72,6 +74,7 @@ function App() {
             <Route path="/nurses/:id" element={<NurseProfilePage />} />
             <Route path="/book-ambulance" element={<BookAmbulancePage />} />
             <Route path="/care-circle" element={<CareCirclePage />} />
+            
 
             <Route path="/about" element={<About />} />
             <Route path="/services" element={<Services />} />
@@ -86,7 +89,8 @@ function App() {
             <Route path="/video-consult" element={<ProtectedRoute><VideoConsultPage /></ProtectedRoute>} />
             <Route path="/my-appointments" element={<ProtectedRoute><MyAppointmentsPage /></ProtectedRoute>} />
             <Route path="/my-prescriptions" element={<ProtectedRoute><MyPrescriptionsPage /></ProtectedRoute>} />
-//             <Route path="/health-quests" element={<ProtectedRoute><HealthQuestsPage /></ProtectedRoute>} />
+            <Route path="/payment-history" element={<ProtectedRoute><PaymentHistoryPage /></ProtectedRoute>}/>
+            {/* <Route path="/health-quests" element={<ProtectedRoute><HealthQuestsPage /></ProtectedRoute>} /> */}
             
 
             {/* --- Protected Professional (Doctor/Nurse) Routes --- */}

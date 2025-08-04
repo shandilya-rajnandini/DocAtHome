@@ -7,4 +7,7 @@ export default defineConfig({
   optimizeDeps: {
     include: ['react-icons'], // Add this line
   },
+  server: {
+    open: true, 
+  },
 });
