@@ -1,3 +1,4 @@
+
 const path = require("path");
 const dotenv = require('dotenv');
 if(process.env.NODE_ENV != "production"){
@@ -14,6 +15,7 @@ const errorHandler = require('./middleware/errorMiddleware');
 
 const connectDB = require('./config/db');
 const app = require('./app');  // if app is already created there
+
 
 
 
@@ -55,6 +57,15 @@ app.use(errorHandler);
 
 // Server Port
 const PORT = process.env.PORT || 5000;
+//error handling middleware
+app.use((req,res,next)=>{
+  res.status(404).json({message:'Not found'});
+});
+//global error handling middleware
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).json({ message: 'Internal Server Error' });
+});
 
 // Strict Server Startup Function
 const startServer = async () => {

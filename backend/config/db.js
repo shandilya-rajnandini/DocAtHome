@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const asyncHandler = require('../middleware/asyncHandler');
 
+
 // This is an asynchronous function because connecting to a database is an async operation.
 const connectDB = asyncHandler(async () => {
     // Attempt to connect to MongoDB using the URI from our .env file.

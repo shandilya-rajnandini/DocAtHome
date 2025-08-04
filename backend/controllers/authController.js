@@ -5,6 +5,7 @@ const crypto = require('crypto');
 const sendEmail = require('../utils/sendEmail');
 const asyncHandler = require('../middleware/asyncHandler');
 
+
 // @desc    Register a new user
 // @route   POST /api/auth/register
 exports.register = asyncHandler(async (req, res) => {
@@ -48,38 +49,45 @@ exports.login = asyncHandler(async (req, res) => {
 
     // Find user by email, and explicitly include the password for comparison
     let user = await User.findOne({ email }).select('+password');
+
     if (!user) {
+      console.log("3. RESULT: User NOT found in the database. Login failed.");
       return res.status(400).json({ msg: 'Invalid Credentials' });
     }
+    
+    console.log("3. RESULT: User FOUND in the database. User's name:", user.name);
+    
+    // --- DEBUG PROBE 3 ---
+    // Let's look at the hashed password stored in the database.
+    // It should be a very long string of random characters.
+    console.log("4. Hashed password stored in DB:", user.password);
 
-    // Use the matchPassword method from our User model
-    const isMatch = await user.matchPassword(password);
+    // --- DEBUG PROBE 4 ---
+    // Now, let's compare the password from the form with the one from the DB.
+    console.log("5. Comparing form password with hashed password...");
+    const isMatch = await bcrypt.compare(password, user.password);
+    
     if (!isMatch) {
+      console.log("6. RESULT: Passwords DO NOT MATCH. Login failed.");
       return res.status(400).json({ msg: 'Invalid Credentials' });
     }
 
-    // Check if the professional account is verified
-    if ((user.role === 'doctor' || user.role === 'nurse') && !user.isVerified) {
-      return res.status(401).json({ msg: 'Your account is pending admin approval.' });
-    }
-
-    // Create token
-    const payload = {
-      user: {
-        id: user.id,
-        role: user.role,
-      },
-    };
-
+    console.log("6. RESULT: Passwords MATCH! Login successful.");
+    
+    // If we reach here, the login is successful. Now create and send the token.
+    const payload = { user: { id: user.id, role: user.role } };
     jwt.sign(
       payload,
       process.env.JWT_SECRET,
       { expiresIn: '5h' },
       (err, token) => {
         if (err) throw err;
+        console.log("7. JWT token created and sent to user.");
+        console.log("--- LOGIN ATTEMPT FINISHED ---\n");
         res.json({ token });
       }
     );
+
 });
 
 // @desc    Get current logged-in user details
@@ -87,9 +95,10 @@ exports.login = asyncHandler(async (req, res) => {
 exports.getMe = asyncHandler(async (req, res) => {
 
     // req.user is attached by our 'protect' middleware
+
     const user = await User.findById(req.user.id).select('-password');
     if (!user) {
-        return res.status(404).json({ msg: 'User not found' });
+      return res.status(404).json({ msg: 'User not found' });
     }
     res.json(user);
 });

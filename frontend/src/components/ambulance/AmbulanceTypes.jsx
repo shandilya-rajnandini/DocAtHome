@@ -1,6 +1,6 @@
 import React from 'react';
-// Import SVGs for icons, or use an icon library if it's working
-// For now, we will use text placeholders
+
+//  we will use text placeholders
 
 const types = [
     { name: "Advanced Life Support", desc: "Large size ambulance ideal for critically ill patients.", bg: "bg-[url('/ambulance-type-als.jpg')]" },
