@@ -49,6 +49,15 @@ app.use('/api/auth', require('./routes/authRoutes'));
 app.use('/api/payment', require('./routes/paymentRoutes'));
 
 const PORT = process.env.PORT || 5000;
+//error handling middleware
+app.use((req,res,next)=>{
+  res.status(404).json({message:'Not found'});
+});
+//global error handling middleware
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).json({ message: 'Internal Server Error' });
+});
 
 // --- Stricter Server Startup ---
 const startServer = async () => {
