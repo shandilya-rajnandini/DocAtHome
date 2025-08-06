@@ -66,6 +66,10 @@ const UserSchema = new mongoose.Schema({
     type: [String],
     default: [],
   },
+  careFundBalance: {
+    type: Number,
+    default: 0,
+  },
   
   // --- Status & Ratings ---
   isVerified: {

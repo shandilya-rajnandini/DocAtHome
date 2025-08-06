@@ -8,6 +8,8 @@ const doctorController = require('../controllers/doctorController');
 // Now calls the function from the imported object
 router.get('/', doctorController.getDoctors);
 
+router.get('/search', doctorController.searchDoctors);
+
 // Define the route for fetching a single doctor by their ID
 router.get('/:id', doctorController.getDoctorById);
 
