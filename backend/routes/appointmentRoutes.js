@@ -2,10 +2,11 @@ const express = require('express');
 const router = express.Router();
 
 // Import all the necessary controller functions
-const { 
-    createAppointment, 
-    getMyAppointments,
-    updateAppointmentStatus 
+const {
+  createAppointment,
+  getMyAppointments,
+  updateAppointmentStatus,
+  getAppointmentSummary,
 } = require('../controllers/appointmentController');
 
 const { protect } = require('../middleware/authMiddleware');
@@ -17,10 +18,13 @@ const { protect } = require('../middleware/authMiddleware');
 router.route('/my-appointments')
     .get(protect, getMyAppointments);
 
+// GET /api/appointments/:id/summary
+// Gets a smart summary for a specific appointment
+router.route('/:id/summary').get(protect, getAppointmentSummary);
+
 // PUT /api/appointments/:id
 // Updates the status of a specific appointment (e.g., to 'Confirmed' or 'Cancelled')
-router.route('/:id')
-    .put(protect, updateAppointmentStatus);
+router.route('/:id').put(protect, updateAppointmentStatus);
 
 // POST /api/appointments/
 // Creates a new appointment

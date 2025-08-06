@@ -19,8 +19,7 @@ exports.getMyProfile = async (req, res) => {
 // @desc    Update current user's profile
 // @route   PUT /api/profile/me
 exports.updateMyProfile = async (req, res) => {
-  // We'll only allow updating specific fields for security
-  const { name, city, experience, qualifications, bio } = req.body;
+  const { name, city, experience, qualifications, bio, profilePictureUrl } = req.body;
 
   const profileFields = {};
   if (name) profileFields.name = name;
@@ -28,6 +27,7 @@ exports.updateMyProfile = async (req, res) => {
   if (experience) profileFields.experience = experience;
   if (qualifications) profileFields.qualifications = qualifications.split(',').map(q => q.trim());
   if (bio) profileFields.bio = bio;
+  if (profilePictureUrl) profileFields.profilePictureUrl = profilePictureUrl;
 
   try {
     let profile = await User.findById(req.user.id);
@@ -47,6 +47,8 @@ exports.updateMyProfile = async (req, res) => {
     res.status(500).send('Server Error');
   }
 };
+
+
 
 // ... existing getMyProfile and updateMyProfile functions
 

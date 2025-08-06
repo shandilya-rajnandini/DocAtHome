@@ -23,19 +23,19 @@ const testimonialsData = [
 
 const Testimonials = () => {
   return (
-    <section className="bg-primary-dark text-primary-text py-20 px-4">
+    <section className="bg-amber-200 dark:bg-primary-dark text-black dark:text-primary-text py-20 px-4">
       <div className="container mx-auto text-center">
         <h2 className="text-4xl font-bold">TESTIMONIALS</h2>
-        <div className="w-20 h-1 bg-accent-cream my-4 mx-auto"></div>
+        <div className="w-20 h-1 bg-slate-800 dark:bg-accent-cream my-4 mx-auto"></div>
         <div className="grid md:grid-cols-3 gap-10 mt-12">
           {testimonialsData.map((testimonial, index) => (
-            <div key={index} className="bg-secondary-dark p-8 rounded-lg shadow-lg">
-                <p className="text-secondary-text italic mb-6">"{testimonial.quote}"</p>
+            <div key={index} className="bg-accent-cream dark:bg-secondary-dark p-8  dark:!text-slate-200 rounded-lg shadow-lg text-xl">
+                <p className=" text-slate-700 dark:text-slate-200 italic mb-6">"{testimonial.quote}"</p>
                 <div className="flex items-center">
                     <img src={testimonial.img} alt={testimonial.name} className="w-16 h-16 rounded-full mr-4 object-cover" />
                     <div>
                         <h4 className="font-bold text-lg">{testimonial.name}</h4>
-                        <p className="text-accent-cream text-sm">{testimonial.role}</p>
+                        <p className="text-slate-600 dark:text-accent-cream text-sm">{testimonial.role}</p>
                     </div>
                 </div>
             </div>

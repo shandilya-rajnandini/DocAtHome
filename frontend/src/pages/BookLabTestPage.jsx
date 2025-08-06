@@ -45,32 +45,32 @@ const BookLabTestPage = () => {
 
             {/* Booking Form Section */}
             <div className="container mx-auto p-8">
-                <form onSubmit={handleSubmit} className="max-w-4xl mx-auto bg-secondary-dark p-8 rounded-lg shadow-lg">
+                <form onSubmit={handleSubmit} className="max-w-4xl mx-auto bg-amber-50 dark:bg-secondary-dark  p-8 rounded-lg shadow-lg">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                         {/* Column 1: Test & Address Details */}
                         <div className="space-y-6">
                             <div>
-                                <label className="block text-secondary-text mb-2 font-semibold">Test Name*</label>
-                                <input type="text" name="testName" value={bookingData.testName} onChange={onChange} placeholder="e.g., Complete Blood Count (CBC), Thyroid Profile" className="w-full p-3 bg-primary-dark rounded-md border-gray-700 text-white" />
+                                <label className="block text-black dark:text-secondary-text mb-2 font-semibold">Test Name*</label>
+                                <input type="text" name="testName" value={bookingData.testName} onChange={onChange} placeholder="e.g., Complete Blood Count (CBC), Thyroid Profile" className="w-full p-3 bg-gray-200 dark:bg-primary-dark text-black dark:text-white rounded-md border-gray-700 " />
                             </div>
                             <div>
-                                <label className="block text-secondary-text mb-2 font-semibold">Collection Address*</label>
-                                <textarea name="patientAddress" value={bookingData.patientAddress} onChange={onChange} placeholder="Enter your full address for sample collection" rows="4" className="w-full p-3 bg-primary-dark rounded-md border-gray-700 text-white"></textarea>
+                                <label className="block text-black dark:text-secondary-text mb-2 font-semibold">Collection Address*</label>
+                                <textarea name="patientAddress" value={bookingData.patientAddress} onChange={onChange} placeholder="Enter your full address for sample collection" rows="4" className="w-full p-3 bg-gray-200 dark:bg-primary-dark text-black dark:text-white rounded-md border-gray-700 "></textarea>
                             </div>
                         </div>
 
                         {/* Column 2: Schedule */}
                         <div className="space-y-6">
                             <div>
-                                <label className="block text-secondary-text mb-2 font-semibold">Preferred Collection Date*</label>
-                                <input type="date" name="collectionDate" value={bookingData.collectionDate} onChange={onChange} className="w-full p-3 bg-primary-dark rounded-md border-gray-700 text-white" />
+                                <label className="block text-black dark:text-secondary-text mb-2 font-semibold">Preferred Collection Date*</label>
+                                <input type="date" name="collectionDate" value={bookingData.collectionDate} onChange={onChange} className="w-full p-3 bg-gray-200 dark:bg-primary-dark text-black dark:text-white rounded-md border-gray-700 " />
                             </div>
                              <div>
-                                <label className="block text-secondary-text mb-2 font-semibold">Preferred Time Slot*</label>
+                                <label className="block text-black dark:text-secondary-text mb-2 font-semibold">Preferred Time Slot*</label>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                     {timeSlots.map(time => (
                                         <button key={time} type="button" onClick={() => setBookingData({...bookingData, collectionTime: time})}
-                                            className={`p-3 rounded-lg text-center transition-colors ${bookingData.collectionTime === time ? 'bg-accent-blue text-white' : 'bg-primary-dark text-secondary-text border border-gray-700 hover:border-accent-blue'}`}>
+                                            className={`p-3 rounded-lg text-center transition-colors ${bookingData.collectionTime === time ? 'bg-accent-blue text-white' : 'bg-gray-200 dark:bg-primary-dark text-black dark:text-secondary-text border border-gray-700 hover:border-accent-blue '}`}>
                                             {time}
                                         </button>
                                     ))}
@@ -82,9 +82,9 @@ const BookLabTestPage = () => {
                     {/* Fee and Submit Section */}
                     <div className="border-t border-gray-700 mt-8 pt-6 flex flex-col items-center">
                          <div className="text-center">
-                            <p className="text-secondary-text">Total Payable Amount</p>
+                            <p className="text-black dark:text-secondary-text">Total Payable Amount</p>
                             <p className="text-4xl font-bold text-accent-blue mt-1">₹800</p>
-                            <p className="text-xs text-gray-500">(Includes Visit & Transportation Charges)</p>
+                            <p className="text-xs text-black dark:text-secondary-text">(Includes Visit & Transportation Charges)</p>
                          </div>
                         <button type="submit" className="w-full md:w-1/2 mt-6 bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg transition">
                             Confirm & Book Test

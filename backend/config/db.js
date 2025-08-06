@@ -1,14 +1,12 @@
 const mongoose = require('mongoose');
 
-// This is an asynchronous function because connecting to a database is an async operation.
+
 const connectDB = async () => {
   try {
-    // Attempt to connect to MongoDB using the URI from our .env file.
-    // The mongoose.connect() method returns a promise, so we use 'await'.
+    
     const conn = await mongoose.connect(process.env.MONGO_URI);
 
-    // If the connection is successful, log a confirmation message to the console.
-    // We can access the host of the connected database from the connection object.
+  
     console.log(`MongoDB Connected: ${conn.connection.host}`);
     
   } catch (err) {

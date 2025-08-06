@@ -21,11 +21,11 @@ const PatientDashboard = () => {
 
   return (
     // The background is now a clean, dark slate color from our tailwind config
-    <div className="bg-primary-dark min-h-full py-12 px-4">
+    <div className="bg-amber-200 dark:bg-primary-dark min-h-full py-12 px-4">
       <div className="container mx-auto">
         <div className="mb-12">
-            <h1 className="text-4xl md:text-5xl font-bold text-white">Hello, {user?.name}!</h1>
-            <p className="text-lg text-secondary-text mt-2">Your personal health command center.</p>
+            <h1 className="text-4xl md:text-5xl font-bold text-black dark:text-white">Hello, {user?.name}!</h1>
+            <p className="text-lg text-gray-800 dark:text-secondary-text mt-2">Your personal health command center.</p>
         </div>
         
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">

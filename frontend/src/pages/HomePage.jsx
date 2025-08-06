@@ -6,6 +6,7 @@ import About from '../components/About';
 import Services from '../components/Services';
 import Testimonials from '../components/Testimonials';
 import Contact from '../components/Contact';
+import Chatbot from '../components/Chatbot';
 // Notice we are NOT importing Footer here anymore.
 
 const HomePage = () => {
@@ -20,6 +21,7 @@ const HomePage = () => {
       <Services />
       <Testimonials />
       <Contact />
+      <Chatbot />
     </div>
   );
 };

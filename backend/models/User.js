@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 
 const UserSchema = new mongoose.Schema({
-  // --- Core Fields ---
+  
   name: {
     type: String,
     required: [true, 'Please add a name'],
@@ -56,6 +56,16 @@ const UserSchema = new mongoose.Schema({
     type: String,
     required: function() { return this.role === 'doctor' || this.role === 'nurse'; }
   },
+
+  // --- Patient-Specific Medical Info ---
+  allergies: {
+    type: [String],
+    default: [],
+  },
+  chronicConditions: {
+    type: [String],
+    default: [],
+  },
   
   // --- Status & Ratings ---
   isVerified: {
@@ -71,11 +81,24 @@ const UserSchema = new mongoose.Schema({
     type: Number,
     default: 0,
   },
-
+  profilePictureUrl: {
+  type: String,
+  default: "",
+},
   createdAt: {
     type: Date,
     default: Date.now
-  }
+  },
+  
+  // --- Password Reset Fields ---
+  passwordResetToken: String,
+  passwordResetExpires: Date,
+
+  // --- Gamification Fields ---
+  healthPoints: {
+    type: Number,
+    default: 0,
+  },
 });
 
 
