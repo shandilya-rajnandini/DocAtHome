@@ -53,16 +53,19 @@ const Footer = () => {
             </div>
           </div>
 
+          {/* Patient Portal */}
           <div>
-            <h4 className="text-lg font-semibold text-white mb-4">For Patients</h4>
+            <h4 className="text-lg font-semibold text-white mb-4">Patient Portal</h4>
             <div className="space-y-3">
               <Link to="/dashboard" className="block text-sm text-gray-300 hover:text-white">Dashboard</Link>
               <Link to="/search" className="block text-sm text-gray-300 hover:text-white">Search Doctors</Link>
               <Link to="/book-ambulance" className="block text-sm text-gray-300 hover:text-white">Ambulance</Link>
+            </div>
+          </div>
 
-          {/* For Patients */}
+          {/* Manage Account */}
           <div>
-            <h4 className="text-lg font-semibold text-white mb-4">For Patients</h4>
+            <h4 className="text-lg font-semibold text-white mb-4">Manage Account</h4>
             <div className="space-y-3">
               <Link to="/login" className="block text-sm text-gray-300 hover:text-white">Login</Link>
               <Link to="/register" className="block text-sm text-gray-300 hover:text-white">Register</Link>
