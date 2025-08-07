@@ -1,4 +1,4 @@
-/*const Razorpay = require('razorpay');
+const Razorpay = require('razorpay');
 const crypto = require('crypto');
 
 // Initialize Razorpay instance
@@ -55,4 +55,4 @@ exports.verifyPayment = (req, res) => {
             message: 'Payment verification failed.',
         });
     }
-};*/
+};
