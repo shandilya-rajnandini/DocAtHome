@@ -1,8 +1,15 @@
 import axios from 'axios';
 
-const API = axios.create({ baseURL: 'http://localhost:5000/api' });
+// --- Smart API URL Configuration ---
+// This automatically selects the correct backend URL based on the environment.
+const API_URL = import.meta.env.PROD 
+    ? 'https://docathome-backend.onrender.com/api' // Your LIVE backend URL from Render
+    : 'http://localhost:5000/api';                // Your LOCAL backend URL for development
 
-// This interceptor automatically adds the JWT token to every request header
+// Create a configured instance of Axios
+const API = axios.create({ baseURL: API_URL });
+
+// Interceptor to automatically add the JWT token to every secure request
 API.interceptors.request.use((req) => {
   if (localStorage.getItem('token')) {
     req.headers.Authorization = `Bearer ${localStorage.getItem('token')}`;
@@ -10,12 +17,13 @@ API.interceptors.request.use((req) => {
   return req;
 });
 
+
 // === Authentication Routes ===
 export const login = (formData) => API.post('/auth/login', formData);
 export const register = (formData) => API.post('/auth/register', formData);
 export const getMe = () => API.get('/auth/me');
 export const forgotPassword = (emailData) => API.post('/auth/forgot-password', emailData);
-export const resetPassword = (token, password) => API.post(`/auth/reset-password/${token}`, password);
+export const resetPassword = (token, passwordData) => API.post(`/auth/reset-password/${token}`, passwordData);
 
 // === Admin Routes ===
 export const getPendingUsers = () => API.get('/admin/pending');
