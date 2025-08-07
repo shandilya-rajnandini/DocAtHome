@@ -95,6 +95,13 @@ const PatientDashboard = () => {
                 link="/book-ambulance"
                 color="from-red-500 to-red-700"
             />
+            <NewFeatureCard 
+                icon="💰"
+                title="Care Fund"
+                description="Manage your community-funded care balance."
+                link="/care-fund"
+                color="from-pink-500 to-pink-700"
+            />
 
         </div>
       </div>

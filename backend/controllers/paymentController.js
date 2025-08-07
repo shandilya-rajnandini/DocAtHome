@@ -30,8 +30,11 @@ exports.createOrder = async (req, res) => {
 
 // @desc    Verify a Razorpay payment
 // @route   POST /api/payment/verify
-exports.verifyPayment = (req, res) => {
-    const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
+const Donation = require('../models/Donation');
+const User = require('../models/User');
+
+exports.verifyPayment = async (req, res) => {
+    const { razorpay_order_id, razorpay_payment_id, razorpay_signature, isDonation, donorName, patientId, amount } = req.body;
 
     const body = razorpay_order_id + "|" + razorpay_payment_id;
 
@@ -43,8 +46,24 @@ exports.verifyPayment = (req, res) => {
     const isAuthentic = expectedSignature === razorpay_signature;
 
     if (isAuthentic) {
-        // Payment is authentic. Now you can save the appointment in the database.
-        // We will send a success response, and the frontend will call the 'createAppointment' API.
+        if (isDonation && donorName && patientId && amount) {
+            try {
+                // Save donation
+                await Donation.create({
+                    donorName,
+                    patientId,
+                    amount,
+                    razorpayPaymentId: razorpay_payment_id,
+                });
+                // Update patient's careFundBalance
+                await User.findByIdAndUpdate(patientId, { $inc: { careFundBalance: amount } });
+            } catch (err) {
+                return res.status(500).json({
+                    success: false,
+                    message: 'Donation processing failed.',
+                });
+            }
+        }
         res.json({
             success: true,
             message: 'Payment verified successfully.',
@@ -54,5 +73,17 @@ exports.verifyPayment = (req, res) => {
             success: false,
             message: 'Payment verification failed.',
         });
+    }
+};
+
+// @desc    Get all donations for a patient
+// @route   GET /api/payment/donations
+exports.getDonations = async (req, res) => {
+    try {
+        const donations = await Donation.find({ patientId: req.query.patientId });
+        res.json(donations);
+    } catch (error) {
+        console.error('FETCH DONATIONS ERROR:', error);
+        res.status(500).send('Something went wrong');
     }
 };
