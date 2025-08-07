@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 
 const UserSchema = new mongoose.Schema({
-  // --- Core Fields ---
+  
   name: {
     type: String,
     required: [true, 'Please add a name'],
@@ -65,6 +65,10 @@ const UserSchema = new mongoose.Schema({
   chronicConditions: {
     type: [String],
     default: [],
+  },
+  careFundBalance: {
+    type: Number,
+    default: 0,
   },
   
   // --- Status & Ratings ---

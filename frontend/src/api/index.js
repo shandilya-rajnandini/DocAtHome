@@ -1,8 +1,7 @@
 import axios from 'axios';
 
-const API = axios.create({ baseURL: 'http://localhost:5000/api' });
+const API = axios.create({ baseURL: '/api' });
 
-// This interceptor automatically adds the JWT token to every request header
 API.interceptors.request.use((req) => {
   if (localStorage.getItem('token')) {
     req.headers.Authorization = `Bearer ${localStorage.getItem('token')}`;
@@ -10,54 +9,46 @@ API.interceptors.request.use((req) => {
   return req;
 });
 
-// === Authentication Routes ===
+// === Auth Routes ===
+export const getMe = () => API.get('/auth/me');
 export const login = (formData) => API.post('/auth/login', formData);
 export const register = (formData) => API.post('/auth/register', formData);
-export const getMe = () => API.get('/auth/me');
-export const forgotPassword = (emailData) => API.post('/auth/forgot-password', emailData);
-export const resetPassword = (token, password) => API.post(`/auth/reset-password/${token}`, password);
+export const forgotPassword = (email) => API.post('/auth/forgot-password', email);
+export const resetPassword = (token, password) => API.post(`/auth/reset-password/${token}`, { password });
 
-// === Admin Routes ===
-export const getPendingUsers = () => API.get('/admin/pending');
-export const approveUser = (id) => API.put(`/admin/approve/${id}`);
-
-// === Generic Profile Fetching ===
-const getProfessionalById = (id) => API.get(`/profile/${id}`);
-
-// === Doctor Routes ===
-export const searchDoctors = (params) => API.get('/doctors', { params });
-export const getDoctorById = (id) => getProfessionalById(id);
-
-// === Nurse Routes ===
-export const searchNurses = (params) => API.get('/nurses', { params });
-export const getNurseById = (id) => getProfessionalById(id);
-
-// === Logged-in User Profile Routes ===
+// === Profile Routes ===
 export const getMyProfile = () => API.get('/profile/me');
 export const updateMyProfile = (profileData) => API.put('/profile/me', profileData);
+export const getMyCareCircle = () => API.get('/profile/my-care-circle');
+export const inviteToCareCircle = (email) => API.post('/profile/my-care-circle/invite', email);
+
+// === Doctor/Nurse Routes ===
+export const getDoctorById = (id) => API.get(`/doctors/${id}`);
+export const getNurseById = (id) => API.get(`/nurses/${id}`);
+export const searchDoctors = (params) => API.get('/doctors/search', { params });
+export const searchNurses = (params) => API.get('/nurses/search', { params });
 
 // === Appointment Routes ===
 export const bookAppointment = (appointmentData) => API.post('/appointments', appointmentData);
 export const getMyAppointments = () => API.get('/appointments/my-appointments');
-export const updateAppointmentStatus = (id, updateData) => API.put(`/appointments/${id}`, updateData);
-export const getAppointmentSummary = (id) => API.get(`/appointments/${id}/summary`);
+export const getDoctorAppointments = () => API.get('/appointments/doctor-appointments');
+export const updateAppointmentStatus = (id, status) => API.put(`/appointments/${id}/status`, { status });
+export const getAppointmentSummary = () => API.get('/appointments/summary');
 
-// === Care Circle Routes ===
-export const getMyCareCircle = () => API.get('/profile/my-care-circle');
-export const inviteToCareCircle = (inviteData) => API.post('/profile/my-care-circle/invite', inviteData);
-
-// === Lab Test Routes ===
+// === Prescription & Lab Test Routes ===
+export const getMyPrescriptions = () => API.get('/prescriptions/my-prescriptions');
 export const bookLabTest = (testData) => API.post('/lab-tests', testData);
 
-// === Payment Routes ===
-export const createRazorpayOrder = (orderData) => API.post('/payment/create-order', orderData);
-export const verifyRazorpayPayment = (paymentData) => API.post('/payment/verify', paymentData);
-
-// === Payment History Route ===
-export const getPaymentHistory = () => API.get('/payment/my-history');
-
+// === Admin Routes ===
+export const getPendingUsers = () => API.get('/admin/pending-users');
+export const approveUser = (id) => API.put(`/admin/approve-user/${id}`);
 
 // === Quest Routes ===
 export const getQuests = () => API.get('/quests');
 export const acceptQuest = (questId) => API.post(`/quests/${questId}/accept`);
-export const logQuestProgress = (userQuestId) => API.post(`/quests/${userQuestId}/log`);
+export const logQuestProgress = (userQuestId, progress) => API.post(`/quests/${userQuestId}/progress`, { progress });
+
+// === Payment Routes ===
+export const getPaymentHistory = () => API.get('/payment/my-history');
+
+export default API;

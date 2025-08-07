@@ -1,6 +1,8 @@
 const Razorpay = require('razorpay');
 const crypto = require('crypto');
 const Transaction = require('../models/Transaction');
+const Donation = require('../models/Donation');
+const User = require('../models/User');
 
 // Initialize Razorpay instance
 const instance = new Razorpay({
@@ -32,7 +34,7 @@ exports.createOrder = async (req, res) => {
   }
 };
 
-// @desc    Verify a Razorpay payment and store transaction
+// @desc    Verify a Razorpay payment
 // @route   POST /api/payment/verify
 // @access  Private
 exports.verifyPayment = async (req, res) => {
@@ -42,6 +44,9 @@ exports.verifyPayment = async (req, res) => {
     razorpay_signature,
     amount,
     description,
+    isDonation,
+    donorName,
+    patientId,
   } = req.body;
 
   const body = `${razorpay_order_id}|${razorpay_payment_id}`;
@@ -60,6 +65,25 @@ exports.verifyPayment = async (req, res) => {
   }
 
   try {
+    if (isDonation && donorName && patientId && amount) {
+      // Save donation
+      await Donation.create({
+        donorName,
+        patientId,
+        amount,
+        razorpayPaymentId: razorpay_payment_id,
+      });
+
+      // Update patient's careFundBalance
+      await User.findByIdAndUpdate(patientId, { $inc: { careFundBalance: amount } });
+
+      return res.status(200).json({
+        success: true,
+        message: 'Donation verified and processed successfully.',
+      });
+    }
+
+    // Else store as a normal transaction
     const savedTransaction = await Transaction.create({
       userId: req.user.id,
       razorpayOrderId: razorpay_order_id,
@@ -76,10 +100,10 @@ exports.verifyPayment = async (req, res) => {
       data: savedTransaction,
     });
   } catch (err) {
-    console.error('Transaction save error:', err);
+    console.error('Payment processing error:', err);
     return res.status(500).json({
       success: false,
-      message: 'Payment verified, but storing transaction failed.',
+      message: 'Payment verified, but storing details failed.',
     });
   }
 };
@@ -101,5 +125,18 @@ exports.getMyPaymentHistory = async (req, res) => {
       success: false,
       message: 'Error fetching payment history.',
     });
+  }
+};
+
+// @desc    Get all donations for a patient
+// @route   GET /api/payment/donations
+// @access  Public
+exports.getDonations = async (req, res) => {
+  try {
+    const donations = await Donation.find({ patientId: req.query.patientId });
+    return res.status(200).json(donations);
+  } catch (error) {
+    console.error('FETCH DONATIONS ERROR:', error);
+    return res.status(500).send('Something went wrong');
   }
 };
