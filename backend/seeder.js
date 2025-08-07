@@ -1,15 +1,10 @@
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
-<<<<<<< HEAD
-const User = require('./models/User'); // <-- This path is now correct
-const adminData = require('./data/admin');
-=======
 const { faker } = require('@faker-js/faker');
 const User = require('./models/User');
 const Quest = require('./models/Quest');
 const UserQuest = require('./models/UserQuest');
 const quests = require('./data/quests');
->>>>>>> 7895a1ac95dd9ec20f9eac1f2bc3740396ee7f69
 
 dotenv.config();
 
@@ -23,19 +18,6 @@ const connectDB = async () => {
     }
 };
 
-<<<<<<< HEAD
-const createAdmin = async () => {
-    await connectDB();
-    try {
-        const adminExists = await User.findOne({ email: adminData.email });
-        
-        if (adminExists) {
-            console.log(`Admin user '${adminData.email}' already exists. No action taken.`);
-        } else {
-            await User.create(adminData);
-            console.log(`SUCCESS: Admin user '${adminData.email}' created successfully!`);
-        }
-=======
 const importData = async () => {
     try {
         // Clear existing data before import
@@ -75,7 +57,6 @@ const importData = async () => {
         }
         await User.create(doctorsToCreate);
         console.log(`${doctorsToCreate.length} Doctors created successfully.`);
->>>>>>> 7895a1ac95dd9ec20f9eac1f2bc3740396ee7f69
 
         // Import Quests
         // Validate quest data structure
@@ -93,16 +74,6 @@ const importData = async () => {
         console.log(`${validQuests.length} Quests imported successfully.`);
         console.log('Data Imported!');
     } catch (error) {
-<<<<<<< HEAD
-        console.error(`SEEDER SCRIPT ERROR: ${error}`);
-    } finally {
-        await mongoose.connection.close();
-        process.exit();
-    }
-};
-
-createAdmin();
-=======
         console.error(`SEEDER IMPORT ERROR: ${error}`);
     }
 };
@@ -132,4 +103,3 @@ const run = async () => {
 };
 
 run();
->>>>>>> 7895a1ac95dd9ec20f9eac1f2bc3740396ee7f69

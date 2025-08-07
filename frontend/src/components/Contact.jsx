@@ -29,13 +29,8 @@ const Contact = () => {
                     <p className="text-slate-600 dark:text-secondary-text text-xl">📧 singhrajnandini65@gmail.com</p>
                 </div>
                 <div>
-<<<<<<< HEAD
-                    <h3 className="text-xl font-semibold mb-2 text-accent-cream">Operating Hours</h3>
-                    <p className="text-secondary-text">🕒 Mon-Fri - 08:00 A.M.-9:00 P.M.</p>
-=======
                     <h3 className="text-2xl font-semibold mb-2 text-slate-800 dark:text-accent-cream">Operating Hours</h3>
                     <p className="text-slate-600 dark:text-secondary-text text-xl">🕒 Mon-Fri - 08:00 A.M.-19:00 P.M.</p>
->>>>>>> 7895a1ac95dd9ec20f9eac1f2bc3740396ee7f69
                 </div>
             </div>
 

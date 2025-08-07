@@ -57,3 +57,7 @@ export const verifyRazorpayPayment = (paymentData) => API.post('/payment/verify'
 export const getQuests = () => API.get('/quests');
 export const acceptQuest = (questId) => API.post(`/quests/${questId}/accept`);
 export const logQuestProgress = (userQuestId) => API.post(`/quests/${userQuestId}/log`);
+
+// === Voice Note Routes ===
+export const saveAppointmentVoiceNote = (appointmentId, voiceUrl) =>
+  API.post(`/appointments/${appointmentId}/voicenote`, { voiceUrl });

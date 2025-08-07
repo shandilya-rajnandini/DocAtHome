@@ -1,10 +1,5 @@
-<<<<<<< HEAD
-import React from 'react';
-import { Link } from 'react-router-dom'; 
-=======
 import React, { useState } from "react";
 import { NavLink } from "react-router-dom";
->>>>>>> 7895a1ac95dd9ec20f9eac1f2bc3740396ee7f69
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
