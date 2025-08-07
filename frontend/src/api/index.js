@@ -1,15 +1,7 @@
 import axios from 'axios';
 
-// --- Smart API URL Configuration ---
-// This automatically selects the correct backend URL based on the environment.
-const API_URL = import.meta.env.PROD 
-    ? 'https://docathome-backend.onrender.com/api' // Your LIVE backend URL from Render
-    : 'http://localhost:5000/api';                // Your LOCAL backend URL for development
+const API = axios.create({ baseURL: '/api' });
 
-// Create a configured instance of Axios
-const API = axios.create({ baseURL: API_URL });
-
-// Interceptor to automatically add the JWT token to every secure request
 API.interceptors.request.use((req) => {
   if (localStorage.getItem('token')) {
     req.headers.Authorization = `Bearer ${localStorage.getItem('token')}`;
@@ -17,8 +9,7 @@ API.interceptors.request.use((req) => {
   return req;
 });
 
-
-// api/prescriptions.js (frontend)
+// === Smart Stock: Take Dose ===
 export const takeDose = async (prescriptionId, medicineIndex) => {
   try {
     const response = await API.post(
@@ -32,49 +23,46 @@ export const takeDose = async (prescriptionId, medicineIndex) => {
 };
 
 // === Authentication Routes ===
+export const getMe = () => API.get('/auth/me');
 export const login = (formData) => API.post('/auth/login', formData);
 export const register = (formData) => API.post('/auth/register', formData);
-export const getMe = () => API.get('/auth/me');
-export const forgotPassword = (emailData) => API.post('/auth/forgot-password', emailData);
-export const resetPassword = (token, passwordData) => API.post(`/auth/reset-password/${token}`, passwordData);
 
-// === Admin Routes ===
-export const getPendingUsers = () => API.get('/admin/pending');
-export const approveUser = (id) => API.put(`/admin/approve/${id}`);
-
-// === Generic Profile Fetching ===
-const getProfessionalById = (id) => API.get(`/profile/${id}`);
-
-// === Doctor Routes ===
-export const searchDoctors = (params) => API.get('/doctors', { params });
-export const getDoctorById = (id) => getProfessionalById(id);
-
-// === Nurse Routes ===
-export const searchNurses = (params) => API.get('/nurses', { params });
-export const getNurseById = (id) => getProfessionalById(id);
-
-// === Logged-in User Profile Routes ===
-export const getMyProfile = () => API.get('/profile/me');
-export const updateMyProfile = (profileData) => API.put('/profile/me', profileData);
+// === Doctor & Nurse Routes ===
+export const getDoctorById = (id) => API.get(`/doctors/${id}`);
+export const getNurseById = (id) => API.get(`/nurses/${id}`);
+export const searchDoctors = (params) => API.get('/doctors/search', { params });
+export const searchNurses = (params) => API.get('/nurses/search', { params });
 
 // === Appointment Routes ===
 export const bookAppointment = (appointmentData) => API.post('/appointments', appointmentData);
 export const getMyAppointments = () => API.get('/appointments/my-appointments');
-export const updateAppointmentStatus = (id, updateData) => API.put(`/appointments/${id}`, updateData);
-export const getAppointmentSummary = (id) => API.get(`/appointments/${id}/summary`);
+export const getDoctorAppointments = () => API.get('/appointments/doctor-appointments');
+export const updateAppointmentStatus = (id, status) => API.put(`/appointments/${id}/status`, { status });
+export const getAppointmentSummary = () => API.get('/appointments/summary');
 
-// === Care Circle Routes ===
-export const getMyCareCircle = () => API.get('/profile/my-care-circle');
-export const inviteToCareCircle = (inviteData) => API.post('/profile/my-care-circle/invite', inviteData);
+// === Prescription Routes ===
+export const getMyPrescriptions = () => API.get('/prescriptions/my-prescriptions');
 
-// === Lab Test Routes ===
+// === Lab Test ===
 export const bookLabTest = (testData) => API.post('/lab-tests', testData);
 
-// === Payment Routes ===
-export const createRazorpayOrder = (orderData) => API.post('/payment/create-order', orderData);
-export const verifyRazorpayPayment = (paymentData) => API.post('/payment/verify', paymentData);
+// === Password Reset ===
+export const forgotPassword = (email) => API.post('/auth/forgot-password', email);
+export const resetPassword = (token, password) => API.post(`/auth/reset-password/${token}`, { password });
 
-// === Quest Routes ===
+// === Admin ===
+export const getPendingUsers = () => API.get('/admin/pending-users');
+export const approveUser = (id) => API.put(`/admin/approve-user/${id}`);
+
+// === Profile & Care Circle ===
+export const getMyProfile = () => API.get('/profile/me');
+export const updateMyProfile = (profileData) => API.put('/profile/me', profileData);
+export const getMyCareCircle = () => API.get('/profile/my-care-circle');
+export const inviteToCareCircle = (email) => API.post('/profile/my-care-circle/invite', email);
+
+// === Quest System ===
 export const getQuests = () => API.get('/quests');
-export const acceptQuest = (questId) => API.post(`/quests/${questId}/accept`);
-export const logQuestProgress = (userQuestId) => API.post(`/quests/${userQuestId}/log`);
+export const acceptQuest = (id) => API.post(`/quests/${id}/accept`);
+export const logQuestProgress = (id, progress) => API.post(`/quests/${id}/progress`, { progress });
+
+export default API;
