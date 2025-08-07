@@ -33,6 +33,8 @@ import MyAppointmentsPage from './pages/MyAppointmentsPage.jsx';
 import MyPrescriptionsPage from './pages/MyPrescriptionsPage.jsx';
 import HealthQuestsPage from './pages/HealthQuestsPage.jsx';
 import CareNavigatorPage from './pages/CareNavigatorPage.jsx';
+import CareFundPage from './pages/CareFundPage.jsx';
+import PublicDonationPage from './pages/PublicDonationPage.jsx';
 
 // Protected Professional Pages
 import DoctorDashboard from './pages/DoctorDashboard.jsx';
@@ -76,6 +78,7 @@ function App() {
             <Route path="/services" element={<Services />} />
             <Route path="/testimonials" element={<Testimonials />} />
             <Route path="/contact" element={<Contact />} />
+            <Route path="/care-fund/:patientId" element={<PublicDonationPage />} />
 
             {/* --- Protected Patient Routes --- */}
 
@@ -85,6 +88,7 @@ function App() {
             <Route path="/video-consult" element={<ProtectedRoute><VideoConsultPage /></ProtectedRoute>} />
             <Route path="/my-appointments" element={<ProtectedRoute><MyAppointmentsPage /></ProtectedRoute>} />
             <Route path="/my-prescriptions" element={<ProtectedRoute><MyPrescriptionsPage /></ProtectedRoute>} />
+            <Route path="/care-fund" element={<ProtectedRoute><CareFundPage /></ProtectedRoute>} />
 //             <Route path="/health-quests" element={<ProtectedRoute><HealthQuestsPage /></ProtectedRoute>} />
             
 
