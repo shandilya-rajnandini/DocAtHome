@@ -1,7 +1,17 @@
 import axios from 'axios';
 
-const API = axios.create({ baseURL: '/api' });
+// --- Smart API URL Configuration ---
+// This automatically detects if the app is in production (on Netlify)
+// or in development (running on your local machine).
+const API_URL = import.meta.env.PROD 
+    ? 'https://docathome-backend.onrender.com/api' // Your LIVE backend URL from Render
+    : 'http://localhost:5000/api';                // Your LOCAL backend URL for development
 
+// Create a configured instance of Axios with the correct base URL
+const API = axios.create({ baseURL: API_URL });
+
+// This interceptor automatically adds the user's JWT token to every secure request.
+// It runs before any API call is sent.
 API.interceptors.request.use((req) => {
   if (localStorage.getItem('token')) {
     req.headers.Authorization = `Bearer ${localStorage.getItem('token')}`;
@@ -9,46 +19,53 @@ API.interceptors.request.use((req) => {
   return req;
 });
 
-// === Auth Routes ===
-export const getMe = () => API.get('/auth/me');
+// --- API Function Exports ---
+
+// === Authentication Routes ===
 export const login = (formData) => API.post('/auth/login', formData);
 export const register = (formData) => API.post('/auth/register', formData);
-export const forgotPassword = (email) => API.post('/auth/forgot-password', email);
-export const resetPassword = (token, password) => API.post(`/auth/reset-password/${token}`, { password });
+export const getMe = () => API.get('/auth/me');
+export const forgotPassword = (emailData) => API.post('/auth/forgot-password', emailData);
+export const resetPassword = (token, passwordData) => API.post(`/auth/reset-password/${token}`, passwordData);
 
-// === Profile Routes ===
+// === Admin Routes ===
+export const getPendingUsers = () => API.get('/admin/pending');
+export const approveUser = (id) => API.put(`/admin/approve/${id}`);
+
+// === Generic Profile Fetching ===
+const getProfessionalById = (id) => API.get(`/profile/${id}`);
+
+// === Doctor & Nurse Search Routes ===
+export const searchDoctors = (params) => API.get('/doctors', { params });
+export const getDoctorById = (id) => getProfessionalById(id);
+export const searchNurses = (params) => API.get('/nurses', { params });
+export const getNurseById = (id) => getProfessionalById(id);
+
+// === Logged-in User Profile Routes ===
 export const getMyProfile = () => API.get('/profile/me');
 export const updateMyProfile = (profileData) => API.put('/profile/me', profileData);
-export const getMyCareCircle = () => API.get('/profile/my-care-circle');
-export const inviteToCareCircle = (email) => API.post('/profile/my-care-circle/invite', email);
-
-// === Doctor/Nurse Routes ===
-export const getDoctorById = (id) => API.get(`/doctors/${id}`);
-export const getNurseById = (id) => API.get(`/nurses/${id}`);
-export const searchDoctors = (params) => API.get('/doctors/search', { params });
-export const searchNurses = (params) => API.get('/nurses/search', { params });
 
 // === Appointment Routes ===
 export const bookAppointment = (appointmentData) => API.post('/appointments', appointmentData);
 export const getMyAppointments = () => API.get('/appointments/my-appointments');
-export const getDoctorAppointments = () => API.get('/appointments/doctor-appointments');
-export const updateAppointmentStatus = (id, status) => API.put(`/appointments/${id}/status`, { status });
-export const getAppointmentSummary = () => API.get('/appointments/summary');
+export const updateAppointmentStatus = (id, statusData) => API.put(`/appointments/${id}`, statusData);
+export const getAppointmentSummary = (id) => API.get(`/appointments/${id}/summary`);
 
-// === Prescription & Lab Test Routes ===
-export const getMyPrescriptions = () => API.get('/prescriptions/my-prescriptions');
+// === Care Circle Routes ===
+export const getMyCareCircle = () => API.get('/profile/my-care-circle');
+export const inviteToCareCircle = (inviteData) => API.post('/profile/my-care-circle/invite', inviteData);
+
+// === Lab Test Routes ===
 export const bookLabTest = (testData) => API.post('/lab-tests', testData);
 
-// === Admin Routes ===
-export const getPendingUsers = () => API.get('/admin/pending-users');
-export const approveUser = (id) => API.put(`/admin/approve-user/${id}`);
+// === Payment Routes ===
+export const createRazorpayOrder = (orderData) => API.post('/payment/create-order', orderData);
+export const verifyRazorpayPayment = (paymentData) => API.post('/payment/verify', paymentData);
+export const getPaymentHistory = () => API.get('/payment/my-history');
 
 // === Quest Routes ===
 export const getQuests = () => API.get('/quests');
 export const acceptQuest = (questId) => API.post(`/quests/${questId}/accept`);
 export const logQuestProgress = (userQuestId, progress) => API.post(`/quests/${userQuestId}/progress`, { progress });
 
-// === Payment Routes ===
-export const getPaymentHistory = () => API.get('/payment/my-history');
-
-export default API;
+// Note: No need for 'export default API' when exporting named functions.
