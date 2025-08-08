@@ -7,8 +7,8 @@
     "test": "jest",
     "start": "node server.js",
     "dev": "nodemon server.js",
-    "data:import": "node seeder",
-    "data:destroy": "node seeder -d"
+     "data:import": "node seeder.js",
+    "data:destroy": "node seeder.js -d"
   },
   "keywords": [],
   "author": "",
