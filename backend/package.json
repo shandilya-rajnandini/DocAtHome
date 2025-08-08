@@ -17,10 +17,12 @@
   "dependencies": {
     "@faker-js/faker": "^9.9.0",
     "@google/generative-ai": "^0.24.1",
+    "@sendgrid/mail": "^8.1.5",
     "bcryptjs": "^3.0.2",
     "cors": "^2.8.5",
     "dotenv": "^17.0.0",
     "express": "^5.1.0",
+    "joi": "^17.13.3",
     "jsonwebtoken": "^9.0.2",
     "mongodb": "^6.18.0",
     "mongoose": "^8.16.1",
