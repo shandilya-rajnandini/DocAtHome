@@ -1,4 +1,9 @@
+
 import React from "react";
+
+import React from 'react';
+// We'll use text placeholders for icons 
+
 
 const reasons = [
   {
@@ -24,6 +29,7 @@ const reasons = [
 ];
 
 const WhyChooseUs = () => {
+
   return (
     <section className="py-20 px-4 bg-gradient-to-br from-slate-900 to-slate-900 text-white">
       <div className="container mx-auto text-center max-w-6xl">
@@ -62,6 +68,20 @@ const WhyChooseUs = () => {
                   <span className="text-4xl group-hover:scale-110 transition-transform duration-300">
                     {reason.icon}
                   </span>
+
+    return (
+        <section className="bg-amber-100 py-20 px-4 dark:bg-primary-dark text-white">
+            <div className="container mx-auto text-center">
+                <h2 className="text-3xl font-bold mb-12 text-black dark:text-white">WHY <span className="text-red-500">CHOOSE US ?</span></h2>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+                    {reasons.map(reason => (
+                        <div key={reason.title} className="bg-amber-100 dark:bg-gray-900 p-8 rounded-lg text-black dark:text-white">
+                            <div className="text-5xl text-red-500 mb-4">{reason.icon}</div>
+                            <h3 className="text-2xl font-bold mb-3">{reason.title}</h3>
+                            <p className="text-gray-800 dark:text-gray-400">{reason.text}</p>
+                        </div>
+                    ))}
+
                 </div>
 
                 {/* Title */}

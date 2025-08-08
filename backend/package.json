@@ -4,11 +4,11 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "jest",
     "start": "node server.js",
     "dev": "nodemon server.js",
-    "data:import": "node seeder",
-    "data:destroy": "node seeder -d"
+     "data:import": "node seeder.js",
+    "data:destroy": "node seeder.js -d"
   },
   "keywords": [],
   "author": "",
@@ -16,17 +16,23 @@
   "type": "commonjs",
   "dependencies": {
     "@faker-js/faker": "^9.9.0",
+    "@google/generative-ai": "^0.24.1",
+    "@sendgrid/mail": "^8.1.5",
     "bcryptjs": "^3.0.2",
     "cors": "^2.8.5",
     "dotenv": "^17.0.0",
     "express": "^5.1.0",
+    "joi": "^17.13.3",
     "jsonwebtoken": "^9.0.2",
+    "mongodb": "^6.18.0",
     "mongoose": "^8.16.1",
     "nodemailer": "^7.0.5",
     "razorpay": "^2.9.6",
     "socket.io": "^4.8.1"
   },
   "devDependencies": {
-    "nodemon": "^3.1.10"
+    "jest": "^30.0.5",
+    "nodemon": "^3.1.10",
+    "supertest": "^7.1.4"
   }
 }

@@ -1,3 +1,4 @@
+
 {
   "name": "frontend",
   "private": true,
@@ -10,11 +11,14 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@google/generative-ai": "^0.24.1",
     "axios": "^1.10.0",
     "jspdf": "^3.0.1",
+    "lucide-react": "^0.534.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "react-hot-toast": "^2.5.2",
+    "react-icons": "^5.5.0",
     "react-router-dom": "^7.6.3",
     "socket.io-client": "^4.8.1"
   },
@@ -30,6 +34,7 @@
     "globals": "^16.2.0",
     "postcss": "^8.5.6",
     "tailwindcss": "^3.4.17",
-    "vite": "^7.0.0"
+    "vite": "^7.0.0",
+    "vite-plugin-static-copy": "^3.1.1"
   }
 }

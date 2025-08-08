@@ -21,13 +21,22 @@ const PatientDashboard = () => {
 
   return (
     // The background is now a clean, dark slate color from our tailwind config
-    <div className="bg-primary-dark min-h-full py-12 px-4">
+    <div className="bg-amber-200 dark:bg-primary-dark min-h-full py-12 px-4">
       <div className="container mx-auto">
         <div className="mb-12">
-            <h1 className="text-4xl md:text-5xl font-bold text-white">Hello, {user?.name}!</h1>
-            <p className="text-lg text-secondary-text mt-2">Your personal health command center.</p>
+            <h1 className="text-4xl md:text-5xl font-bold text-black dark:text-white">Hello, {user?.name}!</h1>
+            <p className="text-lg text-gray-800 dark:text-secondary-text mt-2">Your personal health command center.</p>
         </div>
-        
+        <div className="mb-12 bg-secondary-dark text-center py-12 px-4 rounded-lg">
+            <h2 className="text-3xl font-bold text-white mb-4">Not Sure Where to Start?</h2>
+            <p className="text-secondary-text mb-8 max-w-2xl mx-auto">Let our Care Navigator guide you to the right professional based on your needs.</p>
+            <Link
+              to="/care-navigator"
+              className="bg-accent-blue hover:bg-accent-blue-hover text-white font-bold py-3 px-8 rounded-lg text-lg transition-transform transform hover:scale-105 inline-block"
+            >
+              Help Me Choose
+            </Link>
+        </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             
             <NewFeatureCard 
@@ -85,6 +94,21 @@ const PatientDashboard = () => {
                 description="Quick access to emergency ambulance services."
                 link="/book-ambulance"
                 color="from-red-500 to-red-700"
+            />
+            <NewFeatureCard 
+                icon="💰"
+                title="Care Fund"
+                description="Manage your community-funded care balance."
+                link="/care-fund"
+                color="from-pink-500 to-pink-700"
+            />
+
+            <NewFeatureCard 
+                icon="💰"
+                title="Payment History"
+                description="Quick access to all your payment history."
+                link="/payment-history"
+                color="from-blue-500 to-blue-700"
             />
 
         </div>
