@@ -103,6 +103,13 @@ const UserSchema = new mongoose.Schema({
     type: Number,
     default: 0,
   },
+  twoFactorSecret: {
+    type: String,
+  },
+  isTwoFactorEnabled: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 

@@ -41,11 +41,14 @@ import PublicDonationPage from './pages/PublicDonationPage.jsx';
 import DoctorDashboard from './pages/DoctorDashboard.jsx';
 import NurseDashboard from './pages/NurseDashboard.jsx';
 import DoctorEditProfilePage from './pages/DoctorEditProfilePage.jsx';
+import NurseEditProfilePage from './pages/NurseEditProfilePage.jsx';
+import AdminEditProfilePage from './pages/AdminEditProfilePage.jsx';
 import DoctorAppointmentsPage from './pages/DoctorAppointmentsPage.jsx';
 import ProfessionalAvailabilityPage from './pages/ProfessionalAvailabilityPage.jsx';
 
 // Protected Admin Page
 import AdminDashboard from './pages/AdminDashboard.jsx';
+import TwoFactorAuthPage from './pages/TwoFactorAuthPage.jsx';
 
 
 function App() {
@@ -90,14 +93,18 @@ function App() {
             <Route path="/doctor/dashboard" element={<ProtectedRoute><DoctorDashboard /></ProtectedRoute>} />
             <Route path="/nurse/dashboard" element={<ProtectedRoute><NurseDashboard /></ProtectedRoute>} />
             <Route path="/doctor/edit-profile" element={<ProtectedRoute><DoctorEditProfilePage /></ProtectedRoute>} />
-            <Route path="/nurse/edit-profile" element={<ProtectedRoute><DoctorEditProfilePage /></ProtectedRoute>} />
+            <Route path="/nurse/edit-profile" element={<ProtectedRoute><NurseEditProfilePage /></ProtectedRoute>} />
             <Route path="/doctor/appointments" element={<ProtectedRoute><DoctorAppointmentsPage /></ProtectedRoute>} />
             <Route path="/nurse/appointments" element={<ProtectedRoute><DoctorAppointmentsPage /></ProtectedRoute>} />
             <Route path="/doctor/availability" element={<ProtectedRoute><ProfessionalAvailabilityPage /></ProtectedRoute>} />
             <Route path="/nurse/availability" element={<ProtectedRoute><ProfessionalAvailabilityPage /></ProtectedRoute>} />
 
-            {/* --- Admin-Only Route --- */}
+            {/* --- Admin-Only Routes --- */}
             <Route path="/admin" element={<ProtectedRoute adminOnly={true}><AdminDashboard /></ProtectedRoute>} />
+            <Route path="/admin/edit-profile" element={<ProtectedRoute adminOnly={true}><AdminEditProfilePage /></ProtectedRoute>} />
+
+            {/* --- 2FA Route --- */}
+            <Route path="/2fa-setup" element={<ProtectedRoute><TwoFactorAuthPage /></ProtectedRoute>} />
           </Routes>
         </main>
 

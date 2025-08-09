@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { getMyProfile, updateMyProfile } from '../api';
 import toast from 'react-hot-toast';
 
@@ -100,10 +101,20 @@ const DoctorEditProfilePage = () => {
 } placeholder="e.g., MBBS, MD Cardiology" className="w-full p-3 bg-primary-dark rounded border-gray-700 text-white" /></div>
                         <div className="md:col-span-2"><label className="block text-secondary-text mb-2">Professional Bio</label><textarea name="bio" value={profile.bio} onChange={onChange} rows="5" placeholder="Tell patients about yourself..." className="w-full p-3 bg-primary-dark rounded border-gray-700 text-white"></textarea></div>
                     </div>
-                    <div className="text-right mt-8"><button type="submit" className="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg transition">Save Changes</button></div>
+                <div className="flex items-center justify-between mt-8"> 
+                    <Link to="/2fa-setup" className="bg-accent-blue hover:bg-accent-blue-hover text-white font-bold py-2 px-4 rounded inline-block" > Enable Two-Factor Authentication </Link>
+                        <button
+                        type="submit"
+                        className="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg transition"
+                        >Save Changes
+                        </button> </div>
                 </form>
             </div>
         </div>
     );
 };
 export default DoctorEditProfilePage;
+
+
+                <div className="max-w-4xl mx-auto bg-secondary-dark p-8 rounded-lg shadow-lg mt-8">
+                </div>

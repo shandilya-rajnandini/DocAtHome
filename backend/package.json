@@ -7,7 +7,7 @@
     "test": "jest",
     "start": "node server.js",
     "dev": "nodemon server.js",
-     "data:import": "node seeder.js",
+    "data:import": "node seeder.js",
     "data:destroy": "node seeder.js -d"
   },
   "keywords": [],
@@ -27,8 +27,10 @@
     "mongodb": "^6.18.0",
     "mongoose": "^8.16.1",
     "nodemailer": "^7.0.5",
+    "qrcode": "^1.5.4",
     "razorpay": "^2.9.6",
-    "socket.io": "^4.8.1"
+    "socket.io": "^4.8.1",
+    "speakeasy": "^2.0.0"
   },
   "devDependencies": {
     "jest": "^30.0.5",
