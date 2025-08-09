@@ -1,10 +1,6 @@
 
 import React from "react";
-
-import React from 'react';
 // We'll use text placeholders for icons 
-
-
 const reasons = [
   {
     icon: "💼",
