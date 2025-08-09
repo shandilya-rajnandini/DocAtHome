@@ -3,6 +3,7 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const sendEmail = require('../utils/sendEmail');
+const speakeasy = require('speakeasy');
 
 // (The 'register' and 'getMe' functions can remain as they are)
 // ...
@@ -51,6 +52,12 @@ exports.login = async (req, res) => {
     }
 
     console.log("6. RESULT: Passwords MATCH! Login successful.");
+
+    if (user.isTwoFactorEnabled) {
+      console.log("7. 2FA is ENABLED for this user. Sending 2FA required message.");
+      console.log("--- LOGIN ATTEMPT FINISHED (PENDING 2FA) ---\n");
+      return res.json({ twoFactorRequired: true, userId: user.id });
+    }
     
     // If we reach here, the login is successful. Now create and send the token.
     const payload = { user: { id: user.id, role: user.role } };
@@ -68,6 +75,42 @@ exports.login = async (req, res) => {
   } catch (err) {
     console.error('FATAL LOGIN ERROR:', err.message);
     res.status(500).send('Server error');
+  }
+};
+
+exports.loginWith2FA = async (req, res) => {
+  const { userId, token } = req.body;
+
+  try {
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    const verified = speakeasy.totp.verify({
+      secret: user.twoFactorSecret,
+      encoding: 'base32',
+      token,
+    });
+
+    if (verified) {
+      const payload = { user: { id: user.id, role: user.role } };
+      jwt.sign(
+        payload,
+        process.env.JWT_SECRET,
+        { expiresIn: '5h' },
+        (err, token) => {
+          if (err) throw err;
+          res.json({ token });
+        }
+      );
+    } else {
+      res.status(400).json({ message: 'Invalid 2FA token' });
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server error' });
   }
 };
 

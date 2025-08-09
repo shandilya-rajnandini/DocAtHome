@@ -2,61 +2,69 @@ const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
 const dotenv = require('dotenv');
+const cors = require('cors');
 const connectDB = require('./config/db');
-const app = require('./app');
-
 
 // Load environment variables from .env file
 dotenv.config();
 
-
+// Create Express app and HTTP server
+const app = require('./app');
 const server = http.createServer(app);
-const careCircle = require("./routes/careCircle");
 
+// --- Production-Ready CORS Configuration ---
+const allowedOrigins = [
+  "http://localhost:5173", // For your local development frontend
+  "https://docathome-rajnandini.netlify.app" // Your live frontend URL
+];
 
-// Configure Socket.IO with CORS settings
+const corsOptions = {
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  }
+};
+
+// --- Socket.IO Configuration ---
 const io = new Server(server, {
   cors: {
-    origin: "http://localhost:5173",
+    origin: allowedOrigins,
     methods: ["GET", "POST"]
   }
 });
 
-// Socket.IO Connection Logic
 io.on('connection', (socket) => {
   console.log(`User Connected: ${socket.id}`);
-  socket.on('join_room', (data) => socket.join(data));
-  socket.on('send_message', (data) => socket.to(data.room).emit('receive_message', data));
-  socket.on('disconnect', () => console.log('User Disconnected', socket.id));
+  socket.on('disconnect', () => {
+    console.log(`User Disconnected: ${socket.id}`);
+  });
 });
 
-// API Route Definitions
-app.use('/api/auth', require('./routes/authRoutes'));
-app.use('/api/admin', require('./routes/adminRoutes'));
-app.use('/api/doctors', require('./routes/doctorRoutes'));
-app.use('/api/nurses', require('./routes/nurseRoutes'));
-app.use('/api/profile', require('./routes/profileRoutes'));
-app.use('/api/appointments', require('./routes/appointmentRoutes'));
-app.use('/api/lab-tests', require('./routes/labTestRoutes')); // <-- New Lab Test Route
-app.use('/api/payment', require('./routes/paymentRoutes'));
+// --- Error Handling ---
+app.use((req, res, next) => {
+  res.status(404).json({ message: 'API endpoint not found' });
+});
 
-app.use("/api/profile", require("./routes/careCircle"));
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).json({ message: 'Internal Server Error' });
+});
 
-app.use('/api/quests', require('./routes/questRoutes'));
-
-
-// Server Port
+// --- Start Server ---
 const PORT = process.env.PORT || 5000;
 
-// Strict Server Startup Function
 const startServer = async () => {
   try {
     await connectDB();
     server.listen(PORT, () => {
-      console.log(`Server running with chat on port ${PORT}`);
+      console.log(`Server running on port ${PORT}`);
     });
   } catch (error) {
-    console.error('FATAL ERROR: Could not connect to the database.', error);
+    console.error('FATAL ERROR: Could not connect to the database.');
+    console.error(error);
     process.exit(1);
   }
 };
