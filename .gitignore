@@ -4,3 +4,4 @@
 .env
 /backend/.env
 /frontend/.env
+/backend/logs/*.log

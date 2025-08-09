@@ -1,12 +1,13 @@
 // This file contains sample doctor data to populate our database.
 // All doctors now have unique emails and all required fields.
+const { getUniquePasswordForUser } = require('../utils/passwordUtils');
 
 const doctors = [
   
   {
     name: 'Dr. ANJALI VERMA',
     email: 'anjali.verma@docathome.com',
-    password: 'password123',
+    password: getUniquePasswordForUser('anjali.verma@docathome.com'),
     role: 'doctor',
     specialty: 'Cardiologist',
     city: 'Mumbai',
@@ -18,7 +19,7 @@ const doctors = [
   {
     name: 'Dr. RAJNANDINI SHANDILYA',
     email: 'rajnandini.s@docathome.com',
-    password: 'password123',
+    password: getUniquePasswordForUser('rajnandini.s@docathome.com'),
     role: 'doctor',
     specialty: 'Pediatrician',
     city: 'Delhi',
@@ -30,7 +31,7 @@ const doctors = [
   {
     name: 'Dr. DEEPA RAJ',
     email: 'deepa.raj@docathome.com',
-    password: 'password123',
+    password: getUniquePasswordForUser('deepa.raj@docathome.com'),
     role: 'doctor',
     specialty: 'Dermatologist',
     city: 'Bangalore',
@@ -42,7 +43,7 @@ const doctors = [
   {
     name: 'Dr. Rohan Joshi',
     email: 'rohan.joshi@docathome.com',
-    password: 'password123',
+    password: getUniquePasswordForUser('rohan.joshi@docathome.com'),
     role: 'doctor',
     specialty: 'Cardiologist',
     city: 'Mumbai',
@@ -54,7 +55,7 @@ const doctors = [
   {
     name: 'Dr. Priya Sharma',
     email: 'priya.sharma@docathome.com',
-    password: 'password123',
+    password: getUniquePasswordForUser('priya.sharma@docathome.com'),
     role: 'doctor',
     specialty: 'General Physician',
     city: 'Delhi',
@@ -68,7 +69,7 @@ const doctors = [
   {
     name: 'Dr. Evelyn Reed',
     email: 'evelyn.reed@docathome.com',
-    password: 'password123',
+    password: getUniquePasswordForUser('evelyn.reed@docathome.com'),
     role: 'doctor',
     specialty: 'Cardiologist',
     city: 'Mumbai',
@@ -80,7 +81,7 @@ const doctors = [
   {
     name: 'Dr. Ben Carter',
     email: 'ben.carter@docathome.com',
-    password: 'password123',
+    password: getUniquePasswordForUser('ben.carter@docathome.com'),
     role: 'doctor',
     specialty: 'Pediatrician',
     city: 'Delhi',
@@ -92,7 +93,7 @@ const doctors = [
   {
     name: 'Dr. Aisha Khan',
     email: 'aisha.khan@docathome.com',
-    password: 'password123',
+    password: getUniquePasswordForUser('aisha.khan@docathome.com'),
     role: 'doctor',
     specialty: 'Dermatologist',
     city: 'Bangalore',
@@ -105,7 +106,7 @@ const doctors = [
   {
     name: 'Dr. Ram Kumar',
     email: 'ram.kumar@docathome.com',
-    password: 'password123',
+    password: getUniquePasswordForUser('ram.kumar@docathome.com'),
     role: 'doctor',
     specialty: 'Cardiologist',
     city: 'Pune',
@@ -117,7 +118,7 @@ const doctors = [
   {
     name: 'Dr. SHYAM VERMA',
     email: 'shyam.verma@docathome.com',
-    password: 'password123',
+    password: getUniquePasswordForUser('shyam.verma@docathome.com'),
     role: 'doctor',
     specialty: 'Pediatrician',
     city: 'Kolkata',
@@ -129,7 +130,7 @@ const doctors = [
   {
     name: 'Dr. Anurag Singh',
     email: 'anurag.singh@docathome.com',
-    password: 'password123',
+    password: getUniquePasswordForUser('anurag.singh@docathome.com'),
     role: 'doctor',
     specialty: 'Dermatologist',
     city: 'Chennai',
@@ -141,7 +142,7 @@ const doctors = [
   {
     name: 'Dr. Jay Mehra',
     email: 'jay.mehra@docathome.com',
-    password: 'password123',
+    password: getUniquePasswordForUser('jay.mehra@docathome.com'),
     role: 'doctor',
     specialty: 'Dentist',
     city: 'Mumbai',
@@ -153,7 +154,7 @@ const doctors = [
   {
     name: 'Dr. Bhanu Pratap',
     email: 'bhanu.pratap@docathome.com',
-    password: 'password123',
+    password: getUniquePasswordForUser('bhanu.pratap@docathome.com'),
     role: 'doctor',
     specialty: 'General Physician',
     city: 'Patna',
@@ -165,7 +166,7 @@ const doctors = [
   {
     name: 'Dr. Alisha Singh',
     email: 'alisha.singh@docathome.com',
-    password: 'password123',
+    password: getUniquePasswordForUser('alisha.singh@docathome.com'),
     role: 'doctor',
     specialty: 'Gynecologist',
     city: 'Bangalore',
