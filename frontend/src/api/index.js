@@ -79,6 +79,10 @@ export const getPaymentHistory = () => API.get('/payment/my-history');
 export const getQuests = () => API.get('/quests');
 export const acceptQuest = (questId) => API.post(`/quests/${questId}/accept`);
 export const logQuestProgress = (questId, progress) => API.post(`/quests/${questId}/progress`, { progress });
+// === Voice Note Routes ===
+export const saveAppointmentVoiceNote = (appointmentId, voiceUrl) =>
+  API.post(`/appointments/${appointmentId}/voicenote`, { voiceUrl });
 
 // Export Axios instance if needed
 export default API;
+
