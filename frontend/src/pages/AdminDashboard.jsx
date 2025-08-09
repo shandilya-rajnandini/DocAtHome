@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { getPendingUsers, approveUser } from '../api';
 
 const AdminDashboard = () => {
@@ -33,7 +34,15 @@ const AdminDashboard = () => {
 
     return (
         <div className="container mx-auto p-4">
-            <h1 className="text-3xl font-bold text-white mb-6">Admin Dashboard</h1>
+            <div className="flex justify-between items-center mb-6">
+                <h1 className="text-3xl font-bold text-white">Admin Dashboard</h1>
+                <Link 
+                    to="/admin/edit-profile" 
+                    className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition"
+                >
+                    Edit Profile
+                </Link>
+            </div>
             <h2 className="text-2xl text-accent-blue mb-4">Pending Approvals</h2>
             {message && <div className="bg-green-500 text-white p-3 rounded mb-4">{message}</div>}
             <div className="bg-secondary-dark p-4 rounded-lg">

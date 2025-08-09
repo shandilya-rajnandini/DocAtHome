@@ -9,7 +9,7 @@ const connectDB = require('./config/db');
 dotenv.config();
 
 // Create Express app and HTTP server
-const app = express();
+const app = require('./app');
 const server = http.createServer(app);
 
 // --- Production-Ready CORS Configuration ---
@@ -28,9 +28,6 @@ const corsOptions = {
   }
 };
 
-app.use(cors(corsOptions));
-app.use(express.json()); // Middleware to parse JSON bodies
-
 // --- Socket.IO Configuration ---
 const io = new Server(server, {
   cors: {
@@ -45,16 +42,6 @@ io.on('connection', (socket) => {
     console.log(`User Disconnected: ${socket.id}`);
   });
 });
-
-// --- API Routes ---
-app.use('/api/auth', require('./routes/authRoutes'));
-app.use('/api/admin', require('./routes/adminRoutes'));
-app.use('/api/doctors', require('./routes/doctorRoutes'));
-app.use('/api/nurses', require('./routes/nurseRoutes'));
-app.use('/api/profile', require('./routes/profileRoutes'));
-app.use('/api/appointments', require('./routes/appointmentRoutes'));
-app.use('/api/lab-tests', require('./routes/labTestRoutes')); // ✅ Lab test route
-app.use('/api/payment', require('./routes/paymentRoutes'));   // ✅ Payment route
 
 // --- Error Handling ---
 app.use((req, res, next) => {

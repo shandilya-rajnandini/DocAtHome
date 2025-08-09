@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import jsPDF from "jspdf";
-import { toast, ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import { toast, Toaster } from "react-hot-toast";
 import { useEffect } from "react";
 // import { Slide, Zoom, Flip, Bounce, POSITION } from 'react-toastify';
 
@@ -356,10 +355,16 @@ const MyPrescriptionsPage = () => {
         )}
       </div>
 
-      <ToastContainer
+      <Toaster
         position="bottom-right"
-        toastClassName="!bg-gray-800 !text-white !rounded-lg !border !border-gray-700 !shadow-lg"
-        progressClassName="!bg-blue-600"
+        toastOptions={{
+          className:
+            "!bg-gray-800 !text-white !rounded-lg !border !border-gray-700 !shadow-lg",
+          style: {
+            background: "#333",
+            color: "#fff",
+          },
+        }}
       />
     </div>
   );
