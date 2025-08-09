@@ -98,6 +98,17 @@ const UserSchema = new mongoose.Schema({
   passwordResetToken: String,
   passwordResetExpires: Date,
 
+  // --- Account Security Fields ---
+  isLocked: {
+    type: Boolean,
+    default: false,
+  },
+  lockUntil: Date,
+  loginAttempts: {
+    type: Number,
+    default: 0,
+  },
+
   // --- Gamification Fields ---
   healthPoints: {
     type: Number,

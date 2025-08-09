@@ -4,137 +4,403 @@ const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const sendEmail = require('../utils/sendEmail');
 const speakeasy = require('speakeasy');
+const { 
+  catchAsync, 
+  AppError, 
+  ValidationError, 
+  AuthenticationError,
+  ConflictError,
+  logger 
+} = require('../middleware/errorHandler');
 
 // (The 'register' and 'getMe' functions can remain as they are)
 // ...
 
-exports.login = async (req, res) => {
-  console.log("\n--- LOGIN ATTEMPT INITIATED ---");
-
-  try {
-    const { email, password } = req.body;
-    
-    // --- DEBUG PROBE 1 ---
-    // Let's see what the frontend is sending us.
-    console.log("1. Received from frontend - Email:", email);
-    console.log("1. Received from frontend - Password:", password);
-
-    if (!email || !password) {
-        console.log("ERROR: Email or password was not received from the frontend.");
-        return res.status(400).json({ msg: 'Please enter all fields' });
-    }
-
-    // --- DEBUG PROBE 2 ---
-    // Let's find the user in the database and see what we get.
-    console.log("2. Searching database for user with email:", email);
-    const user = await User.findOne({ email }).select('+password');
-
-    if (!user) {
-      console.log("3. RESULT: User NOT found in the database. Login failed.");
-      return res.status(400).json({ msg: 'Invalid Credentials' });
-    }
-    
-    console.log("3. RESULT: User FOUND in the database. User's name:", user.name);
-    
-    // --- DEBUG PROBE 3 ---
-    // Let's look at the hashed password stored in the database.
-    // It should be a very long string of random characters.
-    console.log("4. Hashed password stored in DB:", user.password);
-
-    // --- DEBUG PROBE 4 ---
-    // Now, let's compare the password from the form with the one from the DB.
-    console.log("5. Comparing form password with hashed password...");
-    const isMatch = await bcrypt.compare(password, user.password);
-    
-    if (!isMatch) {
-      console.log("6. RESULT: Passwords DO NOT MATCH. Login failed.");
-      return res.status(400).json({ msg: 'Invalid Credentials' });
-    }
-
-    console.log("6. RESULT: Passwords MATCH! Login successful.");
-
-    if (user.isTwoFactorEnabled) {
-      console.log("7. 2FA is ENABLED for this user. Sending 2FA required message.");
-      console.log("--- LOGIN ATTEMPT FINISHED (PENDING 2FA) ---\n");
-      return res.json({ twoFactorRequired: true, userId: user.id });
-    }
-    
-    // If we reach here, the login is successful. Now create and send the token.
-    const payload = { user: { id: user.id, role: user.role } };
-    jwt.sign(
-      payload,
-      process.env.JWT_SECRET,
-      { expiresIn: '5h' },
-      (err, token) => {
-        if (err) throw err;
-        console.log("7. JWT token created and sent to user.");
-        console.log("--- LOGIN ATTEMPT FINISHED ---\n");
-        res.json({ token });
-      }
-    );
-  } catch (err) {
-    console.error('FATAL LOGIN ERROR:', err.message);
-    res.status(500).send('Server error');
+exports.login = catchAsync(async (req, res, next) => {
+  const { email, password } = req.body;
+  
+  // Input validation
+  if (!email || !password) {
+    return next(new ValidationError('Please provide both email and password'));
   }
-};
 
-exports.loginWith2FA = async (req, res) => {
+  // Validate email format
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(email)) {
+    return next(new ValidationError('Please provide a valid email address'));
+  }
+
+  // Find user - always take same time regardless of user existence (timing attack prevention)
+  const user = await User.findOne({ email: email.toLowerCase() }).select('+password');
+  
+  // Create a dummy hash for timing attack prevention when user doesn't exist
+  const dummyHash = '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy';
+  const hashToCompare = user ? user.password : dummyHash;
+  
+  // Always perform bcrypt comparison to prevent timing attacks
+  const isMatch = await bcrypt.compare(password, hashToCompare);
+  
+  // Check if user exists AND password matches
+  if (!user || !isMatch) {
+    // If user exists but password is wrong, increment login attempts
+    if (user && !isMatch) {
+      user.loginAttempts = (user.loginAttempts || 0) + 1;
+      
+      // Lock account after 5 failed attempts
+      if (user.loginAttempts >= 5) {
+        user.isLocked = true;
+        user.lockUntil = new Date(Date.now() + 30 * 60 * 1000); // 30 minutes lock
+        await user.save();
+        
+        return next(new AuthenticationError('Account locked due to too many failed login attempts. Please try again in 30 minutes or reset your password.'));
+      }
+      
+      await user.save();
+    }
+    
+    return next(new AuthenticationError('Invalid credentials'));
+  }
+
+  // Check if account is locked
+  if (user.isLocked && user.lockUntil > Date.now()) {
+    return next(new AuthenticationError('Account is temporarily locked. Please try again later or reset your password.'));
+  }
+
+  // Verify the stored password is properly hashed (security check)
+  if (!user.password.startsWith('$2a$') && !user.password.startsWith('$2b$')) {
+    // This should never happen in production, but protects against hash bypass
+    logger.error('SECURITY ALERT: User password is not properly hashed', {
+      userEmail: user.email,
+      userId: user.id
+    });
+    return next(new AppError('Authentication system error. Please contact support.', 500));
+  }
+
+  // Successful login - clear any locks and reset login attempts
+  if (user.isLocked || user.lockUntil || user.loginAttempts > 0) {
+    user.isLocked = false;
+    user.lockUntil = undefined;
+    user.loginAttempts = 0;
+    await user.save();
+  }
+
+  // Check if 2FA is enabled for this user
+  if (user.isTwoFactorEnabled) {
+    logger.info('2FA required for user login', { userId: user.id, email: user.email });
+    return res.json({ 
+      twoFactorRequired: true, 
+      userId: user.id,
+      message: 'Two-factor authentication required'
+    });
+  }
+  
+  // Generate JWT token for users without 2FA
+  const payload = { 
+    user: { 
+      id: user.id, 
+      role: user.role,
+      email: user.email 
+    } 
+  };
+  
+  jwt.sign(
+    payload,
+    process.env.JWT_SECRET,
+    { expiresIn: '5h' },
+    (err, token) => {
+      if (err) {
+        logger.error('JWT signing error', { error: err.message, userId: user.id });
+        return next(new AppError('Authentication error. Please try again.', 500));
+      }
+      
+      logger.info('Successful login', { userId: user.id, email: user.email });
+      res.json({ 
+        success: true,
+        token,
+        user: {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          role: user.role
+        }
+      });
+    }
+  );
+});
+
+  // Validate email format
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(email)) {
+    return next(new ValidationError('Please provide a valid email address'));
+  }
+
+  // Find user - always take same time regardless of user existence (timing attack prevention)
+  const user = await User.findOne({ email: email.toLowerCase() }).select('+password');
+  
+  // Create a dummy hash for timing attack prevention when user doesn't exist
+  const dummyHash = '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy';
+  const hashToCompare = user ? user.password : dummyHash;
+  
+  // Always perform bcrypt comparison to prevent timing attacks
+  const isMatch = await bcrypt.compare(password, hashToCompare);
+  
+  // Check if user exists AND password matches
+  if (!user || !isMatch) {
+    // If user exists but password is wrong, increment login attempts
+    if (user && !isMatch) {
+      user.loginAttempts = (user.loginAttempts || 0) + 1;
+      
+      // Lock account after 5 failed attempts
+      if (user.loginAttempts >= 5) {
+        user.isLocked = true;
+        user.lockUntil = new Date(Date.now() + 30 * 60 * 1000); // 30 minutes lock
+        await user.save();
+        
+        return next(new AuthenticationError('Account locked due to too many failed login attempts. Please try again in 30 minutes or reset your password.'));
+      }
+      
+      await user.save();
+    }
+    
+    return next(new AuthenticationError('Invalid credentials'));
+  }
+
+  // Check if account is locked
+  if (user.isLocked && user.lockUntil > Date.now()) {
+    return next(new AuthenticationError('Account is temporarily locked. Please try again later or reset your password.'));
+  }
+
+  // Verify the stored password is properly hashed (security check)
+  if (!user.password.startsWith('$2a$') && !user.password.startsWith('$2b$')) {
+    // This should never happen in production, but protects against hash bypass
+    logger.error('SECURITY ALERT: User password is not properly hashed', {
+      userEmail: user.email,
+      userId: user.id
+    });
+    return next(new AppError('Authentication system error. Please contact support.', 500));
+  }
+
+  // Successful login - clear any locks and reset login attempts
+  if (user.isLocked || user.lockUntil || user.loginAttempts > 0) {
+    user.isLocked = false;
+    user.lockUntil = undefined;
+    user.loginAttempts = 0;
+    await user.save();
+  }
+  
+  // Check if 2FA is enabled for this user
+  if (user.isTwoFactorEnabled) {
+    logger.info('2FA required for user login', { userId: user.id, email: user.email });
+    return res.json({ 
+      twoFactorRequired: true, 
+      userId: user.id,
+      message: 'Two-factor authentication required'
+    });
+  }
+  
+  // Generate JWT token for users without 2FA
+  const payload = { 
+    user: { 
+      id: user.id, 
+      role: user.role,
+      email: user.email 
+    } 
+  };
+  
+  jwt.sign(
+    payload,
+    process.env.JWT_SECRET,
+    { expiresIn: '5h' },
+    (err, token) => {
+      if (err) {
+        logger.error('JWT signing error', { error: err.message, userId: user.id });
+        return next(new AppError('Authentication error. Please try again.', 500));
+      }
+      
+      logger.info('Successful login', { userId: user.id, email: user.email });
+      res.json({ 
+        success: true,
+        token,
+        user: {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          role: user.role
+        }
+      });
+    }
+  );
+});
+
+exports.loginWith2FA = catchAsync(async (req, res, next) => {
   const { userId, token } = req.body;
 
-  try {
-    const user = await User.findById(userId);
-
-    if (!user) {
-      return res.status(404).json({ message: 'User not found' });
-    }
-
-    const verified = speakeasy.totp.verify({
-      secret: user.twoFactorSecret,
-      encoding: 'base32',
-      token,
-    });
-
-    if (verified) {
-      const payload = { user: { id: user.id, role: user.role } };
-      jwt.sign(
-        payload,
-        process.env.JWT_SECRET,
-        { expiresIn: '5h' },
-        (err, token) => {
-          if (err) throw err;
-          res.json({ token });
-        }
-      );
-    } else {
-      res.status(400).json({ message: 'Invalid 2FA token' });
-    }
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Server error' });
+  // Input validation
+  if (!userId || !token) {
+    return next(new ValidationError('Please provide user ID and 2FA token'));
   }
-};
 
+  const user = await User.findById(userId);
+
+  if (!user) {
+    return next(new AuthenticationError('User not found'));
+  }
+
+  if (!user.isTwoFactorEnabled || !user.twoFactorSecret) {
+    return next(new ValidationError('Two-factor authentication is not enabled for this user'));
+  }
+
+  const verified = speakeasy.totp.verify({
+    secret: user.twoFactorSecret,
+    encoding: 'base32',
+    token: token,
+    window: 2 // Allow some time drift
+  });
+
+  if (!verified) {
+    // Increment 2FA attempts to prevent brute force
+    user.loginAttempts = (user.loginAttempts || 0) + 1;
+    
+    if (user.loginAttempts >= 5) {
+      user.isLocked = true;
+      user.lockUntil = new Date(Date.now() + 30 * 60 * 1000); // 30 minutes lock
+      await user.save();
+      
+      return next(new AuthenticationError('Account locked due to too many failed 2FA attempts. Please try again in 30 minutes.'));
+    }
+    
+    await user.save();
+    return next(new AuthenticationError('Invalid 2FA token'));
+  }
+
+  // Successful 2FA - clear any locks and reset login attempts
+  if (user.isLocked || user.lockUntil || user.loginAttempts > 0) {
+    user.isLocked = false;
+    user.lockUntil = undefined;
+    user.loginAttempts = 0;
+    await user.save();
+  }
+
+  const payload = { 
+    user: { 
+      id: user.id, 
+      role: user.role,
+      email: user.email 
+    } 
+  };
+  
+  jwt.sign(
+    payload,
+    process.env.JWT_SECRET,
+    { expiresIn: '5h' },
+    (err, token) => {
+      if (err) {
+        logger.error('JWT signing error after 2FA', { error: err.message, userId: user.id });
+        return next(new AppError('Authentication error. Please try again.', 500));
+      }
+      
+      logger.info('Successful 2FA login', { userId: user.id, email: user.email });
+      res.json({ 
+        success: true,
+        token,
+        user: {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          role: user.role
+        }
+      });
+    }
+  );
+});
 
 // ... Make sure your other functions (register, getMe) are also in this file
-exports.register = async (req, res) => {
-  try {
-    const { email } = req.body;
-    let user = await User.findOne({ email });
-    if (user) {
-      return res.status(400).json({ msg: 'User already exists' });
-    }
-    const newUser = new User(req.body);
-    await newUser.save();
-    const payload = { user: { id: newUser.id, role: newUser.role } };
-    jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '5h' }, (err, token) => {
-      if (err) throw err;
-      res.status(201).json({ token });
-    });
-  } catch (err) {
-    console.error('REGISTRATION ERROR:', err.message);
-    res.status(500).send('Server error');
+exports.register = catchAsync(async (req, res, next) => {
+  const { name, email, password, role } = req.body;
+  
+  // Input validation
+  if (!name || !email || !password) {
+    return next(new ValidationError('Please provide name, email, and password'));
   }
-};
+
+  // Email validation
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(email)) {
+    return next(new ValidationError('Please provide a valid email address'));
+  }
+
+  // Password strength validation
+  if (password.length < 8) {
+    return next(new ValidationError('Password must be at least 8 characters long'));
+  }
+
+  // Check for password complexity
+  const hasUpperCase = /[A-Z]/.test(password);
+  const hasLowerCase = /[a-z]/.test(password);
+  const hasNumbers = /\d/.test(password);
+  const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+
+  if (!(hasUpperCase && hasLowerCase && hasNumbers && hasSpecialChar)) {
+    return next(new ValidationError('Password must contain at least one uppercase letter, lowercase letter, number, and special character'));
+  }
+
+  // Check if user already exists
+  let user = await User.findOne({ email: email.toLowerCase() });
+  if (user) {
+    return next(new ConflictError('User with this email already exists'));
+  }
+
+  // Validate role if provided
+  const validRoles = ['patient', 'doctor', 'nurse', 'admin'];
+  if (role && !validRoles.includes(role)) {
+    return next(new ValidationError('Invalid role specified'));
+  }
+
+  // Create new user
+  const newUser = new User({
+    name: name.trim(),
+    email: email.toLowerCase(),
+    password, // Will be hashed by the User model pre-save hook
+    role: role || 'patient'
+  });
+
+  await newUser.save();
+
+  // Create JWT token
+  const payload = { 
+    user: { 
+      id: newUser.id, 
+      role: newUser.role,
+      email: newUser.email 
+    } 
+  };
+
+  jwt.sign(
+    payload, 
+    process.env.JWT_SECRET, 
+    { expiresIn: '5h' }, 
+    (err, token) => {
+      if (err) {
+        logger.error('JWT signing error during registration', { 
+          error: err.message, 
+          userId: newUser.id 
+        });
+        return next(new AppError('Registration successful but token generation failed. Please login.', 500));
+      }
+      
+      res.status(201).json({ 
+        success: true,
+        token,
+        user: {
+          id: newUser.id,
+          name: newUser.name,
+          email: newUser.email,
+          role: newUser.role
+        }
+      });
+    }
+  );
+});
 exports.getMe = async (req, res) => {
   try {
     const user = await User.findById(req.user.id).select('-password');
@@ -152,14 +418,49 @@ exports.getMe = async (req, res) => {
 // @route   POST /api/auth/forgot-password
 exports.forgotPassword = async (req, res) => {
   try {
-    const user = await User.findOne({ email: req.body.email });
-
-    if (!user) {
-      return res.status(404).json({ msg: 'User not found' });
+    const { email } = req.body;
+    
+    // Input validation
+    if (!email) {
+      return res.status(400).json({ 
+        success: false,
+        message: 'Please provide email address' 
+      });
     }
 
-    // Generate token
-    const resetToken = crypto.randomBytes(20).toString('hex');
+    // Email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({ 
+        success: false,
+        message: 'Please provide a valid email address' 
+      });
+    }
+
+    const user = await User.findOne({ email: email.toLowerCase() });
+
+    // Don't reveal if user exists or not (security best practice)
+    // Always return success message to prevent email enumeration
+    if (!user) {
+      return res.status(200).json({ 
+        success: true, 
+        message: 'If an account with that email exists, a password reset link has been sent' 
+      });
+    }
+
+    // Check if user recently requested password reset (prevent spam)
+    const lastResetAttempt = user.passwordResetExpires || 0;
+    const timeSinceLastReset = Date.now() - (lastResetAttempt - 10 * 60 * 1000);
+    
+    if (timeSinceLastReset < 5 * 60 * 1000) { // 5 minutes cooldown
+      return res.status(429).json({ 
+        success: false,
+        message: 'Please wait before requesting another password reset' 
+      });
+    }
+
+    // Generate cryptographically secure token
+    const resetToken = crypto.randomBytes(32).toString('hex'); // Increased from 20 to 32 bytes
 
     // Hash token and set to user
     user.passwordResetToken = crypto
@@ -167,34 +468,60 @@ exports.forgotPassword = async (req, res) => {
       .update(resetToken)
       .digest('hex');
 
-    // Set expire time to 10 minutes
+    // Set expire time to 10 minutes (short window for security)
     user.passwordResetExpires = Date.now() + 10 * 60 * 1000;
 
     await user.save();
 
     // Create reset URL
-    const resetUrl = `${process.env.FRONTEND_URL}/reset-password/${resetToken}`;
+    const resetUrl = `${process.env.FRONTEND_URL || 'http://localhost:5173'}/reset-password/${resetToken}`;
 
-    const message = `You are receiving this email because you (or someone else) has requested the reset of a password. Please make a PUT request to: \n\n ${resetUrl}`;
+    const message = `
+    Hello ${user.name},
+    
+    You have requested a password reset for your DocAtHome account.
+    
+    Please click the link below to reset your password:
+    ${resetUrl}
+    
+    This link will expire in 10 minutes for security reasons.
+    
+    If you didn't request this password reset, please ignore this email.
+    
+    Best regards,
+    DocAtHome Team
+    `;
 
     try {
       await sendEmail({
         email: user.email,
-        subject: 'Password reset token',
+        subject: 'DocAtHome - Password Reset Request',
         message,
       });
 
-      res.status(200).json({ success: true, data: 'Email sent' });
+      res.status(200).json({ 
+        success: true, 
+        message: 'If an account with that email exists, a password reset link has been sent' 
+      });
     } catch (err) {
-      console.error('EMAIL ERROR:', err);
+      console.error('Email service error:', err.message);
+      
+      // Clean up reset token if email fails
       user.passwordResetToken = undefined;
       user.passwordResetExpires = undefined;
       await user.save();
-      res.status(500).send('Email could not be sent');
+      
+      res.status(500).json({ 
+        success: false,
+        message: 'Email service temporarily unavailable. Please try again later.' 
+      });
     }
   } catch (err) {
-    console.error('FORGOT PASSWORD ERROR:', err);
-    res.status(500).send('Server error');
+    console.error('Forgot password error:', err.message);
+    res.status(500).json({ 
+      success: false,
+      message: 'Server error. Please try again later.' 
+    });
   }
 };
 
@@ -202,10 +529,49 @@ exports.forgotPassword = async (req, res) => {
 // @route   POST /api/auth/reset-password/:token
 exports.resetPassword = async (req, res) => {
   try {
+    const { password } = req.body;
+    const { token } = req.params;
+    
+    // Input validation
+    if (!password || !token) {
+      return res.status(400).json({ 
+        success: false,
+        message: 'Password and token are required' 
+      });
+    }
+
+    // Password strength validation (same as registration)
+    if (password.length < 8) {
+      return res.status(400).json({ 
+        success: false,
+        message: 'Password must be at least 8 characters long' 
+      });
+    }
+
+    const hasUpperCase = /[A-Z]/.test(password);
+    const hasLowerCase = /[a-z]/.test(password);
+    const hasNumbers = /\d/.test(password);
+    const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+
+    if (!(hasUpperCase && hasLowerCase && hasNumbers && hasSpecialChar)) {
+      return res.status(400).json({ 
+        success: false,
+        message: 'Password must contain at least one uppercase letter, lowercase letter, number, and special character' 
+      });
+    }
+
+    // Validate token format (hex string)
+    if (!/^[a-f0-9]+$/i.test(token) || token.length !== 64) {
+      return res.status(400).json({ 
+        success: false,
+        message: 'Invalid reset token format' 
+      });
+    }
+
     // Get hashed token
     const passwordResetToken = crypto
       .createHash('sha256')
-      .update(req.params.token)
+      .update(token)
       .digest('hex');
 
     const user = await User.findOne({
@@ -214,18 +580,44 @@ exports.resetPassword = async (req, res) => {
     });
 
     if (!user) {
-      return res.status(400).json({ msg: 'Invalid token' });
+      return res.status(400).json({ 
+        success: false,
+        message: 'Invalid or expired reset token' 
+      });
     }
 
-    // Set new password
-    user.password = req.body.password;
+    // Verify user account is active/not locked
+    if (user.isLocked && user.lockUntil > Date.now()) {
+      return res.status(423).json({ 
+        success: false,
+        message: 'Account is temporarily locked. Please try again later.' 
+      });
+    }
+
+    // Set new password (will be hashed by pre-save hook)
+    user.password = password;
     user.passwordResetToken = undefined;
     user.passwordResetExpires = undefined;
+    
+    // Clear any account locks since user successfully reset password
+    user.isLocked = false;
+    user.lockUntil = undefined;
+    user.loginAttempts = 0;
+    
     await user.save();
 
-    res.status(200).json({ success: true, data: 'Password updated' });
+    // Log security event (password reset successful)
+    console.info(`Password reset successful for user: ${user.email}`);
+
+    res.status(200).json({ 
+      success: true, 
+      message: 'Password has been reset successfully. You can now login with your new password.' 
+    });
   } catch (err) {
-    console.error('RESET PASSWORD ERROR:', err);
-    res.status(500).send('Server error');
+    console.error('Reset password error:', err.message);
+    res.status(500).json({ 
+      success: false,
+      message: 'Server error. Please try again later.' 
+    });
   }
 };
