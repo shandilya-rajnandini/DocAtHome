@@ -1,39 +1,62 @@
-const path = require("path");
-const dotenv = require('dotenv');
-if(process.env.NODE_ENV != "production"){
-    dotenv.config({ path: path.resolve(__dirname, '../.env') });
-}
-
-
+const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
+const dotenv = require('dotenv');
+const cors = require('cors');
+const connectDB = require('./config/db');
+const path = require("path");
 const errorHandler = require('./middleware/errorMiddleware');
+const asyncHandler = require('./middleware/asyncHandler');
+
+const app = require('./app');  // if app is already created there
+
+if(process.env.NODE_ENV != "production"){
+    dotenv.config({ path: path.resolve(__dirname, '../.env') });
+}else {
+    dotenv.config(); // default .env in production
+}
+
 
 // ... your existing routes and middlewares here ...
 
 
-const connectDB = require('./config/db');
-const app = require('./app');  // if app is already created there
-
-
-
 const server = http.createServer(app);
 
-// Configure Socket.IO with CORS settings
+// --- Production-Ready CORS Configuration ---
+const allowedOrigins = [
+  "http://localhost:5173", // For your local development frontend
+  "https://docathome-rajnandini.netlify.app" // Your live frontend URL
+];
+
+const corsOptions = {
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  }
+};
+
+// Apply CORS middleware to all routes
+app.use(cors(corsOptions));
+
+
+// --- Socket.IO Configuration ---
 const io = new Server(server, {
   cors: {
-    origin: "http://localhost:5173",
+    origin: allowedOrigins,
     methods: ["GET", "POST"]
   }
 });
 
-// Socket.IO Connection Logic
 io.on('connection', (socket) => {
   console.log(`User Connected: ${socket.id}`);
-  socket.on('join_room', (data) => socket.join(data));
-  socket.on('send_message', (data) => socket.to(data.room).emit('receive_message', data));
-  socket.on('disconnect', () => console.log('User Disconnected', socket.id));
+  socket.on('disconnect', () => {
+    console.log(`User Disconnected: ${socket.id}`);
+  });
 });
+
 
 // API Route Definitions
 app.use('/api/auth', require('./routes/authRoutes'));
@@ -50,22 +73,27 @@ app.use('/api/lab-tests', require('./routes/labTestRoutes'));
 app.use('/api/payment', require('./routes/paymentRoutes'));
 app.use('/api/quests', require('./routes/questRoutes'));
 
+// 404 handler
+app.use((req, res, next) => {
+  res.status(404).json({ message: 'API endpoint not found' });
+});
+
 // Centralized error handling middleware (must come after routes)
 app.use(errorHandler);
 
-// Server Port
+
+// --- Start Server ---
 const PORT = process.env.PORT || 5000;
 
-// Strict Server Startup Function
 const startServer = async () => {
-  try {
+  try{
     await connectDB();
     server.listen(PORT, () => {
-      console.log(`Server running with chat on port ${PORT}`);
+      console.log(`Server running on port ${PORT}`);
     });
-  } catch (error) {
-    console.error('FATAL ERROR: Could not connect to the database.', error);
-    process.exit(1);
+  }catch(error){
+     console.error("Failed to start server:", error);
+    process.exit(1); // Exit if DB connection fails
   }
 };
 
