@@ -1,11 +1,12 @@
 const Appointment = require('../models/Appointment');
 const User = require('../models/User');
 const { generateSummary } = require('../utils/aiService');
+const asyncHandler = require('../middleware/asyncHandler');
+
 
 // @desc    Create a new appointment
 // @route   POST /api/appointments
-exports.createAppointment = async (req, res) => {
-  try {
+exports.createAppointment = asyncHandler(async (req, res) => {
     // Add the patient's ID from the authenticated user token
     req.body.patient = req.user.id;
 
@@ -25,17 +26,13 @@ exports.createAppointment = async (req, res) => {
       success: true,
       data: appointment
     });
-  } catch (err) {
-    console.error('APPOINTMENT CREATION ERROR:', err.message);
-    res.status(500).send('Server Error');
-  }
-};
+});
 
 
 // @desc    Get a smart summary for a specific appointment
 // @route   GET /api/appointments/:id/summary
-exports.getAppointmentSummary = async (req, res) => {
-  try {
+exports.getAppointmentSummary = asyncHandler(async (req, res) => {
+
     const appointment = await Appointment.findById(req.params.id).populate('patient');
 
     if (!appointment) {
@@ -75,16 +72,12 @@ exports.getAppointmentSummary = async (req, res) => {
     const summary = await generateSummary(patientDataForAI);
 
     res.status(200).json({ success: true, summary });
-  } catch (err) {
-    console.error('SUMMARY_GENERATION_ERROR:', err.message);
-    res.status(500).send('Server Error');
-  }
-};
+});
 
 // @desc    Get all appointments for the logged-in user (patient or professional)
 // @route   GET /api/appointments/my-appointments
-exports.getMyAppointments = async (req, res) => {
-    try {
+exports.getMyAppointments = asyncHandler(async (req, res) => {
+
         let query;
         // Check the role of the logged-in user to build the correct query
         if (req.user.role === 'doctor' || req.user.role === 'nurse') {
@@ -102,16 +95,12 @@ exports.getMyAppointments = async (req, res) => {
             count: appointments.length,
             data: appointments
         });
-    } catch (err) {
-        console.error('GET_MY_APPOINTMENTS_ERROR:', err.message);
-        res.status(500).send('Server Error');
-    }
-};
+});
 
 // @desc    Update an appointment's status (e.g., confirm or cancel)
 // @route   PUT /api/appointments/:id
-exports.updateAppointmentStatus = async (req, res) => {
-  try {
+exports.updateAppointmentStatus = asyncHandler(async (req, res) => {
+
     const { status, doctorNotes } = req.body;
 
     // Find the appointment by its ID
@@ -139,8 +128,4 @@ exports.updateAppointmentStatus = async (req, res) => {
 
     res.json(appointment);
 
-  } catch (err) {
-    console.error('UPDATE APPOINTMENT ERROR:', err.message);
-    res.status(500).send('Server Error');
-  }
-};
+});

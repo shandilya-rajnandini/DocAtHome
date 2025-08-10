@@ -1,8 +1,10 @@
 const User = require('../models/User');
+const asyncHandler = require('../middleware/asyncHandler');
+
 
 // @desc    Get all verified doctors, with optional filters
-const getDoctors = async (req, res) => {
-  try {
+const getDoctors = asyncHandler(async (req, res) => {
+
     const query = { role: 'doctor', isVerified: true };
 
     if (req.query.specialty && req.query.specialty !== '') {
@@ -15,15 +17,11 @@ const getDoctors = async (req, res) => {
     const doctors = await User.find(query).select('-password');
     res.json(doctors);
 
-  } catch (error) {
-    console.error('ERROR in getDoctors:', error.message);
-    res.status(500).send('Server Error');
-  }
-};
+});
 
 // @desc    Get a single doctor by ID
-const getDoctorById = async (req, res) => {
-  try {
+const getDoctorById = asyncHandler(async (req, res) => {
+
     const doctor = await User.findById(req.params.id).select('-password');
 
     if (!doctor || doctor.role !== 'doctor') {
@@ -31,15 +29,7 @@ const getDoctorById = async (req, res) => {
     }
 
     res.json(doctor);
-
-  } catch (error) {
-    console.error('ERROR in getDoctorById:', error.message);
-    if (error.kind === 'ObjectId') {
-        return res.status(404).json({ msg: 'Doctor not found' });
-    }
-    res.status(500).send('Server Error');
-  }
-};
+});
 
 // This is the most standard way to export multiple functions
 module.exports = {

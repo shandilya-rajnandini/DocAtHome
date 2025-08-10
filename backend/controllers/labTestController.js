@@ -1,9 +1,11 @@
 const LabTest = require('../models/LabTest');
+const asyncHandler = require('../middleware/asyncHandler');
+
 
 // @desc    Book a new lab test
 // @route   POST /api/lab-tests
-exports.bookLabTest = async (req, res) => {
-  try {
+exports.bookLabTest = asyncHandler(async (req, res) => {
+
     // Add the patient's ID from the authenticated user token
     req.body.patient = req.user.id;
     
@@ -16,8 +18,4 @@ exports.bookLabTest = async (req, res) => {
       success: true,
       data: labTestBooking
     });
-  } catch (err) {
-    console.error('LAB TEST BOOKING ERROR:', err.message);
-    res.status(500).send('Server Error');
-  }
-};
+});

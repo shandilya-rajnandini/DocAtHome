@@ -1,11 +1,12 @@
 const Quest = require('../models/Quest');
 const UserQuest = require('../models/UserQuest');
 const User = require('../models/User');
+const asyncHandler = require('../middleware/asyncHandler');
+
 
 // @desc    Get all quests and user's progress
 // @route   GET /api/quests
-exports.getQuests = async (req, res) => {
-  try {
+exports.getQuests = asyncHandler(async (req, res) => {
     const quests = await Quest.find().lean();
     const userQuests = await UserQuest.find({ user: req.user.id });
 
@@ -20,16 +21,13 @@ exports.getQuests = async (req, res) => {
     });
 
     res.status(200).json({ success: true, data: questsWithProgress });
-  } catch (err) {
-    console.error('GET QUESTS ERROR:', err.message);
-    res.status(500).send('Server Error');
-  }
-};
+
+});
 
 // @desc    Accept a quest
 // @route   POST /api/quests/:questId/accept
-exports.acceptQuest = async (req, res) => {
-  try {
+exports.acceptQuest = asyncHandler(async (req, res) => {
+
     const quest = await Quest.findById(req.params.questId);
     if (!quest) {
       return res.status(404).json({ msg: 'Quest not found' });
@@ -49,16 +47,12 @@ exports.acceptQuest = async (req, res) => {
     });
 
     res.status(201).json({ success: true, data: userQuest });
-  } catch (err) {
-    console.error('ACCEPT QUEST ERROR:', err.message);
-    res.status(500).send('Server Error');
-  }
-};
+});
 
 // @desc    Log progress for a quest
 // @route   POST /api/quests/:userQuestId/log
-exports.logQuestProgress = async (req, res) => {
-  try {
+exports.logQuestProgress = asyncHandler(async (req, res) => {
+
     const userQuest = await UserQuest.findById(req.params.userQuestId).populate('quest');
     if (!userQuest) {
       return res.status(404).json({ msg: 'User quest not found' });
@@ -118,8 +112,4 @@ if (userQuest.lastLoggedDate) {
     const savedUserQuest = await userQuest.save();
 
     res.status(200).json({ success: true, data: savedUserQuest });
-  } catch (err) {
-    console.error('LOG PROGRESS ERROR:', err.message);
-    res.status(500).send('Server Error');
-  }
-};
+});

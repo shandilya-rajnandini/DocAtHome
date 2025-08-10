@@ -3,11 +3,13 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const sendEmail = require('../utils/sendEmail');
+const asyncHandler = require('../middleware/asyncHandler');
+
 
 // @desc    Register a new user
 // @route   POST /api/auth/register
-exports.register = async (req, res) => {
-  try {
+exports.register = asyncHandler(async (req, res) => {
+
     const { email } = req.body;
 
     let user = await User.findOne({ email });
@@ -38,20 +40,14 @@ exports.register = async (req, res) => {
         res.status(201).json({ token });
       }
     );
-  } catch (err) {
-    // This is the most important part for debugging.
-    // Check your backend terminal for this message.
-    console.error('REGISTRATION ERROR:', err.message);
-    res.status(500).send('Server error');
-  }
-};
+});
 
 // @desc    Authenticate user & get token (Login)
 // @route   POST /api/auth/login
-exports.login = async (req, res) => {
+exports.login = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
 
-  try {
+
     // Find user by email, and explicitly include the password for comparison
     let user = await User.findOne({ email }).select('+password');
     if (!user) {
@@ -86,32 +82,24 @@ exports.login = async (req, res) => {
         res.json({ token });
       }
     );
-  } catch (err) {
-    console.error('LOGIN ERROR:', err.message);
-    res.status(500).send('Server error');
-  }
-};
+});
 
 // @desc    Get current logged-in user details
 // @route   GET /api/auth/me
-exports.getMe = async (req, res) => {
-  try {
+exports.getMe = asyncHandler(async (req, res) => {
+
     // req.user is attached by our 'protect' middleware
     const user = await User.findById(req.user.id).select('-password');
     if (!user) {
         return res.status(404).json({ msg: 'User not found' });
     }
     res.json(user);
-  } catch (err) {
-    console.error('GETME ERROR:', err.message);
-    res.status(500).send('Server Error');
-  }
-};
+});
 
 // @desc    Forgot password
 // @route   POST /api/auth/forgot-password
-exports.forgotPassword = async (req, res) => {
-  try {
+exports.forgotPassword = asyncHandler(async (req, res) => {
+
     const user = await User.findOne({ email: req.body.email });
 
     if (!user) {
@@ -152,16 +140,12 @@ exports.forgotPassword = async (req, res) => {
       await user.save();
       res.status(500).send('Email could not be sent');
     }
-  } catch (err) {
-    console.error('FORGOT PASSWORD ERROR:', err);
-    res.status(500).send('Server error');
-  }
-};
+});
 
 // @desc    Reset password
 // @route   POST /api/auth/reset-password/:token
-exports.resetPassword = async (req, res) => {
-  try {
+exports.resetPassword = asyncHandler(async (req, res) => {
+
     // Get hashed token
     const passwordResetToken = crypto
       .createHash('sha256')
@@ -184,8 +168,4 @@ exports.resetPassword = async (req, res) => {
     await user.save();
 
     res.status(200).json({ success: true, data: 'Password updated' });
-  } catch (err) {
-    console.error('RESET PASSWORD ERROR:', err);
-    res.status(500).send('Server error');
-  }
-};
+});
