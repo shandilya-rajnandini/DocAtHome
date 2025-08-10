@@ -28,6 +28,8 @@ const DoctorProfilePage = () => {
     const { user } = useAuth();
     const [doctor, setDoctor] = useState(null);
     const [loading, setLoading] = useState(true);
+
+    const [careFundBalance, setCareFundBalance] = useState(0);
     
     const [selectedDate, setSelectedDate] = useState(availableDates[0].fullDate);
     const [selectedTime, setSelectedTime] = useState('');
@@ -52,7 +54,14 @@ const DoctorProfilePage = () => {
             }
         };
         fetchDoctor();
-    }, [id]);
+
+        // Fetch care fund balance for patient
+        if (user && user.role === "patient") {
+            fetch(`/api/profile/${user._id}`)
+                .then(res => res.json())
+                .then(data => setCareFundBalance(data.careFundBalance || 0));
+        }
+    }, [id, user]);
 
     const handleBookingDetailChange = (e) => {
         if (e.target.name === 'reportImage') {
@@ -63,7 +72,7 @@ const DoctorProfilePage = () => {
     };
 
     // --- MODIFIED BOOKING LOGIC (NO PAYMENT) ---
-    const handleBookAppointment = async () => {
+    const handleBookAppointment = async (useCareFund = false) => {
         if (!user) {
             toast.error("You must be logged in to book an appointment.");
             return navigate('/login');
@@ -81,6 +90,7 @@ const DoctorProfilePage = () => {
             symptoms: bookingDetails.symptoms,
             previousMeds: bookingDetails.previousMeds,
             fee: bookingType === 'In-Home Visit' ? 2000 : 400,
+            payFromCareFund: useCareFund,
         };
 
         try {
@@ -171,7 +181,15 @@ const DoctorProfilePage = () => {
                             <span className="font-semibold text-white">Total Fee:</span>
                             <span className="font-bold text-accent-blue">₹{fee}</span>
                         </div>
-                        <button onClick={handleBookAppointment} className="w-full bg-green-600 text-white p-3 mt-6 rounded font-bold hover:bg-green-700 transition duration-300">
+                        {user && user.role === "patient" && careFundBalance >= fee && (
+                            <button
+                                onClick={() => handleBookAppointment(true)}
+                                className="w-full bg-blue-600 text-white p-3 mt-4 rounded font-bold hover:bg-blue-700 transition duration-300"
+                            >
+                                Pay from Care Fund (₹{careFundBalance} available)
+                            </button>
+                        )}
+                        <button onClick={() => handleBookAppointment(false)} className="w-full bg-green-600 text-white p-3 mt-6 rounded font-bold hover:bg-green-700 transition duration-300">
                             Confirm & Book Appointment
                         </button>
                     </div>

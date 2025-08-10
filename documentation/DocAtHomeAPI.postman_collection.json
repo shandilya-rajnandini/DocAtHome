@@ -1,0 +1,1025 @@
+{
+	"info": {
+		"_postman_id": "a8a0c0d0-0b0a-4b0e-8b0a-0a0a0a0a0a0a",
+		"name": "Doc@Home API - NEW",
+		"description": "This is the official API documentation for the Doc@Home application.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Admin",
+			"item": [
+				{
+					"name": "Get Pending Users",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/admin/pending",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"admin",
+								"pending"
+							]
+						},
+						"description": "Get a list of all users that are pending approval. Requires admin privileges."
+					},
+					"response": []
+				},
+				{
+					"name": "Approve User",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/admin/approve/:id",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"admin",
+								"approve",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "userId"
+								}
+							]
+						},
+						"description": "Approve a user by their ID. Requires admin privileges."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Appointments",
+			"item": [
+				{
+					"name": "Get My Appointments",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/appointments/my-appointments",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"appointments",
+								"my-appointments"
+							]
+						},
+						"description": "Get a list of all appointments for the logged in user (patient or professional)."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Appointment Summary",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/appointments/:id/summary",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"appointments",
+								":id",
+								"summary"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "appointmentId"
+								}
+							]
+						},
+						"description": "Get a summary of a specific appointment."
+					},
+					"response": []
+				},
+				{
+					"name": "Update Appointment Status",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"status\": \"Confirmed\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/appointments/:id",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"appointments",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "appointmentId"
+								}
+							]
+						},
+						"description": "Update the status of a specific appointment. Valid statuses are 'Confirmed', 'Cancelled', 'Completed'."
+					},
+					"response": []
+				},
+				{
+					"name": "Create Appointment",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"doctor\": \"doctorId\",\n    \"appointmentDate\": \"2025-12-31\",\n    \"appointmentTime\": \"10:00 AM\",\n    \"bookingType\": \"In-Home Visit\",\n    \"symptoms\": \"Headache\",\n    \"previousMeds\": \"None\",\n    \"fee\": 2000,\n    \"payFromCareFund\": false\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/appointments",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"appointments"
+							]
+						},
+						"description": "Create a new appointment."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Auth",
+			"item": [
+				{
+					"name": "Register",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"John Doe\",\n    \"email\": \"john.doe@example.com\",\n    \"password\": \"password123\",\n    \"role\": \"patient\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/auth/register",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"register"
+							]
+						},
+						"description": "Register a new user. The `role` can be 'patient', 'doctor', or 'nurse'. If registering a doctor or nurse, additional fields are required (see 'Register Doctor' and 'Register Nurse' requests)."
+					},
+					"response": []
+				},
+				{
+					"name": "Login",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"...\",\n    \"password\": \"...\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/auth/login",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"login"
+							]
+						},
+						"description": "Login a user.\n\n**Note:** To log in as a doctor or nurse, you must first register a user with the appropriate role and the required professional-specific fields. Then, an admin must approve the user. After that, you can log in."
+					},
+					"response": []
+				},
+				{
+					"name": "Register Doctor",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Dr. Smith\",\n    \"email\": \"dr.smith@example.com\",\n    \"password\": \"password123\",\n    \"role\": \"doctor\",\n    \"specialty\": \"Cardiologist\",\n    \"city\": \"New York\",\n    \"experience\": 10,\n    \"licenseNumber\": \"12345\",\n    \"govId\": \"ABCDE1234F\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/auth/register",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"register"
+							]
+						},
+						"description": "Register a new doctor. The new doctor will need to be approved by an admin before they can log in."
+					},
+					"response": []
+				},
+				{
+					"name": "Register Nurse",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Nurse Joy\",\n    \"email\": \"nurse.joy@example.com\",\n    \"password\": \"password123\",\n    \"role\": \"nurse\",\n    \"specialty\": \"Home Care Nurse\",\n    \"city\": \"New York\",\n    \"experience\": 5,\n    \"licenseNumber\": \"54321\",\n    \"govId\": \"FEDCB9876A\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/auth/register",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"register"
+							]
+						},
+						"description": "Register a new nurse. The new nurse will need to be approved by an admin before they can log in. The `specialty` for a nurse can be something like 'Home Care Nurse', 'Geriatric Nurse', etc."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Me",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/auth/me",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"me"
+							]
+						},
+						"description": "Get the logged in user's profile."
+					},
+					"response": []
+				},
+				{
+					"name": "Forgot Password",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"...\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/auth/forgot-password",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"forgot-password"
+							]
+						},
+						"description": "Send a password reset email."
+					},
+					"response": []
+				},
+				{
+					"name": "Reset Password",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"password\": \"...\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/auth/reset-password/:token",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"reset-password",
+								":token"
+							],
+							"variable": [
+								{
+									"key": "token",
+									"value": "resetToken"
+								}
+							]
+						},
+						"description": "Reset a user's password."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Care Circle",
+			"item": [
+				{
+					"name": "Get My Care Circle",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/care-circle/my-care-circle",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"care-circle",
+								"my-care-circle"
+							]
+						},
+						"description": "Get the logged in user's care circle."
+					},
+					"response": []
+				},
+				{
+					"name": "Invite to Care Circle",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"...\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/care-circle/my-care-circle/invite",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"care-circle",
+								"my-care-circle",
+								"invite"
+							]
+						},
+						"description": "Invite a user to the logged in user's care circle."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Doctors",
+			"item": [
+				{
+					"name": "Get Doctors",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/doctors?specialty=Cardiologist&city=New York",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"doctors"
+							],
+							"query": [
+								{
+									"key": "specialty",
+									"value": "Cardiologist"
+								},
+								{
+									"key": "city",
+									"value": "New York"
+								}
+							]
+						},
+						"description": "Get a list of all doctors. Can be filtered by `specialty` and `city`."
+					},
+					"response": []
+				},
+				{
+					"name": "Search Doctors",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/doctors/search?specialty=Cardiologist&city=New York",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"doctors",
+								"search"
+							],
+							"query": [
+								{
+									"key": "specialty",
+									"value": "Cardiologist"
+								},
+								{
+									"key": "city",
+									"value": "New York"
+								}
+							]
+						},
+						"description": "Search for doctors. Can be filtered by `specialty` and `city`."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Doctor By Id",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/doctors/:id",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"doctors",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "doctorId"
+								}
+							]
+						},
+						"description": "Get a doctor by their ID."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Lab Tests",
+			"item": [
+				{
+					"name": "Book Lab Test",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"testName\": \"Blood Test\",\n    \"patientAddress\": \"123 Main St, New York, NY\",\n    \"collectionDate\": \"2025-12-31\",\n    \"collectionTime\": \"10:00 AM\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/lab-tests",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"lab-tests"
+							]
+						},
+						"description": "Book a lab test."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Nurses",
+			"item": [
+				{
+					"name": "Get Nurses",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/nurses?specialty=Pediatrics&city=New York",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"nurses"
+							],
+							"query": [
+								{
+									"key": "specialty",
+									"value": "Pediatrics"
+								},
+								{
+									"key": "city",
+									"value": "New York"
+								}
+							]
+						},
+						"description": "Get a list of all nurses. Can be filtered by `specialty` and `city`."
+					},
+					"response": []
+				},
+				{
+					"name": "Search Nurses",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/nurses/search?specialty=Pediatrics&city=New York",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"nurses",
+								"search"
+							],
+							"query": [
+								{
+									"key": "specialty",
+									"value": "Pediatrics"
+								},
+								{
+									"key": "city",
+									"value": "New York"
+								}
+							]
+						},
+						"description": "Search for nurses. Can be filtered by `specialty` and `city`."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Nurse By Id",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/nurses/:id",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"nurses",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "nurseId"
+								}
+							]
+						},
+						"description": "Get a nurse by their ID."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Payment",
+			"item": [
+				{
+					"name": "Create Order",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"amount\": 1000\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/payment/create-order",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"payment",
+								"create-order"
+							]
+						},
+						"description": "Create a new payment order."
+					},
+					"response": []
+				},
+				{
+					"name": "Verify Payment",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"razorpay_order_id\": \"...\",\n    \"razorpay_payment_id\": \"...\",\n    \"razorpay_signature\": \"...\",\n    \"isDonation\": true,\n    \"donorName\": \"John Doe\",\n    \"patientId\": \"...\",\n    \"amount\": 1000\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/payment/verify",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"payment",
+								"verify"
+							]
+						},
+						"description": "Verify a payment. If `isDonation` is true, the payment will be recorded as a donation."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Donations",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/payment/donations?patientId=patientId",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"payment",
+								"donations"
+							],
+							"query": [
+								{
+									"key": "patientId",
+									"value": "patientId"
+								}
+							]
+						},
+						"description": "Get a list of all donations for a patient."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Profile",
+			"item": [
+				{
+					"name": "Get My Profile",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/profile/me",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"profile",
+								"me"
+							]
+						},
+						"description": "Get the logged in user's profile."
+					},
+					"response": []
+				},
+				{
+					"name": "Update My Profile",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"John Doe\",\n    \"allergies\": [\"Peanuts\"],\n    \"chronicConditions\": [\"Asthma\"]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/profile/me",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"profile",
+								"me"
+							]
+						},
+						"description": "Update the logged in user's profile."
+					},
+					"response": []
+				},
+				{
+					"name": "Get My Care Circle",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/profile/my-care-circle",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"profile",
+								"my-care-circle"
+							]
+						},
+						"description": "Get the logged in user's care circle."
+					},
+					"response": []
+				},
+				{
+					"name": "Invite to Care Circle",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"...\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/profile/my-care-circle/invite",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"profile",
+								"my-care-circle",
+								"invite"
+							]
+						},
+						"description": "Invite a user to the logged in user's care circle."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Profile By Id",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/profile/:id",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"profile",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "userId"
+								}
+							]
+						},
+						"description": "Get a user's profile by their ID."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Quests",
+			"item": [
+				{
+					"name": "Get Quests",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/quests",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"quests"
+							]
+						},
+						"description": "Get a list of all quests."
+					},
+					"response": []
+				},
+				{
+					"name": "Accept Quest",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/quests/:questId/accept",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"quests",
+								":questId",
+								"accept"
+							],
+							"variable": [
+								{
+									"key": "questId",
+									"value": "questId"
+								}
+							]
+						},
+						"description": "Accept a quest."
+					},
+					"response": []
+				},
+				{
+					"name": "Log Quest Progress",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"progress\": 50\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/quests/:userQuestId/log",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"quests",
+								":userQuestId",
+								"log"
+							],
+							"variable": [
+								{
+									"key": "userQuestId",
+									"value": "userQuestId"
+								}
+							]
+						},
+						"description": "Log progress for a quest."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Reviews",
+			"item": [
+				{
+					"name": "Create Review",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"rating\": 5,\n    \"comment\": \"Great doctor!\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/doctors/:doctorId/reviews",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"doctors",
+								":doctorId",
+								"reviews"
+							],
+							"variable": [
+								{
+									"key": "doctorId",
+									"value": "doctorId"
+								}
+							]
+						},
+						"description": "Create a new review for a doctor."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Reviews For Doctor",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/doctors/:doctorId/reviews",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"doctors",
+								":doctorId",
+								"reviews"
+							],
+							"variable": [
+								{
+									"key": "doctorId",
+									"value": "doctorId"
+								}
+							]
+						},
+						"description": "Get all reviews for a doctor."
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}

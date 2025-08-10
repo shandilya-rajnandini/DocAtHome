@@ -31,8 +31,29 @@ const getDoctorById = asyncHandler(async (req, res) => {
     res.json(doctor);
 });
 
+const searchDoctors = async (req, res) => {
+    try {
+        const { specialty, city } = req.query;
+        const query = { role: 'doctor', isVerified: true };
+
+        if (specialty) {
+            query.specialty = { $regex: specialty, $options: 'i' };
+        }
+        if (city) {
+            query.city = { $regex: city, $options: 'i' };
+        }
+
+        const doctors = await User.find(query).select('-password');
+        res.json(doctors);
+    } catch (error) {
+        console.error('ERROR in searchDoctors:', error.message);
+        res.status(500).send('Server Error');
+    }
+};
+
 // This is the most standard way to export multiple functions
 module.exports = {
     getDoctors,
-    getDoctorById
+    getDoctorById,
+    searchDoctors
 };

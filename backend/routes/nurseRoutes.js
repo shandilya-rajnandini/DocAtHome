@@ -5,6 +5,8 @@ const { getNurses, getNurseById } = require('../controllers/nurseController');
 // Route to get all nurses (with potential filters)
 router.get('/', getNurses);
 
+router.get('/search', getNurses);
+
 // Route to get a single nurse by their ID
 router.get('/:id', getNurseById);
 

@@ -2,7 +2,7 @@
 // All doctors now have unique emails and all required fields.
 
 const doctors = [
-  // Your custom doctors, now corrected
+  
   {
     name: 'Dr. ANJALI VERMA',
     email: 'anjali.verma@docathome.com',
@@ -64,7 +64,7 @@ const doctors = [
     isVerified: false, // This one is pending approval
   },
 
-  // Existing sample doctors with unique emails
+
   {
     name: 'Dr. Evelyn Reed',
     email: 'evelyn.reed@docathome.com',
@@ -102,7 +102,6 @@ const doctors = [
     isVerified: true,
   },
 
-  // Additional doctors with unique emails
   {
     name: 'Dr. Ram Kumar',
     email: 'ram.kumar@docathome.com',
