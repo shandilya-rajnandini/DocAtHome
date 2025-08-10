@@ -4,20 +4,44 @@ if(process.env.NODE_ENV != "production"){
     dotenv.config({ path: path.resolve(__dirname, '../.env') });
 }
 
-
+const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
+const cors = require('cors');
+const connectDB = require('./config/db');
 const errorHandler = require('./middleware/errorMiddleware');
+
 
 // ... your existing routes and middlewares here ...
 
 
-const connectDB = require('./config/db');
+
 const app = require('./app');  // if app is already created there
 
 
 
+
+// Create HTTP server from Express app
 const server = http.createServer(app);
+
+// Production-ready CORS config for Express and Socket.IO
+const allowedOrigins = [
+  'http://localhost:5173', // Local dev frontend
+  'https://docathome-rajnandini.netlify.app' // Live frontend URL
+];
+
+const corsOptions = {
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  }
+};
+
+// Apply CORS middleware to all Express routes BEFORE route handlers
+app.use(cors(corsOptions));
 
 // Configure Socket.IO with CORS settings
 const io = new Server(server, {
