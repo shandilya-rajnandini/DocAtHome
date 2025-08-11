@@ -13,9 +13,10 @@ const app = express();
 
 // --- Production-Ready CORS Configuration ---
 const allowedOrigins = [
-    "http://localhost:5173",
-    "https://docathome-rajnandini.netlify.app"
+    "http://localhost:5173", // For local development
+    "https://docathome-rajnandini.netlify.app" // Your LIVE frontend URL. Check for typos!
 ];
+
 const corsOptions = {
     origin: function (origin, callback) {
         if (!origin || allowedOrigins.indexOf(origin) !== -1) {
@@ -25,6 +26,7 @@ const corsOptions = {
         }
     }
 };
+
 app.use(cors(corsOptions));
 
 // Middleware to parse JSON

@@ -1,9 +1,9 @@
 import axios from 'axios';
 
 const API_URL = import.meta.env.PROD 
-    ? 'https://docathome.onrender.com/api' // <-- Make sure this is your exact Render URL + /api
+    ? 'https://docathome.onrender.com/api' // Your LIVE backend URL. Check for typos!
     : 'http://localhost:5000/api';
-
+    
 // Create configured Axios instance
 const API = axios.create({ baseURL: API_URL });
 
