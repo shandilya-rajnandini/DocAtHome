@@ -8,6 +8,10 @@ const connectDB = require('./config/db');
 dotenv.config();
 
 const app = express();
+
+// Create Express app and HTTP server
+const app = require('./app');
+
 const server = http.createServer(app);
 
 // --- Production-Ready CORS Configuration ---
@@ -17,9 +21,10 @@ const allowedOrigins = [
 ];
 app.use(cors({ origin: allowedOrigins }));
 app.use(express.json());
-
+S
 // ... (your Socket.IO config)
 
+D
 // --- Fly.io Health Check Route ---
 // This is a special route that Fly.io will use to check if your server is alive.
 app.get('/health', (req, res) => {
@@ -32,6 +37,26 @@ app.use('/api/auth', require('./routes/authRoutes'));
 app.use('/api/payment', require('./routes/paymentRoutes'));
 
 // ... (your error handling middleware)
+
+// --- Socket.IO Configuration ---
+const io = new Server(server, {
+  cors: {
+    origin: allowedOrigins,
+    methods: ["GET", "POST"]
+  }
+});
+
+io.on('connection', (socket) => {
+  console.log(`User Connected: ${socket.id}`);
+  socket.on('disconnect', () => {
+    console.log(`User Disconnected: ${socket.id}`);
+  });
+});
+
+// --- Error Handling ---
+app.use((req, res, next) => {
+  res.status(404).json({ message: 'API endpoint not found' });
+})
 
 // --- Server Startup for Fly.io ---
 // Fly.io sets the PORT environment variable. It expects to connect to 0.0.0.0.
