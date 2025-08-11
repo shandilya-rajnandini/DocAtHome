@@ -17,6 +17,7 @@ const allowedOrigins = [
     "http://localhost:5174", //local testing
     "https://docathome-rajnandini.netlify.app"
 ];
+
 const corsOptions = {
     origin: function (origin, callback) {
         if (!origin || allowedOrigins.indexOf(origin) !== -1) {
@@ -26,6 +27,7 @@ const corsOptions = {
         }
     }
 };
+
 app.use(cors(corsOptions));
 
 // Middleware to parse JSON
