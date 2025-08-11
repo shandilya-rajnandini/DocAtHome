@@ -13,7 +13,7 @@ const TwoFactorAuthPage = () => {
   useEffect(() => {
     const setup2FA = async () => {
       try {
-        const { data } = await api.post('/2fa/setup');
+        const { data } = await api.post('/twofactor/setup');
         setQrCodeUrl(data.qrCodeUrl);
         setSecret(data.secret);
       } catch (err) {
@@ -33,7 +33,7 @@ const TwoFactorAuthPage = () => {
       return;
     }
     try {
-      await api.post('/2fa/verify', { token });
+      await api.post('/twofactor/verify', { token });
       setIsVerified(true);
       setError('');
       toast.success('2FA enabled successfully!');

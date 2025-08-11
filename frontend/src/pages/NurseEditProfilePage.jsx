@@ -2,10 +2,24 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { getMyProfile, updateMyProfile } from '../api';
 import toast from 'react-hot-toast';
+import ServiceAreaMap from '../components/ServiceAreaMap';
 
 const NurseEditProfilePage = () => {
-    const [profile, setProfile] = useState({ name: '', specialty: '', city: '', experience: '', qualifications: [], bio: '', licenseNumber: '', profilePictureUrl: null });
+    const [profile, setProfile] = useState({ 
+        name: '', 
+        specialty: '', 
+        city: '', 
+        experience: '', 
+        qualifications: [], 
+        bio: '', 
+        licenseNumber: '', 
+        profilePictureUrl: null, 
+        serviceArea: null,
+        isTwoFactorEnabled: false 
+    });
     const [loading, setLoading] = useState(true);
+    const [isSaving, setIsSaving] = useState(false);
+    const [isDisabling2FA, setIsDisabling2FA] = useState(false);
 
     useEffect(() => {
         const fetchProfile = async () => {
@@ -20,6 +34,8 @@ const NurseEditProfilePage = () => {
                     bio: data.bio || '',
                     licenseNumber: data.licenseNumber || '',
                     profilePictureUrl: data.profilePictureUrl || '',
+                    serviceArea: data.serviceArea || null,
+                    isTwoFactorEnabled: data.isTwoFactorEnabled || false,
                 });
             } catch (error) {
                 toast.error("Could not load your profile.");
@@ -31,6 +47,32 @@ const NurseEditProfilePage = () => {
     }, []);
 
     const onChange = (e) => setProfile({ ...profile, [e.target.name]: e.target.value });
+
+    const disable2FA = async () => {
+        setIsDisabling2FA(true);
+        try {
+            const response = await fetch('http://localhost:5000/api/twofactor/disable', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                }
+            });
+            
+            if (response.ok) {
+                setProfile({ ...profile, isTwoFactorEnabled: false });
+                toast.success('2FA has been disabled successfully');
+            } else {
+                const errorData = await response.json();
+                toast.error(errorData.message || 'Failed to disable 2FA');
+            }
+        } catch (error) {
+            toast.error('Failed to disable 2FA');
+            console.error('2FA disable error:', error);
+        } finally {
+            setIsDisabling2FA(false);
+        }
+    };
 
     const handleFileChange = async (e) => {
         const file = e.target.files[0];
@@ -63,17 +105,29 @@ const NurseEditProfilePage = () => {
 
     const onSubmit = async (e) => {
         e.preventDefault();
+        setIsSaving(true);
+        
         try {
             const profileData = {
                 ...profile,
                 qualifications: profile.qualifications.join(', '),
                 profilePictureUrl: profile.profilePictureUrl || '',
+                serviceArea: profile.serviceArea || null,
             };
 
-            await updateMyProfile(profileData);
+            const { data } = await updateMyProfile(profileData);
+            
+            // Update the profile state with the returned data to ensure consistency
+            setProfile(prev => ({
+                ...prev,
+                serviceArea: data.serviceArea || null,
+            }));
+            
             toast.success("Profile updated successfully!");
         } catch (error) {
             toast.error("Failed to update profile.");
+        } finally {
+            setIsSaving(false);
         }
     };
 
@@ -93,7 +147,7 @@ const NurseEditProfilePage = () => {
                         <label htmlFor="profile-picture-upload" className="mt-4 bg-teal-600 text-white font-bold py-2 px-4 rounded cursor-pointer hover:bg-teal-700">Upload New Picture</label>
                         <input id="profile-picture-upload" type="file" className="hidden" onChange={handleFileChange} accept="image/*" />
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div><label className="block text-secondary-text mb-2">Full Name</label><input type="text" name="name" value={profile.name} onChange={onChange} className="w-full p-3 bg-primary-dark rounded border-gray-700 text-white" /></div>
                         <div><label className="block text-secondary-text mb-2">Specialty</label><input type="text" name="specialty" value={profile.specialty || ''} onChange={onChange} placeholder="e.g., Elder Care, Post-Operative Care" className="w-full p-3 bg-primary-dark rounded border-gray-700 text-white" /></div>
                         <div><label className="block text-secondary-text mb-2">City</label><input type="text" name="city" value={profile.city} onChange={onChange} className="w-full p-3 bg-primary-dark rounded border-gray-700 text-white" /></div>
@@ -103,14 +157,40 @@ const NurseEditProfilePage = () => {
 } placeholder="e.g., GNM, BSc Nursing, Critical Care" className="w-full p-3 bg-primary-dark rounded border-gray-700 text-white" /></div>
                         <div><label className="block text-secondary-text mb-2">License Number</label><input type="text" name="licenseNumber" value={profile.licenseNumber || ''} onChange={onChange} className="w-full p-3 bg-primary-dark rounded border-gray-700 text-white" /></div>
                         <div className="md:col-span-2"><label className="block text-secondary-text mb-2">Professional Bio</label><textarea name="bio" value={profile.bio} onChange={onChange} rows="5" placeholder="Tell patients about your nursing expertise and care approach..." className="w-full p-3 bg-primary-dark rounded border-gray-700 text-white"></textarea></div>
+                        <div className="md:col-span-2">
+                          <label className="block text-secondary-text mb-2">Service Area</label>
+                          <p className="text-sm text-secondary-text mb-2">Draw a polygon showing where you provide in-person service. Changes persist after saving.</p>
+                          <ServiceAreaMap value={profile.serviceArea} onChange={(geo) => setProfile({ ...profile, serviceArea: geo })} />
+                        </div>
                     </div>
                 <div className="flex items-center justify-between mt-8"> 
-                    <Link to="/2fa-setup" className="bg-teal-600 hover:bg-teal-700 text-white font-bold py-2 px-4 rounded inline-block" > Enable Two-Factor Authentication </Link>
-                        <button
+                    <div className="space-x-4">
+                        {profile.isTwoFactorEnabled ? (
+                            <button
+                                type="button"
+                                onClick={disable2FA}
+                                disabled={isDisabling2FA}
+                                className="bg-red-600 hover:bg-red-700 disabled:bg-red-400 text-white font-bold py-2 px-4 rounded transition"
+                            >
+                                {isDisabling2FA ? 'Disabling...' : 'Disable Two-Factor Authentication'}
+                            </button>
+                        ) : (
+                            <Link 
+                                to="/2fa-setup" 
+                                className="bg-teal-600 hover:bg-teal-700 text-white font-bold py-2 px-4 rounded inline-block"
+                            >
+                                Enable Two-Factor Authentication
+                            </Link>
+                        )}
+                    </div>
+                    <button
                         type="submit"
-                        className="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg transition"
-                        >Save Changes
-                        </button> </div>
+                        disabled={isSaving}
+                        className="bg-green-600 hover:bg-green-700 disabled:bg-green-400 text-white font-bold py-3 px-6 rounded-lg transition"
+                    >
+                        {isSaving ? 'Saving...' : 'Save Changes'}
+                    </button>
+                </div>
                 </form>
             </div>
         </div>
