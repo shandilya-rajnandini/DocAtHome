@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import api from '../api';
+import API from '../api';
 import toast from 'react-hot-toast';
 
 const TwoFactorAuthPage = () => {
@@ -13,7 +13,7 @@ const TwoFactorAuthPage = () => {
   useEffect(() => {
     const setup2FA = async () => {
       try {
-        const { data } = await api.post('/twofactor/setup');
+        const { data } = await API.post('/twofactor/setup');
         setQrCodeUrl(data.qrCodeUrl);
         setSecret(data.secret);
       } catch (err) {
@@ -33,7 +33,7 @@ const TwoFactorAuthPage = () => {
       return;
     }
     try {
-      await api.post('/twofactor/verify', { token });
+      await API.post('/twofactor/verify', { token });
       setIsVerified(true);
       setError('');
       toast.success('2FA enabled successfully!');
