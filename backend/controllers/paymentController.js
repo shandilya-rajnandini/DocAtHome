@@ -1,6 +1,6 @@
 const Razorpay = require('razorpay');
 const crypto = require('crypto');
-const Transaction = require('../models/Transaction');
+/*const Transaction = require('../models/Transaction');
 const Donation = require('../models/Donation');
 const User = require('../models/User');
 
@@ -139,4 +139,4 @@ exports.getDonations = async (req, res) => {
     console.error('FETCH DONATIONS ERROR:', error);
     return res.status(500).send('Something went wrong');
   }
-};
+};*/

@@ -4,6 +4,7 @@ const { Server } = require('socket.io');
 const dotenv = require('dotenv');
 const cors = require('cors');
 const connectDB = require('./config/db');
+app.use('/api/lab-tests', require('./routes/labTestRoutes'));
 
 dotenv.config();
 
