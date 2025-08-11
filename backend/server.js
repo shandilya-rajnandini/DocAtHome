@@ -4,47 +4,64 @@ const { Server } = require('socket.io');
 const dotenv = require('dotenv');
 const cors = require('cors');
 const connectDB = require('./config/db');
-app.use('/api/lab-tests', require('./routes/labTestRoutes'));
 
+// Load environment variables
 dotenv.config();
 
+// Initialize Express App
 const app = express();
-
-// Create Express app and HTTP server
-const app = require('./app');
-
-const server = http.createServer(app);
 
 // --- Production-Ready CORS Configuration ---
 const allowedOrigins = [
     "http://localhost:5173",
     "https://docathome-rajnandini.netlify.app"
 ];
-app.use(cors({ origin: allowedOrigins }));
-app.use(express.json());
-S
-// ... (your Socket.IO config)
+const corsOptions = {
+    origin: function (origin, callback) {
+        if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+            callback(null, true);
+        } else {
+            callback(new Error('Not allowed by CORS'));
+        }
+    }
+};
+app.use(cors(corsOptions));
 
-D
-// --- Fly.io Health Check Route ---
-// This is a special route that Fly.io will use to check if your server is alive.
-app.get('/health', (req, res) => {
-    res.status(200).send('OK');
-});
+// Middleware to parse JSON
+app.use(express.json());
+
 
 // --- API Route Definitions ---
+// Make sure all these route files exist in your `backend/routes` folder
 app.use('/api/auth', require('./routes/authRoutes'));
-// ... (all your other app.use routes)
-app.use('/api/payment', require('./routes/paymentRoutes'));
+app.use('/api/admin', require('./routes/adminRoutes'));
+app.use('/api/doctors', require('./routes/doctorRoutes'));
+app.use('/api/nurses', require('./routes/nurseRoutes'));
+app.use('/api/profile', require('./routes/profileRoutes'));
+app.use('/api/appointments', require('./routes/appointmentRoutes'));
+app.use('/api/lab-tests', require('./routes/labTestRoutes'));
+// The payment route is commented out as requested
+// app.use('/api/payment', require('./routes/paymentRoutes'));
 
-// ... (your error handling middleware)
 
-// --- Socket.IO Configuration ---
+// --- Simple Health Check Route ---
+app.get('/health', (req, res) => res.status(200).send('OK'));
+
+
+// --- Error Handling Middleware ---
+app.use((req, res, next) => {
+  res.status(404).json({ message: 'API endpoint not found' });
+});
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).json({ message: 'Internal Server Error' });
+});
+
+
+// --- Server and Socket.IO Startup ---
+const server = http.createServer(app);
 const io = new Server(server, {
-  cors: {
-    origin: allowedOrigins,
-    methods: ["GET", "POST"]
-  }
+  cors: { origin: allowedOrigins, methods: ["GET", "POST"] }
 });
 
 io.on('connection', (socket) => {
@@ -54,21 +71,13 @@ io.on('connection', (socket) => {
   });
 });
 
-// --- Error Handling ---
-app.use((req, res, next) => {
-  res.status(404).json({ message: 'API endpoint not found' });
-})
-
-// --- Server Startup for Fly.io ---
-// Fly.io sets the PORT environment variable. It expects to connect to 0.0.0.0.
 const PORT = process.env.PORT || 5000;
-const HOST = '0.0.0.0';
 
 const startServer = async () => {
   try {
     await connectDB();
-    server.listen(PORT, HOST, () => {
-      console.log(`Server running on http://${HOST}:${PORT}`);
+    server.listen(PORT, () => {
+      console.log(`Server running on port ${PORT}`);
     });
   } catch (error) {
     console.error('FATAL ERROR: Could not connect to the database.');
