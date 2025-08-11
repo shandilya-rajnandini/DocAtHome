@@ -1,13 +1,10 @@
 import axios from 'axios';
 
-// --- FORCING THE PRODUCTION URL ---
-// This line explicitly tells your frontend where the backend server lives.
-// It removes any ambiguity and is the most robust solution.
-// Make sure this URL is your correct Render backend URL.
-const API_URL = 'https://docathome.onrender.com/api';
 
-// Create a configured instance of Axios with the correct, full base URL
+const API_URL = 'https://docathome-backend.onrender.com/api'; // Or your specific Render URL
+
 const API = axios.create({ baseURL: API_URL });
+
 
 // Interceptor to automatically add the JWT token to every secure request.
 // This runs before any API call is sent.
