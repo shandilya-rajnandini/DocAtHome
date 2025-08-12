@@ -47,6 +47,9 @@ const AppointmentSchema = new mongoose.Schema({
     type: String,
     default: '',
   },
+  voiceRecording: {
+    type: String, // This field is now optional
+  },
 }, { timestamps: true });
 
 module.exports = mongoose.model('Appointment', AppointmentSchema);

@@ -19,15 +19,49 @@ exports.getMyProfile = async (req, res) => {
 // @desc    Update current user's profile
 // @route   PUT /api/profile/me
 exports.updateMyProfile = async (req, res) => {
-  const { name, city, experience, qualifications, bio, profilePictureUrl } = req.body;
+  const { name, city, experience, qualifications, bio, profilePictureUrl, serviceArea } = req.body;
 
   const profileFields = {};
   if (name) profileFields.name = name;
   if (city) profileFields.city = city;
   if (experience) profileFields.experience = experience;
-  if (qualifications) profileFields.qualifications = qualifications.split(',').map(q => q.trim());
+  
+  // Handle qualifications safely
+  if (qualifications) {
+    if (typeof qualifications === 'string') {
+      profileFields.qualifications = qualifications.split(',').map(q => q.trim());
+    } else if (Array.isArray(qualifications)) {
+      profileFields.qualifications = qualifications;
+    }
+  }
+  
   if (bio) profileFields.bio = bio;
   if (profilePictureUrl) profileFields.profilePictureUrl = profilePictureUrl;
+
+  // Accept GeoJSON Polygon for professional service area (optional)
+  if (serviceArea !== undefined) {
+    if (serviceArea === null) {
+      // Allow clearing the service area
+      profileFields.serviceArea = null;
+    } else {
+      try {
+        // Allow serviceArea to be a parsed object or a JSON string
+        const area = typeof serviceArea === 'string' ? JSON.parse(serviceArea) : serviceArea;
+        if (
+          area &&
+          area.type === 'Polygon' &&
+          Array.isArray(area.coordinates) &&
+          Array.isArray(area.coordinates[0])
+        ) {
+          profileFields.serviceArea = area;
+        } else {
+          return res.status(400).json({ msg: 'Invalid serviceArea. Expect GeoJSON Polygon.' });
+        }
+      } catch (e) {
+        return res.status(400).json({ msg: 'Invalid serviceArea JSON.' });
+      }
+    }
+  }
 
   try {
     let profile = await User.findById(req.user.id);

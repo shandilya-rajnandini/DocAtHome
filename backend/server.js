@@ -5,35 +5,69 @@ const dotenv = require('dotenv');
 const cors = require('cors');
 const connectDB = require('./config/db');
 
-// Load environment variables from .env file
+// Load environment variables
 dotenv.config();
 
-// Create Express app and HTTP server
-const app = require('./app');
-const server = http.createServer(app);
+// Initialize Express App
+const app = express();
 
 // --- Production-Ready CORS Configuration ---
 const allowedOrigins = [
-  "http://localhost:5173", // For your local development frontend
-  "https://docathome-rajnandini.netlify.app" // Your live frontend URL
+    "http://localhost:5173", //local testing
+    "http://localhost:5174", //local testing
+    "https://docathome-rajnandini.netlify.app"
 ];
 
 const corsOptions = {
-  origin: function (origin, callback) {
-    if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
+    origin: function (origin, callback) {
+        if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+            callback(null, true);
+        } else {
+            callback(new Error('Not allowed by CORS'));
+        }
     }
-  }
 };
 
-// --- Socket.IO Configuration ---
+app.use(cors(corsOptions));
+
+// Middleware to parse JSON
+app.use(express.json());
+
+
+// --- API Route Definitions ---
+// Make sure all these route files exist in your `backend/routes` folder
+app.use('/api/auth', require('./routes/authRoutes'));
+app.use('/api/admin', require('./routes/adminRoutes'));
+app.use('/api/doctors', require('./routes/doctorRoutes'));
+app.use('/api/nurses', require('./routes/nurseRoutes'));
+app.use('/api/profile', require('./routes/profileRoutes'));
+app.use('/api/appointments', require('./routes/appointmentRoutes'));
+app.use('/api/lab-tests', require('./routes/labTestRoutes'));
+app.use('/api/payment', require('./routes/paymentRoutes'));
+app.use('/api/quests', require('./routes/questRoutes'));
+app.use('/api/prescriptions', require('./routes/PrescriptionRoutes'));
+app.use('/api/reviews', require('./routes/reviewRoutes'));
+app.use('/api/twofactor', require('./routes/twoFactorAuthRoutes'));
+
+
+// --- Simple Health Check Route ---
+app.get('/health', (req, res) => res.status(200).send('OK'));
+
+
+// --- Error Handling Middleware ---
+app.use((req, res, next) => {
+  res.status(404).json({ message: 'API endpoint not found' });
+});
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).json({ message: 'Internal Server Error' });
+});
+
+
+// --- Server and Socket.IO Startup ---
+const server = http.createServer(app);
 const io = new Server(server, {
-  cors: {
-    origin: allowedOrigins,
-    methods: ["GET", "POST"]
-  }
+  cors: { origin: allowedOrigins, methods: ["GET", "POST"] }
 });
 
 io.on('connection', (socket) => {
@@ -43,17 +77,6 @@ io.on('connection', (socket) => {
   });
 });
 
-// --- Error Handling ---
-app.use((req, res, next) => {
-  res.status(404).json({ message: 'API endpoint not found' });
-});
-
-app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).json({ message: 'Internal Server Error' });
-});
-
-// --- Start Server ---
 const PORT = process.env.PORT || 5000;
 
 const startServer = async () => {
