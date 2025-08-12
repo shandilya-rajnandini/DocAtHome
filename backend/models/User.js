@@ -110,6 +110,21 @@ const UserSchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
+  
+  // --- Geofencing: Professional Service Area ---
+  // Optional GeoJSON Polygon that defines where the professional serves.
+  // Coordinates must be in [lng, lat] order as per GeoJSON spec.
+  serviceArea: {
+    type: {
+      type: String,
+      enum: ['Polygon'],
+      required: false
+    },
+    coordinates: {
+      type: [[[Number]]], // Array of LinearRings: [[ [lng,lat], ... ]]
+      required: false
+    }
+  },
 });
 
 
@@ -132,5 +147,9 @@ UserSchema.pre('save', function(next) {
 UserSchema.methods.matchPassword = async function (enteredPassword) {
   return await bcrypt.compare(enteredPassword, this.password);
 };
+
+// Create a 2dsphere index for geospatial queries on serviceArea
+// Note: Ensure MongoDB version supports 2dsphere on Polygon (it does since 2.4+)
+UserSchema.index({ serviceArea: '2dsphere' });
 
 module.exports = mongoose.model('User', UserSchema);

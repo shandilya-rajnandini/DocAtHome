@@ -13,8 +13,9 @@ const app = express();
 
 // --- Production-Ready CORS Configuration ---
 const allowedOrigins = [
-    "http://localhost:5173", // For local development
-    "https://docathome-rajnandini.netlify.app" // Your LIVE frontend URL. Check for typos!
+    "http://localhost:5173", //local testing
+    "http://localhost:5174", //local testing
+    "https://docathome-rajnandini.netlify.app"
 ];
 
 const corsOptions = {
@@ -42,8 +43,11 @@ app.use('/api/nurses', require('./routes/nurseRoutes'));
 app.use('/api/profile', require('./routes/profileRoutes'));
 app.use('/api/appointments', require('./routes/appointmentRoutes'));
 app.use('/api/lab-tests', require('./routes/labTestRoutes'));
-// The payment route is commented out as requested
-// app.use('/api/payment', require('./routes/paymentRoutes'));
+app.use('/api/payment', require('./routes/paymentRoutes'));
+app.use('/api/quests', require('./routes/questRoutes'));
+app.use('/api/prescriptions', require('./routes/PrescriptionRoutes'));
+app.use('/api/reviews', require('./routes/reviewRoutes'));
+app.use('/api/twofactor', require('./routes/twoFactorAuthRoutes'));
 
 
 // --- Simple Health Check Route ---

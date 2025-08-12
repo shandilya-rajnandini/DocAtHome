@@ -2,6 +2,33 @@ const speakeasy = require('speakeasy');
 const qrcode = require('qrcode');
 const User = require('../models/User');
 
+// @desc    Disable 2FA for a user
+// @route   POST /api/profile/2fa/disable
+// @access  Private
+exports.disableTwoFactorAuth = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id);
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Clear 2FA data
+    user.twoFactorSecret = undefined;
+    user.isTwoFactorEnabled = false;
+    await user.save();
+
+    res.json({
+      message: '2FA has been disabled successfully',
+      isTwoFactorEnabled: false
+    });
+
+  } catch (error) {
+    console.error('ERROR in disableTwoFactorAuth:', error.message);
+    res.status(500).json({ message: 'Server Error' });
+  }
+};
+
 // @desc    Set up 2FA for a user
 // @route   POST /api/profile/2fa/setup
 // @access  Private

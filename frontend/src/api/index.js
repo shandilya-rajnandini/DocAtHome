@@ -22,6 +22,8 @@ API.interceptors.request.use((req) => {
 export const login = (formData) => API.post('/auth/login', formData);
 export const register = (formData) => API.post('/auth/register', formData);
 export const getMe = () => API.get('/auth/me');
+export const forgotPassword = (formData) => API.post('/auth/forgot-password', formData);
+export const resetPassword = (formData) => API.post('/auth/reset-password', formData);
 // Add other auth functions if you have them (forgotPassword, etc.)
 
 // === Admin Routes ===
@@ -44,7 +46,10 @@ export const updateMyProfile = (profileData) => API.put('/profile/me', profileDa
 // === Appointment Routes ===
 export const bookAppointment = (appointmentData) => API.post('/appointments', appointmentData);
 export const getMyAppointments = () => API.get('/appointments/my-appointments');
+export const getDoctorAppointments = () => API.get('/appointments/doctor-appointments');
 export const updateAppointmentStatus = (id, statusData) => API.put(`/appointments/${id}`, statusData);
+export const getAppointmentSummary = (id) => API.get(`/appointments/${id}/summary`);
+export const saveAppointmentVoiceNote = (id, noteData) => API.post(`/appointments/${id}/voice-note`, noteData);
 
 // === Care Circle Routes ===
 export const getMyCareCircle = () => API.get('/profile/my-care-circle');
@@ -56,3 +61,12 @@ export const bookLabTest = (testData) => API.post('/lab-tests', testData);
 // === Payment Routes ===
 export const createRazorpayOrder = (orderData) => API.post('/payment/create-order', orderData);
 export const verifyRazorpayPayment = (paymentData) => API.post('/payment/verify', paymentData);
+export const getPaymentHistory = () => API.get('/payment/history');
+
+// === Quest Routes ===
+export const getQuests = () => API.get('/quests');
+export const acceptQuest = (questId) => API.post(`/quests/${questId}/accept`);
+export const logQuestProgress = (questId, progressData) => API.post(`/quests/${questId}/progress`, progressData);
+
+// Export the API instance as default
+export default API;
