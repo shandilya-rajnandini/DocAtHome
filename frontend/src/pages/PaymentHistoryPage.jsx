@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
-import { useAuth } from '../context/AuthContext';
+// import { useAuth } from '../context/AuthContext';
 import { getPaymentHistory } from '../api/index';
 import toast from 'react-hot-toast';
+import useAuthStore from '../store/useAuthStore';
 
 const PaymentHistoryPage = () => {
-    const { user } = useAuth();
+    const { user } = useAuthStore();
     const [payments, setPayments] = useState([]);
     const [loading, setLoading] = useState(true);
 

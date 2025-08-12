@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { getMyAppointments } from '../api';
-import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
 import IconCalendarCheck from '../components/icons/IconCalendarCheck';
 import IconHistory from '../components/icons/IconHistory';
 import IconStethoscope from '../components/icons/IconStethoscope';
+import useAuthStore from '../store/useAuthStore';
 
 const AppointmentCard = ({ appointment }) => {
     const appointmentDate = new Date(appointment.appointmentDate);
@@ -56,7 +56,7 @@ const MyAppointmentsPage = () => {
     const [appointments, setAppointments] = useState([]);
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState('Upcoming');
-    const { user } = useAuth();
+    const { user } = useAuthStore();
 
     useEffect(() => {
         const fetchAppointments = async () => {

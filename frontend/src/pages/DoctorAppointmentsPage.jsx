@@ -1,14 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { getMyAppointments, updateAppointmentStatus, getAppointmentSummary } from '../api';
-import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
 import DoctorNotesModal from '../components/DoctorNotesModal';
 import Modal from '../components/Modal';
+import useAuthStore from '../store/useAuthStore';
 
 const DoctorAppointmentsPage = () => {
     const [appointments, setAppointments] = useState([]);
     const [loading, setLoading] = useState(true);
-    const { user } = useAuth();
+    const { user } = useAuthStore();
+
     const [filter, setFilter] = useState('Pending'); // To filter by status
     const [isNotesModalOpen, setIsNotesModalOpen] = useState(false);
     const [selectedApptId, setSelectedApptId] = useState(null);

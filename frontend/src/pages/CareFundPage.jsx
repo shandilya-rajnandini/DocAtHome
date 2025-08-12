@@ -1,10 +1,12 @@
 import React, { useEffect, useState, useCallback } from "react";
 import API from '../api';
 import toast from 'react-hot-toast';
-import { useAuth } from "../context/AuthContext";
+import useAthStore from "../store/useAuthStore";
 
 const CareFundPage = () => {
-  const { user } = useAuth();
+  
+  const { user } = useAthStore();
+
   const [balance, setBalance] = useState(0);
   const [donations, setDonations] = useState([]);
   const [shareLink, setShareLink] = useState("");

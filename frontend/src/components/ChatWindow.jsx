@@ -1,12 +1,13 @@
 import { useEffect, useState } from 'react';
 import io from 'socket.io-client';
-import { useAuth } from '../context/AuthContext';
+import useAuthStore from '../store/useAuthStore'
 
 // Connect to the backend socket server
 const socket = io.connect("http://localhost:5000");
 
 const ChatWindow = ({ room, onClose }) => {
-    const { user } = useAuth();
+    
+    const { user } = useAuthStore();
     const [currentMessage, setCurrentMessage] = useState("");
     const [messageList, setMessageList] = useState([]);
 

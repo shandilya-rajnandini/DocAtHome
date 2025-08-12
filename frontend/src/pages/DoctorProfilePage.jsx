@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getDoctorById, bookAppointment } from '../api';
-import { useAuth } from '../context/AuthContext';
+
 import toast from 'react-hot-toast';
+import useAuthStore from '../store/useAuthStore';
 
 // --- Mock Data ---
 const timeSlots = ["11:00 AM", "11:30 AM", "12:00 PM", "12:30 PM", "01:00 PM", "01:30 PM", "02:00 PM"];
@@ -25,7 +26,8 @@ const availableDates = generateDates();
 const DoctorProfilePage = () => {
     const { id } = useParams();
     const navigate = useNavigate();
-    const { user } = useAuth();
+    
+    const { user } = useAuthStore();
     const [doctor, setDoctor] = useState(null);
     const [loading, setLoading] = useState(true);
 

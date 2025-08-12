@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import api, { login as loginApi, getMe } from '../api';
-import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
+import useAuthStore from '../store/useAuthStore';
 
 const LoginPage = () => {
   const [formData, setFormData] = useState({ email: '', password: '' });
@@ -10,7 +10,8 @@ const LoginPage = () => {
   const [userId, setUserId] = useState(null);
   const [token, setToken] = useState('');
   const navigate = useNavigate();
-  const { login } = useAuth();
+  
+  const { login } = useAuthStore();
   
   const { email, password } = formData;
   const onChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });

@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
-import { useAuth } from '../context/AuthContext';
 import { getReviewsForDoctor, createReview } from '../api';
 import toast from 'react-hot-toast';
+import useAuthStore from '../store/useAuthStore';
 
 const ReviewSection = ({ doctorId }) => {
-    const { user } = useAuth();
+    
+    const { user } = useAuthStore();
     const [reviews, setReviews] = useState([]);
     const [rating, setRating] = useState(0);
     const [comment, setComment] = useState('');

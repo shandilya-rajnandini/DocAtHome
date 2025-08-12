@@ -1,12 +1,14 @@
 import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
 import { useState,useEffect } from 'react';
 import { IoSunnySharp } from "react-icons/io5";
 import { BsFillMoonStarsFill } from "react-icons/bs";
+import useAuthStore from "../store/useAuthStore";
 
 
 const Navbar = () => {
-  const { user, logout } = useAuth();
+  
+  const { user, logout, checkUser } = useAuthStore();
+
   const navigate = useNavigate();
 
   //Dark and Light Mode
@@ -24,6 +26,11 @@ const Navbar = () => {
   
    
   }, [theme]);
+
+    useEffect(() => {
+    checkUser();
+  }, [checkUser]);
+
 
   const toggleTheme = ()=>{
     setTheme((prev)=>(prev==='light'?'dark':'light'));
