@@ -1,125 +1,231 @@
 const Quest = require('../models/Quest');
 const UserQuest = require('../models/UserQuest');
 const User = require('../models/User');
+const { 
+  catchAsync, 
+  AppError, 
+  ValidationError, 
+  NotFoundError,
+  ConflictError,
+  RateLimitError 
+} = require('../middleware/errorHandler');
 
 // @desc    Get all quests and user's progress
 // @route   GET /api/quests
-exports.getQuests = async (req, res) => {
-  try {
-    const quests = await Quest.find().lean();
-    const userQuests = await UserQuest.find({ user: req.user.id });
+exports.getQuests = catchAsync(async (req, res, next) => {
+  const userId = req.user.id;
 
-    const questsWithProgress = quests.map(quest => {
-      const userQuest = userQuests.find(uq => uq.quest.toString() === quest._id.toString());
-      return {
-        ...quest,
-        userQuestId: userQuest ? userQuest._id : null,
-        progress: userQuest ? userQuest.progress : 0,
-        status: userQuest ? userQuest.status : 'not-started',
-      };
-    });
+  // Use aggregation pipeline for better performance and atomicity
+  const [quests, userQuests] = await Promise.all([
+    Quest.find({ isActive: { $ne: false } }) // Only get active quests
+      .select('title description points durationDays category')
+      .lean(),
+    UserQuest.find({ user: userId })
+      .select('quest progress status startedAt completedAt lastLoggedDate')
+      .lean()
+  ]);
 
-    res.status(200).json({ success: true, data: questsWithProgress });
-  } catch (err) {
-    console.error('GET QUESTS ERROR:', err.message);
-    res.status(500).send('Server Error');
-  }
-};
+  // Create a Map for O(1) lookup performance
+  const userQuestMap = new Map(
+    userQuests.map(uq => [uq.quest.toString(), uq])
+  );
+
+  const questsWithProgress = quests.map(quest => {
+    const userQuest = userQuestMap.get(quest._id.toString());
+    
+    return {
+      ...quest,
+      userQuestId: userQuest?._id || null,
+      progress: userQuest?.progress || 0,
+      status: userQuest?.status || 'not-started',
+      startedAt: userQuest?.startedAt || null,
+      completedAt: userQuest?.completedAt || null,
+      lastLoggedDate: userQuest?.lastLoggedDate || null,
+      canLogToday: userQuest ? canLogProgressToday(userQuest.lastLoggedDate) : false
+    };
+  });
+
+  res.status(200).json({ 
+    success: true, 
+    data: questsWithProgress,
+    totalQuests: quests.length,
+    activeQuests: userQuests.filter(uq => uq.status === 'in-progress').length,
+    completedQuests: userQuests.filter(uq => uq.status === 'completed').length
+  });
+});
+
+// Helper function to check if user can log progress today
+function canLogProgressToday(lastLoggedDate) {
+  if (!lastLoggedDate) return true;
+  
+  const today = new Date();
+  today.setUTCHours(0, 0, 0, 0);
+  
+  const lastLogged = new Date(lastLoggedDate);
+  lastLogged.setUTCHours(0, 0, 0, 0);
+  
+  return lastLogged.getTime() < today.getTime();
+}
 
 // @desc    Accept a quest
 // @route   POST /api/quests/:questId/accept
-exports.acceptQuest = async (req, res) => {
+exports.acceptQuest = catchAsync(async (req, res, next) => {
+  const { questId } = req.params;
+  const userId = req.user.id;
+
+  // Validate quest ID format
+  if (!questId.match(/^[0-9a-fA-F]{24}$/)) {
+    return next(new ValidationError('Invalid quest ID format'));
+  }
+
+  const quest = await Quest.findById(questId);
+  if (!quest) {
+    return next(new NotFoundError('Quest not found'));
+  }
+
+  // Use atomic operation to prevent race condition
+  // This will either create a new UserQuest or fail if one already exists
   try {
-    const quest = await Quest.findById(req.params.questId);
-    if (!quest) {
-      return res.status(404).json({ msg: 'Quest not found' });
-    }
-
-    // Check if user has already started this quest
-    const existingUserQuest = await UserQuest.findOne({ user: req.user.id, quest: req.params.questId });
-    if (existingUserQuest) {
-      return res.status(400).json({ msg: 'Quest already accepted' });
-    }
-
     const userQuest = await UserQuest.create({
-      user: req.user.id,
-      quest: req.params.questId,
+      user: userId,
+      quest: questId,
       status: 'in-progress',
-      startedAt: Date.now(),
+      startedAt: new Date(),
+      progress: 0,
+      lastLoggedDate: null,
     });
 
-    res.status(201).json({ success: true, data: userQuest });
-  } catch (err) {
-    console.error('ACCEPT QUEST ERROR:', err.message);
-    res.status(500).send('Server Error');
+    res.status(201).json({ 
+      success: true, 
+      data: userQuest,
+      message: 'Quest accepted successfully'
+    });
+  } catch (createError) {
+    // Check if it's a duplicate key error (MongoDB error code 11000)
+    if (createError.code === 11000) {
+      return next(new ConflictError('Quest already accepted by user'));
+    }
+    
+    // Re-throw if it's a different error
+    throw createError;
   }
-};
+});
 
 // @desc    Log progress for a quest
 // @route   POST /api/quests/:userQuestId/log
 exports.logQuestProgress = async (req, res) => {
   try {
-    const userQuest = await UserQuest.findById(req.params.userQuestId).populate('quest');
-    if (!userQuest) {
-      return res.status(404).json({ msg: 'User quest not found' });
+    const { userQuestId } = req.params;
+    const userId = req.user.id;
+
+    // Validate userQuest ID format
+    if (!userQuestId.match(/^[0-9a-fA-F]{24}$/)) {
+      return res.status(400).json({ 
+        success: false,
+        message: 'Invalid user quest ID format' 
+      });
     }
 
-    // Authorization check
-    if (userQuest.user.toString() !== req.user.id) {
-      return res.status(401).json({ msg: 'User not authorized' });
+    // Get current UTC date for consistent daily tracking
+    const todayUTC = new Date();
+    todayUTC.setUTCHours(0, 0, 0, 0);
+
+    // Use atomic findOneAndUpdate to prevent race conditions
+    // This operation is atomic and will prevent multiple simultaneous updates
+    const updateResult = await UserQuest.findOneAndUpdate(
+      {
+        _id: userQuestId,
+        user: userId,
+        status: { $ne: 'completed' }, // Only allow updates if not completed
+        $or: [
+          { lastLoggedDate: { $exists: false } }, // Never logged before
+          { lastLoggedDate: null }, // Explicitly null
+          { lastLoggedDate: { $lt: todayUTC } } // Last logged before today
+        ]
+      },
+      {
+        $inc: { progress: 1 }, // Atomic increment
+        $set: { lastLoggedDate: new Date() } // Set current timestamp
+      },
+      { 
+        new: true, // Return updated document
+        populate: {
+          path: 'quest',
+          select: 'durationDays points title'
+        }
+      }
+    );
+
+    if (!updateResult) {
+      // Check if quest exists but conditions weren't met
+      const existingQuest = await UserQuest.findOne({ 
+        _id: userQuestId, 
+        user: userId 
+      }).populate('quest');
+
+      if (!existingQuest) {
+        return res.status(404).json({ 
+          success: false,
+          message: 'Quest not found or you do not have access to it' 
+        });
+      }
+
+      if (existingQuest.status === 'completed') {
+        return res.status(400).json({ 
+          success: false,
+          message: 'Quest already completed' 
+        });
+      }
+
+      // If we get here, user already logged progress today
+      return res.status(429).json({ 
+        success: false,
+        message: 'Progress already logged for today. Please try again tomorrow.' 
+      });
     }
 
-    if (userQuest.status === 'completed') {
-      return res.status(400).json({ msg: 'Quest already completed' });
-    }
-
-    // Logic to prevent logging more than once a day
-// Logic to prevent logging more than once a day (UTC-based)
-const today = new Date();
-const todayUTC = new Date(Date.UTC(
-  today.getUTCFullYear(),
-  today.getUTCMonth(),
-  today.getUTCDate()
-));
-
-if (userQuest.lastLoggedDate) {
-  const lastLoggedUTC = new Date(Date.UTC(
-    userQuest.lastLoggedDate.getUTCFullYear(),
-    userQuest.lastLoggedDate.getUTCMonth(),
-    userQuest.lastLoggedDate.getUTCDate()
-  ));
-
-  if (lastLoggedUTC.getTime() === todayUTC.getTime()) {
-    return res.status(400).json({ msg: 'Progress already logged for today' });
-  }
-}
-
-    userQuest.progress += 1;
-    userQuest.lastLoggedDate = new Date();
-
-    // Check for completion
-    if (userQuest.progress >= userQuest.quest.durationDays && userQuest.status !== 'completed') {
-      userQuest.status = 'completed';
-      userQuest.completedAt = new Date();
+    // Check if quest should be completed (race-condition safe)
+    if (updateResult.progress >= updateResult.quest.durationDays && updateResult.status !== 'completed') {
       
-      // Use atomic operations to prevent race conditions
-      const [savedUserQuest, updatedUser] = await Promise.all([
-        userQuest.save(),
+      // Use atomic operation to complete quest and award points simultaneously
+      const completionResult = await Promise.all([
+        UserQuest.findByIdAndUpdate(
+          userQuestId,
+          {
+            status: 'completed',
+            completedAt: new Date()
+          },
+          { new: true, populate: { path: 'quest' } }
+        ),
         User.findByIdAndUpdate(
-          req.user.id,
-          { $inc: { healthPoints: userQuest.quest.points } },
-          { new: true }
+          userId,
+          { $inc: { healthPoints: updateResult.quest.points } },
+          { new: true, select: 'healthPoints' }
         )
       ]);
-      
-      return res.status(200).json({ success: true, data: savedUserQuest });
+
+      const [completedQuest, updatedUser] = completionResult;
+
+      return res.status(200).json({ 
+        success: true, 
+        data: completedQuest,
+        message: `Congratulations! Quest completed! You earned ${updateResult.quest.points} health points.`,
+        newHealthPoints: updatedUser.healthPoints
+      });
     }
 
-    const savedUserQuest = await userQuest.save();
+    res.status(200).json({ 
+      success: true, 
+      data: updateResult,
+      message: 'Progress logged successfully',
+      progressRemaining: updateResult.quest.durationDays - updateResult.progress
+    });
 
-    res.status(200).json({ success: true, data: savedUserQuest });
   } catch (err) {
-    console.error('LOG PROGRESS ERROR:', err.message);
-    res.status(500).send('Server Error');
+    console.error('Log progress error:', err.message);
+    res.status(500).json({ 
+      success: false,
+      message: 'Server error. Please try again later.' 
+    });
   }
 };
