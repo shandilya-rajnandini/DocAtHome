@@ -10,7 +10,18 @@ const {
   saveVoiceNote,
 } = require("../controllers/appointmentController");
 
-const { protect } = require("../middleware/authMiddleware");
+const { protect } = require('../middleware/authMiddleware');
+const { 
+  validate, 
+  validateObjectId, 
+  appointmentSchemas, 
+  limitRequestSize, 
+  detectXSS 
+} = require('../middleware/validation');
+
+// Apply comprehensive security middleware to all appointment routes
+router.use(limitRequestSize);
+router.use(detectXSS);
 
 // All routes in this file are protected and require a user to be logged in.
 
@@ -19,16 +30,24 @@ const { protect } = require("../middleware/authMiddleware");
 router.route("/my-appointments").get(protect, getMyAppointments);
 
 // GET /api/appointments/:id/summary
-// Gets a smart summary for a specific appointment
-router.route("/:id/summary").get(protect, getAppointmentSummary);
+// Gets a smart summary for a specific appointment with ID validation
+router.route('/:id/summary')
+    .get(protect, validateObjectId('id'), getAppointmentSummary);
 
 // PUT /api/appointments/:id
-// Updates the status of a specific appointment (e.g., to 'Confirmed' or 'Cancelled')
-router.route("/:id").put(protect, updateAppointmentStatus);
+// Updates the status of a specific appointment with comprehensive validation
+router.route('/:id')
+    .put(protect, 
+         validateObjectId('id'), 
+         validate(appointmentSchemas.updateStatus), 
+         updateAppointmentStatus);
 
 // POST /api/appointments/
-// Creates a new appointment
-router.route("/").post(protect, createAppointment);
+// Creates a new appointment with comprehensive input validation
+router.route('/')
+    .post(protect, 
+          validate(appointmentSchemas.create), 
+          createAppointment);
 
 //POST /:id/voicenote
 //Creates a voice note for the appointment
