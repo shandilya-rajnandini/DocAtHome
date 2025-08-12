@@ -1,4 +1,4 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
 
 // Import all the necessary controller functions
@@ -7,7 +7,8 @@ const {
   getMyAppointments,
   updateAppointmentStatus,
   getAppointmentSummary,
-} = require('../controllers/appointmentController');
+  saveVoiceNote,
+} = require("../controllers/appointmentController");
 
 const { protect } = require('../middleware/authMiddleware');
 const { 
@@ -26,8 +27,7 @@ router.use(detectXSS);
 
 // GET /api/appointments/my-appointments
 // Fetches all appointments related to the logged-in user (as either patient or professional)
-router.route('/my-appointments')
-    .get(protect, getMyAppointments);
+router.route("/my-appointments").get(protect, getMyAppointments);
 
 // GET /api/appointments/:id/summary
 // Gets a smart summary for a specific appointment with ID validation
@@ -48,5 +48,9 @@ router.route('/')
     .post(protect, 
           validate(appointmentSchemas.create), 
           createAppointment);
+
+//POST /:id/voicenote
+//Creates a voice note for the appointment
+router.post("/:id/voicenote", protect, saveVoiceNote);
 
 module.exports = router;

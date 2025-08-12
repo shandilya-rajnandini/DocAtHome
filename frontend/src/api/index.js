@@ -1,14 +1,13 @@
 import axios from 'axios';
 
-// --- Smart API URL Configuration ---
-const API_URL = import.meta.env.PROD
-  ? 'https://docathome-backend.onrender.com/api' // LIVE backend
-  : 'http://localhost:5000/api'; // Local backend for development
 
-// Create configured Axios instance
+const API_URL = 'https://docathome-backend.onrender.com/api'; // Or your specific Render URL
+
 const API = axios.create({ baseURL: API_URL });
 
-// Add JWT token automatically to requests
+
+// Interceptor to automatically add the JWT token to every secure request.
+// This runs before any API call is sent.
 API.interceptors.request.use((req) => {
   if (localStorage.getItem('token')) {
     req.headers.Authorization = `Bearer ${localStorage.getItem('token')}`;
@@ -16,37 +15,25 @@ API.interceptors.request.use((req) => {
   return req;
 });
 
-// --- API Function Exports ---
 
-// === Smart Stock Routes ===
-export const takeDose = async (prescriptionId, medicineIndex) => {
-  try {
-    const response = await API.post(
-      `/prescriptions/${prescriptionId}/take-dose`,
-      { medicineIndex }
-    );
-    return response.data;
-  } catch (error) {
-    throw error.response?.data?.error || 'Failed to record dose';
-  }
-};
-export const getMyPrescriptions = () => API.get('/prescriptions/my-prescriptions');
+// === API Function Exports ===
 
 // === Authentication Routes ===
 export const login = (formData) => API.post('/auth/login', formData);
 export const register = (formData) => API.post('/auth/register', formData);
 export const getMe = () => API.get('/auth/me');
-export const forgotPassword = (emailData) => API.post('/auth/forgot-password', emailData);
-export const resetPassword = (token, passwordData) => API.post(`/auth/reset-password/${token}`, passwordData);
+export const forgotPassword = (formData) => API.post('/auth/forgot-password', formData);
+export const resetPassword = (formData) => API.post('/auth/reset-password', formData);
+// Add other auth functions if you have them (forgotPassword, etc.)
 
 // === Admin Routes ===
-export const getPendingUsers = () => API.get('/admin/pending'); // Unified endpoint name
+export const getPendingUsers = () => API.get('/admin/pending');
 export const approveUser = (id) => API.put(`/admin/approve/${id}`);
 
 // === Generic Profile Fetching ===
 const getProfessionalById = (id) => API.get(`/profile/${id}`);
 
-// === Doctor & Nurse Routes ===
+// === Doctor & Nurse Search Routes ===
 export const searchDoctors = (params) => API.get('/doctors', { params });
 export const getDoctorById = (id) => getProfessionalById(id);
 export const searchNurses = (params) => API.get('/nurses', { params });
@@ -56,16 +43,17 @@ export const getNurseById = (id) => getProfessionalById(id);
 export const getMyProfile = () => API.get('/profile/me');
 export const updateMyProfile = (profileData) => API.put('/profile/me', profileData);
 
-// === Care Circle Routes ===
-export const getMyCareCircle = () => API.get('/profile/my-care-circle');
-export const inviteToCareCircle = (inviteData) => API.post('/profile/my-care-circle/invite', inviteData);
-
 // === Appointment Routes ===
 export const bookAppointment = (appointmentData) => API.post('/appointments', appointmentData);
 export const getMyAppointments = () => API.get('/appointments/my-appointments');
 export const getDoctorAppointments = () => API.get('/appointments/doctor-appointments');
-export const updateAppointmentStatus = (id, status) => API.put(`/appointments/${id}/status`, { status });
+export const updateAppointmentStatus = (id, statusData) => API.put(`/appointments/${id}`, statusData);
 export const getAppointmentSummary = (id) => API.get(`/appointments/${id}/summary`);
+export const saveAppointmentVoiceNote = (id, noteData) => API.post(`/appointments/${id}/voice-note`, noteData);
+
+// === Care Circle Routes ===
+export const getMyCareCircle = () => API.get('/profile/my-care-circle');
+export const inviteToCareCircle = (inviteData) => API.post('/profile/my-care-circle/invite', inviteData);
 
 // === Lab Test Routes ===
 export const bookLabTest = (testData) => API.post('/lab-tests', testData);
@@ -73,12 +61,12 @@ export const bookLabTest = (testData) => API.post('/lab-tests', testData);
 // === Payment Routes ===
 export const createRazorpayOrder = (orderData) => API.post('/payment/create-order', orderData);
 export const verifyRazorpayPayment = (paymentData) => API.post('/payment/verify', paymentData);
-export const getPaymentHistory = () => API.get('/payment/my-history');
+export const getPaymentHistory = () => API.get('/payment/history');
 
 // === Quest Routes ===
 export const getQuests = () => API.get('/quests');
 export const acceptQuest = (questId) => API.post(`/quests/${questId}/accept`);
-export const logQuestProgress = (questId, progress) => API.post(`/quests/${questId}/progress`, { progress });
+export const logQuestProgress = (questId, progressData) => API.post(`/quests/${questId}/progress`, progressData);
 
-// Export Axios instance if needed
+// Export the API instance as default
 export default API;

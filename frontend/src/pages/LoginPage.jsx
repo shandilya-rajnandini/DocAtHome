@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import api, { login as loginApi, getMe } from '../api';
+import API, { login as loginApi, getMe } from '../api';
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
 
@@ -51,7 +51,7 @@ const LoginPage = () => {
   const on2FASubmit = async (e) => {
     e.preventDefault();
     try {
-      const { data } = await api.post('/auth/2fa/login', { userId, token });
+      const { data } = await API.post('/auth/2fa/login', { userId, token });
       localStorage.setItem('token', data.token);
       
       const { data: userData } = await getMe();
