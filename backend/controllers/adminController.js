@@ -15,6 +15,7 @@ exports.approveUser = asyncHandler(async (req, res) => {
     if (!user) {
       return res.status(404).json({ msg: 'User not found' });
     }
+    
     user.isVerified = true;
     await user.save();
     res.json({ msg: 'User approved successfully' });
