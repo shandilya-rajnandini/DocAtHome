@@ -1,24 +1,13 @@
-
-import React, { useState, useEffect } from 'react';
-import { getMyAppointments } from '../api';
-import toast from 'react-hot-toast';
-import IconCalendarCheck from '../components/icons/IconCalendarCheck';
-import IconHistory from '../components/icons/IconHistory';
-import IconStethoscope from '../components/icons/IconStethoscope';
-import useAuthStore from '../store/useAuthStore';
-
 import React, { useState, useEffect } from "react";
 import { getMyAppointments } from "../api";
-import { useAuth } from "../context/AuthContext";
 import toast from "react-hot-toast";
 import IconCalendarCheck from "../components/icons/IconCalendarCheck";
 import IconHistory from "../components/icons/IconHistory";
 import IconStethoscope from "../components/icons/IconStethoscope";
-
+import useAuthStore from "../store/useAuthStore";
 
 const AppointmentCard = ({ appointment }) => {
   const appointmentDate = new Date(appointment.appointmentDate);
-  const isPast = appointmentDate < new Date();
 
   return (
     <div className="bg-accent-cream dark:bg-primary-dark p-5 rounded-lg shadow-lg border border-gray-700 hover:border-accent transition-all duration-300">
@@ -29,9 +18,7 @@ const AppointmentCard = ({ appointment }) => {
             <h3 className="text-xl font-bold text-white">
               {appointment.doctor.name}
             </h3>
-            <p className="text-secondary-text">
-              {appointment.doctor.specialty}
-            </p>
+            <p className="text-secondary-text">{appointment.doctor.specialty}</p>
           </div>
         </div>
         <div
@@ -46,6 +33,7 @@ const AppointmentCard = ({ appointment }) => {
           {appointment.status}
         </div>
       </div>
+
       {appointment.status === "Completed" && appointment.doctorNotes && (
         <>
           <div className="border-t border-gray-700 my-4"></div>
@@ -57,13 +45,14 @@ const AppointmentCard = ({ appointment }) => {
           </div>
         </>
       )}
-      {/* Show voice note if present */}
+
       {appointment.voiceRecording && (
         <div className="mt-4">
           <h4 className="font-bold text-white mb-2">Voice Note:</h4>
           <audio controls src={appointment.voiceRecording} className="w-full" />
         </div>
       )}
+
       <div className="border-t border-gray-700 my-4"></div>
       <div className="flex justify-between items-center text-secondary-text">
         <div>
@@ -81,39 +70,21 @@ const AppointmentCard = ({ appointment }) => {
           <p>{appointment.bookingType}</p>
         </div>
       </div>
-      {appointment.status === "Completed" && appointment.doctorNotes && (
-        <>
-          <div className="border-t border-gray-700 my-4"></div>
-          <div>
-            <h4 className="font-bold text-white mb-2">Doctor's Notes:</h4>
-            <p className="text-secondary-text bg-primary-dark rounded">
-              {appointment.doctorNotes}
-            </p>
-          </div>
-        </>
-      )}
     </div>
   );
 };
 
 const MyAppointmentsPage = () => {
-
-    const [appointments, setAppointments] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [activeTab, setActiveTab] = useState('Upcoming');
-    const { user } = useAuthStore();
-
   const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("Upcoming");
-  const { user } = useAuth();
-
+  const { user } = useAuthStore();
 
   useEffect(() => {
     const fetchAppointments = async () => {
       try {
         const { data } = await getMyAppointments();
-        setAppointments(data.data || []); // Handle the case where data.data might not exist
+        setAppointments(data.data || []);
       } catch (error) {
         toast.error("Could not fetch your appointments.");
         console.error(error);
@@ -122,22 +93,16 @@ const MyAppointmentsPage = () => {
       }
     };
 
-    if (user) {
-      fetchAppointments();
-    }
+    if (user) fetchAppointments();
   }, [user]);
 
   const filteredAppointments = appointments.filter((appt) => {
     const appointmentDate = new Date(appt.appointmentDate);
     const now = new Date();
     now.setHours(0, 0, 0, 0);
-
-    if (activeTab === "Upcoming") {
-      return appointmentDate >= now;
-    } else {
-      // 'Past'
-      return appointmentDate < now;
-    }
+    return activeTab === "Upcoming"
+      ? appointmentDate >= now
+      : appointmentDate < now;
   });
 
   if (loading) {
@@ -149,7 +114,7 @@ const MyAppointmentsPage = () => {
   }
 
   return (
-    <div className=" dark:bg-background-dark min-h-screen">
+    <div className="dark:bg-background-dark min-h-screen">
       <div className="relative bg-my-appointments-bg bg-cover bg-center h-60">
         <div className="absolute inset-0 bg-black bg-opacity-60 flex justify-center items-center">
           <h1 className="text-5xl font-bold text-white tracking-wider">
@@ -164,8 +129,8 @@ const MyAppointmentsPage = () => {
               onClick={() => setActiveTab("Upcoming")}
               className={`flex items-center py-3 px-6 font-semibold text-lg transition-all duration-300 ${
                 activeTab === "Upcoming"
-                  ? "text-black  dark:text-gray-400 border-b-2 border-accent"
-                  : "  text-gray-500 hover:text-gray-600 dark:hover:text-white"
+                  ? "text-black dark:text-gray-400 border-b-2 border-accent"
+                  : "text-gray-500 hover:text-gray-600 dark:hover:text-white"
               }`}
             >
               <IconCalendarCheck className="w-5 h-5 mr-2" />
@@ -175,7 +140,7 @@ const MyAppointmentsPage = () => {
               onClick={() => setActiveTab("Past")}
               className={`flex items-center py-3 px-6 font-semibold text-lg transition-all duration-300 ${
                 activeTab === "Past"
-                  ? "text-black  dark:text-gray-400 border-b-2 border-accent"
+                  ? "text-black dark:text-gray-400 border-b-2 border-accent"
                   : "text-gray-500 hover:text-gray-600 dark:hover:text-white"
               }`}
             >
