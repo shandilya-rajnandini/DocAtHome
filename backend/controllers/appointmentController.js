@@ -144,3 +144,31 @@ exports.updateAppointmentStatus = async (req, res) => {
     res.status(500).send('Server Error');
   }
 };
+
+// @desc    Create a voice note 
+// @route   POST /:id/voicenote
+
+exports.saveVoiceNote = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { voiceUrl } = req.body; // expects { voiceUrl: "https://..." }
+
+    if (!voiceUrl) {
+      return res.status(400).json({ success: false, message: "Voice URL is required." });
+    }
+
+    const appointment = await Appointment.findByIdAndUpdate(
+      id,
+      { voiceRecording: voiceUrl },
+      { new: true }
+    );
+
+    if (!appointment) {
+      return res.status(404).json({ success: false, message: "Appointment not found." });
+    }
+
+    res.json({ success: true, data: appointment });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Server error.", error: error.message });
+  }
+};
