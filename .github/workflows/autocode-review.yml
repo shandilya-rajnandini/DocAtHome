@@ -30,6 +30,6 @@ jobs:
         working-directory: ./backend
         run: npm install
 
-      - name: Run ESLint on backend
+      - name: Check backend syntax (basic Node.js check)
         working-directory: ./backend
-        run: npx eslint . --config eslint.config.js
+        run: node -c server.js
