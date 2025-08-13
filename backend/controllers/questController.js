@@ -3,16 +3,16 @@ const UserQuest = require('../models/UserQuest');
 const User = require('../models/User');
 const { 
   catchAsync, 
-  AppError, 
+  _AppError, 
   ValidationError, 
   NotFoundError,
   ConflictError,
-  RateLimitError 
+  _RateLimitError 
 } = require('../middleware/errorHandler');
 
 // @desc    Get all quests and user's progress
 // @route   GET /api/quests
-exports.getQuests = catchAsync(async (req, res, next) => {
+exports.getQuests = catchAsync(async (req, res, _next) => {
   const userId = req.user.id;
 
   // Use aggregation pipeline for better performance and atomicity

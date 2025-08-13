@@ -57,7 +57,7 @@ exports.updateMyProfile = async (req, res) => {
         } else {
           return res.status(400).json({ msg: 'Invalid serviceArea. Expect GeoJSON Polygon.' });
         }
-      } catch (e) {
+      } catch (_e) {
         return res.status(400).json({ msg: 'Invalid serviceArea JSON.' });
       }
     }
@@ -87,7 +87,7 @@ exports.updateMyProfile = async (req, res) => {
 // ... existing getMyProfile and updateMyProfile functions
 
 const CareCircle = require('../models/CareCircle');
-const Vital = require('../models/Vital');
+const _Vital = require('../models/Vital');
 
 // @desc    Get the Care Circle for the logged-in patient
 // @route   GET /api/profile/my-care-circle

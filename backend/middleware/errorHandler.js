@@ -163,7 +163,7 @@ const handleJWTExpiredError = () =>
 /**
  * Global error handling middleware
  */
-const globalErrorHandler = (err, req, res, next) => {
+const globalErrorHandler = (err, req, res, _next) => {
   err.statusCode = err.statusCode || 500;
   err.status = err.status || 'error';
 

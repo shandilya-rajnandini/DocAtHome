@@ -251,7 +251,7 @@ exports.saveVoiceNote = async (req, res) => {
     const { voiceUrl } = req.body; // expects { voiceUrl: "https://..." }
 
     if (!voiceUrl) {
-      return res.status(400).json({ success: false, message: "Voice URL is required." });
+      return res.status(400).json({ success: false, message: 'Voice URL is required.' });
     }
 
     const appointment = await Appointment.findByIdAndUpdate(
@@ -261,11 +261,11 @@ exports.saveVoiceNote = async (req, res) => {
     );
 
     if (!appointment) {
-      return res.status(404).json({ success: false, message: "Appointment not found." });
+      return res.status(404).json({ success: false, message: 'Appointment not found.' });
     }
 
     res.json({ success: true, data: appointment });
   } catch (error) {
-    res.status(500).json({ success: false, message: "Server error.", error: error.message });
+    res.status(500).json({ success: false, message: 'Server error.', error: error.message });
   }
 };
