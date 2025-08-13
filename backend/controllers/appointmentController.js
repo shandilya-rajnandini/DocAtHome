@@ -4,12 +4,12 @@ const { generateSummary } = require('../utils/aiService');
 
 // @desc    Create a new appointment
 // @route   POST /api/appointments
-exports.createAppointment = async (req, res) => {
+exports.createAppointment = async (req, res, next) => {
   try {
     // Add the patient's ID from the authenticated user token
     req.body.patient = req.user.id;
 
-    const { doctor } = req.body;
+    const { doctor, fee, paymentMethod = 'external' } = req.body;
 
     // Check if the doctor being booked actually exists and has the role of 'doctor'
     const doctorExists = await User.findById(doctor);
@@ -17,17 +17,55 @@ exports.createAppointment = async (req, res) => {
         return res.status(404).json({ msg: 'Professional not found' });
     }
 
+    // If patient wants to pay from care fund, check balance and deduct
+    if (paymentMethod === 'careFund') {
+      const patient = await User.findById(req.user.id);
+      
+      if (!patient) {
+        return res.status(404).json({ msg: 'Patient not found' });
+      }
+      
+      if (patient.careFundBalance < fee) {
+        return res.status(400).json({ 
+          msg: `Insufficient care fund balance. Available: ₹${patient.careFundBalance}, Required: ₹${fee}` 
+        });
+      }
+      
+      // Deduct the fee from care fund balance
+      await User.findByIdAndUpdate(req.user.id, { 
+        $inc: { careFundBalance: -fee } 
+      });
+      
+      // Create a transaction record for care fund payment
+      const Transaction = require('../models/Transaction');
+      await Transaction.create({
+        userId: req.user.id,
+        razorpayOrderId: `care_fund_${Date.now()}`,
+        razorpayPaymentId: `care_fund_payment_${Date.now()}`,
+        amount: fee,
+        currency: 'INR',
+        description: `Care Fund Payment for appointment with ${doctorExists.name}`,
+        status: 'paid',
+      });
+    }
+
     // Create the appointment in the database
-    const appointment = await Appointment.create(req.body);
+    const appointment = await Appointment.create({
+      ...req.body,
+      paymentMethod: paymentMethod || 'external'
+    });
 
     // Send a success response back to the frontend
     res.status(201).json({
       success: true,
-      data: appointment
+      data: appointment,
+      message: paymentMethod === 'careFund' ? 
+        `Appointment booked successfully! ₹${fee} deducted from your care fund.` :
+        'Appointment booked successfully!'
     });
   } catch (err) {
-    console.error('APPOINTMENT CREATION ERROR:', err.message);
-    res.status(500).send('Server Error');
+    console.error('APPOINTMENT CREATION ERROR:', err);
+    next(err); // Pass error to global error handler
   }
 };
 
@@ -83,7 +121,7 @@ exports.getAppointmentSummary = async (req, res) => {
 
 // @desc    Get all appointments for the logged-in user (patient or professional)
 // @route   GET /api/appointments/my-appointments
-exports.getMyAppointments = async (req, res) => {
+exports.getMyAppointments = async (req, res, next) => {
     try {
         let query;
         // Check the role of the logged-in user to build the correct query
@@ -103,14 +141,14 @@ exports.getMyAppointments = async (req, res) => {
             data: appointments
         });
     } catch (err) {
-        console.error('GET_MY_APPOINTMENTS_ERROR:', err.message);
-        res.status(500).send('Server Error');
+        console.error('GET_MY_APPOINTMENTS_ERROR:', err);
+        next(err); // Pass error to global error handler
     }
 };
 
 // @desc    Update an appointment's status (e.g., confirm or cancel)
 // @route   PUT /api/appointments/:id
-exports.updateAppointmentStatus = async (req, res) => {
+exports.updateAppointmentStatus = async (req, res, next) => {
   try {
     const { status, doctorNotes } = req.body;
 
@@ -121,9 +159,68 @@ exports.updateAppointmentStatus = async (req, res) => {
       return res.status(404).json({ msg: 'Appointment not found' });
     }
 
-    // Authorization Check: Ensure the logged-in user is the professional assigned to this appointment
-    if (appointment.doctor.toString() !== req.user.id) {
-        return res.status(401).json({ msg: 'User not authorized to update this appointment' });
+    // Authorization Check: 
+    // - For doctors/nurses: they can update any appointment assigned to them
+    // - For patients: they can only cancel their own appointments
+    if (status === 'Cancelled' && appointment.patient.toString() === req.user.id) {
+      // Patient canceling their own appointment
+      
+      // Check cancellation policy: no cancellations within 2 hours of the appointment
+      const appointmentDateStr = appointment.appointmentDate; // e.g., "2025-07-02"
+      const appointmentTimeStr = appointment.appointmentTime; // e.g., "01:00 PM"
+      
+      // Convert 12-hour format to 24-hour format for proper parsing
+      const [time, period] = appointmentTimeStr.split(' ');
+      const [hours, minutes] = time.split(':');
+      let hour24 = parseInt(hours);
+      
+      if (period === 'PM' && hour24 !== 12) {
+        hour24 += 12;
+      } else if (period === 'AM' && hour24 === 12) {
+        hour24 = 0;
+      }
+      
+      const appointmentDateTime = new Date(appointmentDateStr);
+      appointmentDateTime.setHours(hour24, parseInt(minutes), 0, 0);
+      
+      const now = new Date();
+      const timeDifference = appointmentDateTime.getTime() - now.getTime();
+      const hoursUntilAppointment = timeDifference / (1000 * 60 * 60);
+
+      if (hoursUntilAppointment < 2) {
+        return res.status(400).json({ 
+          msg: 'Cannot cancel appointment within 2 hours of the scheduled time' 
+        });
+      }
+
+      // Check if appointment is in a cancellable state
+      if (!['Pending', 'Confirmed'].includes(appointment.status)) {
+        return res.status(400).json({ 
+          msg: 'This appointment cannot be cancelled' 
+        });
+      }
+
+      // If the appointment was paid using care fund, refund the amount
+      if (appointment.paymentMethod === 'careFund') {
+        await User.findByIdAndUpdate(req.user.id, { 
+          $inc: { careFundBalance: appointment.fee } 
+        });
+        
+        // Create a transaction record for the refund
+        const Transaction = require('../models/Transaction');
+        await Transaction.create({
+          userId: req.user.id,
+          razorpayOrderId: `refund_${Date.now()}`,
+          razorpayPaymentId: `refund_payment_${Date.now()}`,
+          amount: appointment.fee,
+          currency: 'INR',
+          description: `Care Fund Refund for cancelled appointment`,
+          status: 'refunded',
+        });
+      }
+    } else if (appointment.doctor.toString() !== req.user.id) {
+      // For all other status updates, only the assigned doctor/nurse can update
+      return res.status(401).json({ msg: 'User not authorized to update this appointment' });
     }
 
     // Update the status
@@ -140,8 +237,8 @@ exports.updateAppointmentStatus = async (req, res) => {
     res.json(appointment);
 
   } catch (err) {
-    console.error('UPDATE APPOINTMENT ERROR:', err.message);
-    res.status(500).send('Server Error');
+    console.error('UPDATE APPOINTMENT ERROR:', err);
+    next(err); // Pass error to global error handler
   }
 };
 

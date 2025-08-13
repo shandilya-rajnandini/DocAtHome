@@ -20,9 +20,8 @@ handleUncaughtException();
 // Load environment variables
 dotenv.config();
 
-// Create Express app and HTTP server
+// Create Express app
 const app = express();
-const server = http.createServer(app);
 
 // --- Production-Ready CORS Configuration ---
 const allowedOrigins = [
@@ -41,61 +40,10 @@ const corsOptions = {
     }
 };
 
-app.use(cors(corsOptions));
-
-// Middleware to parse JSON
-app.use(express.json());
-
-
-// --- API Route Definitions ---
-// Make sure all these route files exist in your `backend/routes` folder
-app.use('/api/auth', require('./routes/authRoutes'));
-app.use('/api/admin', require('./routes/adminRoutes'));
-app.use('/api/doctors', require('./routes/doctorRoutes'));
-app.use('/api/nurses', require('./routes/nurseRoutes'));
-app.use('/api/profile', require('./routes/profileRoutes'));
-app.use('/api/appointments', require('./routes/appointmentRoutes'));
-app.use('/api/lab-tests', require('./routes/labTestRoutes'));
-app.use('/api/payment', require('./routes/paymentRoutes'));
-app.use('/api/quests', require('./routes/questRoutes'));
-app.use('/api/prescriptions', require('./routes/PrescriptionRoutes'));
-app.use('/api/reviews', require('./routes/reviewRoutes'));
-app.use('/api/twofactor', require('./routes/twoFactorAuthRoutes'));
-
-
-// --- Simple Health Check Route ---
-app.get('/health', (req, res) => res.status(200).send('OK'));
-
-
-// --- Error Handling Middleware ---
-app.use((req, res, next) => {
-  res.status(404).json({ message: 'API endpoint not found' });
-});
-app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).json({ message: 'Internal Server Error' });
-});
-
-
-// --- Server and Socket.IO Startup ---
-const server = http.createServer(app);
-const io = new Server(server, {
-  cors: { origin: allowedOrigins, methods: ["GET", "POST"] }
-});
-
-io.on('connection', (socket) => {
-  logger.info(`User Connected: ${socket.id}`);
-  socket.on('disconnect', () => {
-    logger.info(`User Disconnected: ${socket.id}`);
-  });
-});
-
-app.use(cors(corsOptions));
-
-// --- Security Middleware ---
+// --- Security & Middleware Configuration ---
 app.use(helmet()); // Security headers
+app.use(cors(corsOptions));
 app.use(generalLimiter); // General rate limiting
-
 app.use(express.json()); // Middleware to parse JSON bodies
 
 // --- API Routes ---
@@ -113,6 +61,9 @@ app.use('/api/quests', require('./routes/questRoutes'));
 app.use('/api/reviews', require('./routes/reviewRoutes'));
 app.use('/api/prescriptions', require('./routes/PrescriptionRoutes'));
 app.use('/api/twofactor', require('./routes/twoFactorAuthRoutes'));
+
+// --- Simple Health Check Route ---
+app.get('/health', (req, res) => res.status(200).send('OK'));
 
 // --- Error Handling ---
 // Handle 404 - Route not found (this catches all unmatched routes)
@@ -143,10 +94,10 @@ const startServer = async () => {
 
     // Socket.IO connection handling
     io.on('connection', (socket) => {
-      console.log('New client connected');
+      logger.info(`User Connected: ${socket.id}`);
       
       socket.on('disconnect', () => {
-        console.log('Client disconnected');
+        logger.info(`User Disconnected: ${socket.id}`);
       });
     });
     
