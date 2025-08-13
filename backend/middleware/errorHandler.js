@@ -146,6 +146,9 @@ const handleDuplicateFieldsDB = (err) => {
 };
 
 const handleValidationErrorDB = (err) => {
+  if (!err.errors || typeof err.errors !== 'object') {
+    return new ValidationError('Invalid input data.');
+  }
   const errors = Object.values(err.errors).map(val => val.message);
   const message = `Invalid input data. ${errors.join('. ')}`;
   return new ValidationError(message);
