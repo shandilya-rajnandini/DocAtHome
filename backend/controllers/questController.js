@@ -9,6 +9,7 @@ const {
   ConflictError,
   RateLimitError 
 } = require('../middleware/errorHandler');
+const asyncHandler = require('../middleware/asyncHandler');
 
 // @desc    Get all quests and user's progress
 // @route   GET /api/quests
@@ -113,8 +114,7 @@ exports.acceptQuest = catchAsync(async (req, res, next) => {
 
 // @desc    Log progress for a quest
 // @route   POST /api/quests/:userQuestId/log
-exports.logQuestProgress = async (req, res) => {
-  try {
+exports.logQuestProgress = asyncHandler(async (req, res) => {
     const { userQuestId } = req.params;
     const userId = req.user.id;
 
@@ -220,12 +220,4 @@ exports.logQuestProgress = async (req, res) => {
       message: 'Progress logged successfully',
       progressRemaining: updateResult.quest.durationDays - updateResult.progress
     });
-
-  } catch (err) {
-    console.error('Log progress error:', err.message);
-    res.status(500).json({ 
-      success: false,
-      message: 'Server error. Please try again later.' 
-    });
-  }
-};
+});

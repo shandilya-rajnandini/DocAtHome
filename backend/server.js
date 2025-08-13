@@ -14,91 +14,38 @@ const {
   logger 
 } = require('./middleware/errorHandler');
 
-// Handle uncaught exceptions first
+// --- Handle uncaught exceptions ---
 handleUncaughtException();
 
-// Load environment variables
+// --- Load env vars ---
 dotenv.config();
 
-// Create Express app and HTTP server
+// --- Create Express app ---
 const app = express();
-const server = http.createServer(app);
 
-// --- Production-Ready CORS Configuration ---
+// --- Allowlist for CORS ---
 const allowedOrigins = [
-    "http://localhost:5173", //local testing
-    "http://localhost:5174", //local testing
-    "https://docathome-rajnandini.netlify.app"
+  "http://localhost:5173",
+  "http://localhost:5174",
+  "https://docathome-rajnandini.netlify.app"
 ];
-
 const corsOptions = {
-    origin: function (origin, callback) {
-        if (!origin || allowedOrigins.indexOf(origin) !== -1) {
-            callback(null, true);
-        } else {
-            callback(new Error('Not allowed by CORS'));
-        }
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
     }
+  }
 };
 
+// --- Middleware ---
 app.use(cors(corsOptions));
-
-// Middleware to parse JSON
+app.use(helmet());
+app.use(generalLimiter);
 app.use(express.json());
 
-
-// --- API Route Definitions ---
-// Make sure all these route files exist in your `backend/routes` folder
-app.use('/api/auth', require('./routes/authRoutes'));
-app.use('/api/admin', require('./routes/adminRoutes'));
-app.use('/api/doctors', require('./routes/doctorRoutes'));
-app.use('/api/nurses', require('./routes/nurseRoutes'));
-app.use('/api/profile', require('./routes/profileRoutes'));
-app.use('/api/appointments', require('./routes/appointmentRoutes'));
-app.use('/api/lab-tests', require('./routes/labTestRoutes'));
-app.use('/api/payment', require('./routes/paymentRoutes'));
-app.use('/api/quests', require('./routes/questRoutes'));
-app.use('/api/prescriptions', require('./routes/PrescriptionRoutes'));
-app.use('/api/reviews', require('./routes/reviewRoutes'));
-app.use('/api/twofactor', require('./routes/twoFactorAuthRoutes'));
-
-
-// --- Simple Health Check Route ---
-app.get('/health', (req, res) => res.status(200).send('OK'));
-
-
-// --- Error Handling Middleware ---
-app.use((req, res, next) => {
-  res.status(404).json({ message: 'API endpoint not found' });
-});
-app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).json({ message: 'Internal Server Error' });
-});
-
-
-// --- Server and Socket.IO Startup ---
-const server = http.createServer(app);
-const io = new Server(server, {
-  cors: { origin: allowedOrigins, methods: ["GET", "POST"] }
-});
-
-io.on('connection', (socket) => {
-  logger.info(`User Connected: ${socket.id}`);
-  socket.on('disconnect', () => {
-    logger.info(`User Disconnected: ${socket.id}`);
-  });
-});
-
-app.use(cors(corsOptions));
-
-// --- Security Middleware ---
-app.use(helmet()); // Security headers
-app.use(generalLimiter); // General rate limiting
-
-app.use(express.json()); // Middleware to parse JSON bodies
-
-// --- API Routes ---
+// --- Routes ---
 app.use('/api/auth', require('./routes/authRoutes'));
 app.use('/api/admin', require('./routes/adminRoutes'));
 app.use('/api/doctors', require('./routes/doctorRoutes'));
@@ -114,8 +61,19 @@ app.use('/api/reviews', require('./routes/reviewRoutes'));
 app.use('/api/prescriptions', require('./routes/PrescriptionRoutes'));
 app.use('/api/twofactor', require('./routes/twoFactorAuthRoutes'));
 
-// --- Error Handling ---
-// Handle 404 - Route not found (this catches all unmatched routes)
+// --- Health check ---
+app.get('/health', (req, res) => res.status(200).send('OK'));
+
+// handle root URL gracefully
+app.get('/', (req, res) => {
+  res.send('Welcome to DocAtHome API!');
+});
+
+// prevent favicon.ico from hitting error logs
+app.get('/favicon.ico', (req, res) => res.status(204).end());
+
+
+// --- 404 Handler ---
 app.use((req, res, next) => {
   const err = new Error(`Can't find ${req.originalUrl} on this server!`);
   err.statusCode = 404;
@@ -123,50 +81,35 @@ app.use((req, res, next) => {
   next(err);
 });
 
-// Global error handling middleware
+// --- Global Error Handler ---
 app.use(globalErrorHandler);
 
 const PORT = process.env.PORT || 5000;
 
+// --- Start Server ---
 const startServer = async () => {
   try {
     await connectDB();
+
     const server = http.createServer(app);
-    
-    // --- Socket.IO Configuration ---
     const io = new Server(server, {
-      cors: {
-        origin: allowedOrigins,
-        methods: ["GET", "POST"]
-      }
+      cors: { origin: allowedOrigins, methods: ["GET", "POST"] }
     });
 
-    // Socket.IO connection handling
     io.on('connection', (socket) => {
-      console.log('New client connected');
-      
-      socket.on('disconnect', () => {
-        console.log('Client disconnected');
-      });
+      logger.info(`User Connected: ${socket.id}`);
+      socket.on('disconnect', () => logger.info(`User Disconnected: ${socket.id}`));
     });
-    
+
     server.listen(PORT, () => {
       logger.info(`🚀 Server running on port ${PORT} in ${process.env.NODE_ENV} mode`);
-      console.log(`🚀 Server running on port ${PORT}`);
     });
 
-    // Setup graceful shutdown and error handling
     handleUnhandledRejection(server);
     handleGracefulShutdown(server);
-    
-    return server;
+
   } catch (error) {
-    logger.error('FATAL ERROR: Could not start server', {
-      error: error.message,
-      stack: error.stack
-    });
-    console.error('FATAL ERROR: Could not connect to the database.');
-    console.error(error.message);
+    logger.error('FATAL ERROR: Could not start server', { error: error.message });
     process.exit(1);
   }
 };

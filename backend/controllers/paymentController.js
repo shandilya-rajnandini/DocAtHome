@@ -3,6 +3,7 @@ const crypto = require('crypto');
 const Transaction = require('../models/Transaction');
 const Donation = require('../models/Donation');
 const User = require('../models/User');
+const asyncHandler = require('../middleware/asyncHandler');
 
 // Initialize Razorpay instance
 const instance = new Razorpay({
@@ -13,7 +14,7 @@ const instance = new Razorpay({
 // @desc    Create a Razorpay order
 // @route   POST /api/payment/create-order
 // @access  Private
-exports.createOrder = async (req, res) => {
+exports.createOrder = asyncHandler(async (req, res) => {
   const { amount, currency = 'INR' } = req.body;
 
   const options = {
@@ -21,23 +22,15 @@ exports.createOrder = async (req, res) => {
     currency,
     receipt: `receipt_order_${Date.now()}`,
   };
-
-  try {
     const order = await instance.orders.create(options);
     return res.status(200).json(order);
-  } catch (error) {
-    console.error('RAZORPAY ORDER CREATION ERROR:', error);
-    return res.status(500).json({
-      success: false,
-      message: 'Something went wrong while creating the order.',
-    });
-  }
-};
+
+});
 
 // @desc    Verify a Razorpay payment
 // @route   POST /api/payment/verify
 // @access  Private
-exports.verifyPayment = async (req, res) => {
+exports.verifyPayment = asyncHandler(async (req, res) => {
   const {
     razorpay_order_id,
     razorpay_payment_id,
@@ -64,7 +57,6 @@ exports.verifyPayment = async (req, res) => {
     });
   }
 
-  try {
     if (isDonation && donorName && patientId && amount) {
       // Save donation
       await Donation.create({
@@ -99,44 +91,24 @@ exports.verifyPayment = async (req, res) => {
       message: 'Payment verified and transaction stored.',
       data: savedTransaction,
     });
-  } catch (err) {
-    console.error('Payment processing error:', err);
-    return res.status(500).json({
-      success: false,
-      message: 'Payment verified, but storing details failed.',
-    });
-  }
-};
+});
 
 // @desc    Get logged-in user's payment history
 // @route   GET /api/payment/my-history
 // @access  Private
-exports.getMyPaymentHistory = async (req, res) => {
-  try {
+exports.getMyPaymentHistory = asyncHandler(async (req, res) => {
     const transactions = await Transaction.find({ userId: req.user.id }).sort({ createdAt: -1 });
 
     return res.status(200).json({
       success: true,
       data: transactions,
     });
-  } catch (error) {
-    console.error('Error fetching payment history:', error);
-    return res.status(500).json({
-      success: false,
-      message: 'Error fetching payment history.',
-    });
-  }
-};
+});
 
 // @desc    Get all donations for a patient
 // @route   GET /api/payment/donations
 // @access  Public
-exports.getDonations = async (req, res) => {
-  try {
+exports.getDonations = asyncHandler(async (req, res) => {
     const donations = await Donation.find({ patientId: req.query.patientId });
     return res.status(200).json(donations);
-  } catch (error) {
-    console.error('FETCH DONATIONS ERROR:', error);
-    return res.status(500).send('Something went wrong');
-  }
-};
+});
