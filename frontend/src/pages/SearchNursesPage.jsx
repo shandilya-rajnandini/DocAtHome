@@ -75,7 +75,6 @@ const SearchNursesPage = () => {
         delete clearedFilters.lat;
         delete clearedFilters.lng;
         setFilters(clearedFilters);
-        handleSearch(clearedFilters);
         toast.success('Location filter cleared');
     };
 
@@ -98,7 +97,7 @@ const SearchNursesPage = () => {
                     lng: longitude,
                     radius: filters.radius || '10'
                 };
-                handleSearch(geoFilters);
+                setFilters(geoFilters);
                 setIsGettingLocation(false);
                 toast.success(`Found nurses within ${filters.radius || '10'}km of your location!`);
             },
@@ -133,6 +132,16 @@ const SearchNursesPage = () => {
     useEffect(() => {
         handleSearch();
     }, [handleSearch]);
+
+    // Handle programmatic filter updates (geolocation, clear location)
+    useEffect(() => {
+        // Only trigger search if filters have lat/lng (geolocation updates)
+        // This prevents infinite loops while handling filter state changes
+        if (filters.lat && filters.lng) {
+            handleSearch();
+        }
+    }, [filters.lat, filters.lng, handleSearch]);
+
 // ... inside the SearchNursesPage component's return statement
 
     return (
