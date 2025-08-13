@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { searchNurses } from '../api';
 import { toast } from 'react-hot-toast';
@@ -42,7 +42,7 @@ const SearchNursesPage = () => {
     };
 
     // This function calls the backend API to get nurses based on the current filters
-    const handleSearch = async (searchFilters = filters) => {
+    const handleSearch = useCallback(async (searchFilters = filters) => {
         setIsLoading(true);
         setError('');
         try {
@@ -66,7 +66,7 @@ const SearchNursesPage = () => {
         } finally {
             setIsLoading(false);
         }
-    };
+    }, [filters]);
 
     const clearLocationFilter = () => {
         setUserLocation(null);
@@ -132,7 +132,7 @@ const SearchNursesPage = () => {
     // This hook runs once when the component first loads to get the initial list of all nurses
     useEffect(() => {
         handleSearch();
-    }, []);
+    }, [handleSearch]);
 // ... inside the SearchNursesPage component's return statement
 
     return (

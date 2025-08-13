@@ -225,7 +225,7 @@ const MyPrescriptionsPage = () => {
         }
       });
     });
-  }, []);
+  }, [prescriptions]);
 
   const handleTakeDose = (prescriptionId, medIndex) => {
     setLoading(true);

@@ -33,6 +33,7 @@ const DoctorAppointments = () => {
         try {
             const { data } = await getDoctorAppointments();
             setAppointments(data.data || []);
+        // eslint-disable-next-line no-unused-vars
         } catch (error) {
             toast.error("Could not fetch appointments.");
         } finally {
@@ -49,6 +50,7 @@ const DoctorAppointments = () => {
             await updateAppointmentStatus(id, status);
             toast.success(`Appointment has been ${status.toLowerCase()}.`);
             fetchAppointments(); // Refresh the list
+        // eslint-disable-next-line no-unused-vars
         } catch (error) {
             toast.error("Failed to update status.");
         }
@@ -65,8 +67,50 @@ const DoctorAppointments = () => {
         <div className="bg-primary-dark min-h-screen p-8">
             <div className="container mx-auto">
                 <h1 className="text-4xl font-bold text-white mb-8">Manage Appointments</h1>
-                {/* ... (Tab Navigation JSX similar to patient's page) ... */}
-                {/* ... (Appointments List JSX using filteredAppointments and AppointmentCard) ... */}
+                
+                {/* Tab Navigation */}
+                <div className="flex space-x-4 mb-6">
+                    <button 
+                        onClick={() => setActiveTab('pending')}
+                        className={`px-4 py-2 rounded ${activeTab === 'pending' ? 'bg-blue-600 text-white' : 'bg-gray-600 text-gray-300'}`}
+                    >
+                        Pending
+                    </button>
+                    <button 
+                        onClick={() => setActiveTab('upcoming')}
+                        className={`px-4 py-2 rounded ${activeTab === 'upcoming' ? 'bg-blue-600 text-white' : 'bg-gray-600 text-gray-300'}`}
+                    >
+                        Upcoming
+                    </button>
+                    <button 
+                        onClick={() => setActiveTab('completed')}
+                        className={`px-4 py-2 rounded ${activeTab === 'completed' ? 'bg-blue-600 text-white' : 'bg-gray-600 text-gray-300'}`}
+                    >
+                        Completed
+                    </button>
+                </div>
+
+                {/* Loading State */}
+                {loading ? (
+                    <div className="text-white text-center">Loading appointments...</div>
+                ) : (
+                    /* Appointments List */
+                    <div className="space-y-4">
+                        {filteredAppointments.length > 0 ? (
+                            filteredAppointments.map(appointment => (
+                                <AppointmentCard 
+                                    key={appointment._id} 
+                                    appointment={appointment} 
+                                    onUpdate={handleUpdateStatus}
+                                />
+                            ))
+                        ) : (
+                            <div className="text-gray-400 text-center py-8">
+                                No {activeTab} appointments found.
+                            </div>
+                        )}
+                    </div>
+                )}
             </div>
         </div>
     );
