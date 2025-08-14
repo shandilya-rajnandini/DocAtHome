@@ -12,6 +12,7 @@ const HealthQuestsPage = () => {
     try {
       const { data } = await getQuests();
       setQuests(data.data || []);
+    // eslint-disable-next-line no-unused-vars
     } catch (error) {
       toast.error("Could not fetch quests.");
     } finally {

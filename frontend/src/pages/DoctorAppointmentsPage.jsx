@@ -5,7 +5,6 @@ import {
   getAppointmentSummary,
   saveAppointmentVoiceNote,
 } from "../api";
-import { useAuth } from "../context/AuthContext";
 import toast from "react-hot-toast";
 import DoctorNotesModal from "../components/DoctorNotesModal";
 import Modal from "../components/Modal";
@@ -15,7 +14,7 @@ import { Calendar } from "lucide-react";
 const DoctorAppointmentsPage = () => {
   const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
-  const { user } = useAuth();
+  // const { user } = useAuth(); // Removed unused import
   const [filter, setFilter] = useState("Pending"); // To filter by status
   const [isNotesModalOpen, setIsNotesModalOpen] = useState(false);
   const [selectedApptId, setSelectedApptId] = useState(null);
@@ -112,6 +111,7 @@ const DoctorAppointmentsPage = () => {
       // The API returns an object like { success, count, data: [...] }
       // We need to set the inner 'data' array to the state.
       setAppointments(data.data || []);
+    // eslint-disable-next-line no-unused-vars
     } catch (error) {
       toast.error("Could not fetch appointments.");
       setAppointments([]); // Ensure state is an array even on error
@@ -136,6 +136,7 @@ const DoctorAppointmentsPage = () => {
     try {
       await updateAppointmentStatus(id, { status: newStatus, doctorNotes });
       toast.success(`Appointment successfully ${newStatus.toLowerCase()}!`);
+    // eslint-disable-next-line no-unused-vars
     } catch (error) {
       toast.error("Failed to update status. Please try again.");
       setAppointments(originalAppointments);
@@ -159,6 +160,7 @@ const DoctorAppointmentsPage = () => {
     try {
       const { data } = await getAppointmentSummary(id);
       setSummary(data.summary);
+    // eslint-disable-next-line no-unused-vars
     } catch (error) {
       toast.error("Could not fetch summary.");
       setSummary("Failed to load summary.");

@@ -43,6 +43,7 @@ const AppointmentCard = ({ appointment, onAppointmentUpdate }) => {
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [cancelling, setCancelling] = useState(false);
   const appointmentDate = new Date(appointment.appointmentDate);
+  // eslint-disable-next-line no-unused-vars
   const isPast = appointmentDate < new Date();
 
   // Check if appointment can be cancelled (within 2 hours policy)

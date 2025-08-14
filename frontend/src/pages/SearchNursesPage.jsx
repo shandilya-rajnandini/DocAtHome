@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { searchNurses } from '../api';
 import { toast } from 'react-hot-toast';
@@ -42,7 +42,7 @@ const SearchNursesPage = () => {
     };
 
     // This function calls the backend API to get nurses based on the current filters
-    const handleSearch = async (searchFilters = filters) => {
+    const handleSearch = useCallback(async (searchFilters = filters) => {
         setIsLoading(true);
         setError('');
         try {
@@ -66,7 +66,7 @@ const SearchNursesPage = () => {
         } finally {
             setIsLoading(false);
         }
-    };
+    }, [filters]);
 
     const clearLocationFilter = () => {
         setUserLocation(null);
@@ -75,7 +75,6 @@ const SearchNursesPage = () => {
         delete clearedFilters.lat;
         delete clearedFilters.lng;
         setFilters(clearedFilters);
-        handleSearch(clearedFilters);
         toast.success('Location filter cleared');
     };
 
@@ -98,7 +97,7 @@ const SearchNursesPage = () => {
                     lng: longitude,
                     radius: filters.radius || '10'
                 };
-                handleSearch(geoFilters);
+                setFilters(geoFilters);
                 setIsGettingLocation(false);
                 toast.success(`Found nurses within ${filters.radius || '10'}km of your location!`);
             },
@@ -132,7 +131,17 @@ const SearchNursesPage = () => {
     // This hook runs once when the component first loads to get the initial list of all nurses
     useEffect(() => {
         handleSearch();
-    }, []);
+    }, [handleSearch]);
+
+    // Handle programmatic filter updates (geolocation, clear location)
+    useEffect(() => {
+        // Only trigger search if filters have lat/lng (geolocation updates)
+        // This prevents infinite loops while handling filter state changes
+        if (filters.lat && filters.lng) {
+            handleSearch();
+        }
+    }, [filters.lat, filters.lng, handleSearch]);
+
 // ... inside the SearchNursesPage component's return statement
 
     return (
