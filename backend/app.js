@@ -6,7 +6,7 @@ dotenv.config();
 
 const app = express();
 
-// --- Production-Ready CORS Configuration ---
+
 const allowedOrigins = [
   "http://localhost:5173", // For your local development frontend
   "https://docathome-rajnandini.netlify.app" // Your live frontend URL
