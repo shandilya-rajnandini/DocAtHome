@@ -7,6 +7,7 @@ const connectDB = require('./config/db');
 
 // Load environment variables
 dotenv.config();
+console.log("Loaded MONGO_URI:", process.env.MONGO_URI); // ✅ Debugging line
 
 // Initialize Express App
 const app = express();
@@ -33,9 +34,7 @@ app.use(cors(corsOptions));
 // Middleware to parse JSON
 app.use(express.json());
 
-
 // --- API Route Definitions ---
-// Make sure all these route files exist in your `backend/routes` folder
 app.use('/api/auth', require('./routes/authRoutes'));
 app.use('/api/admin', require('./routes/adminRoutes'));
 app.use('/api/doctors', require('./routes/doctorRoutes'));
@@ -49,10 +48,8 @@ app.use('/api/prescriptions', require('./routes/PrescriptionRoutes'));
 app.use('/api/reviews', require('./routes/reviewRoutes'));
 app.use('/api/twofactor', require('./routes/twoFactorAuthRoutes'));
 
-
 // --- Simple Health Check Route ---
 app.get('/health', (req, res) => res.status(200).send('OK'));
-
 
 // --- Error Handling Middleware ---
 app.use((req, res, next) => {
@@ -62,7 +59,6 @@ app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(500).json({ message: 'Internal Server Error' });
 });
-
 
 // --- Server and Socket.IO Startup ---
 const server = http.createServer(app);

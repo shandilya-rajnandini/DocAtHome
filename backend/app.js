@@ -37,3 +37,8 @@ app.use('/api/lab-tests', require('./routes/labTestRoutes'));
 app.use('/api/payment', require('./routes/paymentRoutes'));
 
 module.exports = app;
+
+
+
+const refillRequestRoutes = require('./routes/refillRequests');
+app.use('/api/refills', refillRequestRoutes);
