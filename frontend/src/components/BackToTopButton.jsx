@@ -1,5 +1,5 @@
 import { ArrowUp } from "lucide-react";
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 
 const BackToTopButton = () => {
   const [isVisible, setIsVisible] = useState(false);
@@ -25,10 +25,10 @@ const BackToTopButton = () => {
     <>
       {isVisible && (
         <div
-          className="fixed w-[50px] h-[50px] bg-white shadow-md rounded-full flex justify-center items-center right-6 bottom-6 cursor-pointer transition-opacity duration-1000 "
+          className="fixed w-[50px] h-[50px] bg-[#FDE68A] dark:bg-[#202735] shadow-md rounded-full flex justify-center items-center right-6 bottom-24 cursor-pointer transition-opacity duration-1000 "
           onClick={handleBackToTop}
         >
-          <ArrowUp className="text-black" />
+          <ArrowUp className="text-black dark:text-white " />
         </div>
       )}
     </>
