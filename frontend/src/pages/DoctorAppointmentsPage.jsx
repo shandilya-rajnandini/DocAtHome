@@ -9,6 +9,8 @@ import { useAuth } from "../context/AuthContext";
 import toast from "react-hot-toast";
 import DoctorNotesModal from "../components/DoctorNotesModal";
 import Modal from "../components/Modal";
+import EmptyState from "../components/EmptyState";
+import { Calendar } from "lucide-react";
 
 const DoctorAppointmentsPage = () => {
   const [appointments, setAppointments] = useState([]);
@@ -350,11 +352,11 @@ const DoctorAppointmentsPage = () => {
                 </div>
               ))
             ) : (
-              <div className="text-center text-secondary-text py-16">
-                <p className="text-lg">
-                  No appointments with "{filter}" status.
-                </p>
-              </div>
+              <EmptyState
+                icon={Calendar}
+                title={`No ${filter} Appointments`}
+                message="When a patient books a visit, it will appear here."
+              />
             )}
           </div>
         )}
