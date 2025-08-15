@@ -15,6 +15,7 @@ const PublicDonationPage = () => {
             try {
                 const { data } = await API.get(`/profile/${patientId}`);
                 setPatient(data);
+            // eslint-disable-next-line no-unused-vars
             } catch (error) {
                 toast.error('Could not fetch patient details.');
             } finally {

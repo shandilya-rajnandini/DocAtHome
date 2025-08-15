@@ -107,13 +107,13 @@ const DoctorProfilePage = () => {
     };
     console.log("Booking appointment with data:", appointmentData);
     try {
-      console.log("Booking appointment with data:", appointmentData);
-      const response = await createAppointment(appointmentData);
+      // eslint-disable-next-line no-unused-vars
+      const response = await bookAppointment(appointmentData);
       const successMessage = useCareFund
         ? `Appointment successfully booked! ₹${appointmentData.fee} deducted from your care fund.`
         : "Appointment successfully booked!";
       toast.success(successMessage, { id: toastId });
-      console.log("Booking appointment after:", response);
+
       // Update care fund balance if payment was made from care fund
       if (useCareFund) {
         setCareFundBalance((prev) => prev - appointmentData.fee);
