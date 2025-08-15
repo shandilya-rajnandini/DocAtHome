@@ -20,14 +20,18 @@ handleUncaughtException();
 // --- Load env vars ---
 dotenv.config();
 
+
 // --- Create Express app ---
+
 const app = express();
 
 // --- Allowlist for CORS ---
 const allowedOrigins = [
+
   "http://localhost:5173",
   "http://localhost:5174",
   "https://docathome-rajnandini.netlify.app"
+
 ];
 const corsOptions = {
   origin: (origin, callback) => {
@@ -38,6 +42,7 @@ const corsOptions = {
     }
   }
 };
+
 
 // --- Middleware ---
 app.use(cors(corsOptions));
@@ -74,6 +79,7 @@ app.get('/favicon.ico', (req, res) => res.status(204).end());
 
 
 // --- 404 Handler ---
+
 app.use((req, res, next) => {
   const err = new Error(`Can't find ${req.originalUrl} on this server!`);
   err.statusCode = 404;
@@ -93,12 +99,16 @@ const startServer = async () => {
 
     const server = http.createServer(app);
     const io = new Server(server, {
+
       cors: { origin: allowedOrigins, methods: ["GET", "POST"] }
+
     });
 
     io.on('connection', (socket) => {
       logger.info(`User Connected: ${socket.id}`);
+
       socket.on('disconnect', () => logger.info(`User Disconnected: ${socket.id}`));
+
     });
 
     server.listen(PORT, () => {

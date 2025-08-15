@@ -94,7 +94,7 @@ export default function ServiceAreaMap({ value, onChange }) {
         mapRef.current = null;
       }
     };
-  }, []);
+  }, [value]);
 
   // Handle drawing mode changes
   useEffect(() => {

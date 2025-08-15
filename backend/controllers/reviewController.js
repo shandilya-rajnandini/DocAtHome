@@ -51,4 +51,6 @@ exports.getReviewsForDoctor = asyncHandler(async (req, res) => {
         });
         res.status(200).json({ success: true, count: reviews.length, data: reviews });
 
+
 });
+

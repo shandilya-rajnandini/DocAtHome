@@ -25,8 +25,8 @@ try {
   
   // CORS Configuration
   const allowedOrigins = [
-    "http://localhost:5173",
-    "https://docathome-rajnandini.netlify.app"
+    'http://localhost:5173',
+    'https://docathome-rajnandini.netlify.app'
   ];
   
   const corsOptions = {
