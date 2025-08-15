@@ -5,9 +5,9 @@ import toast from "react-hot-toast";
 import IconCalendarCheck from "../components/icons/IconCalendarCheck";
 import IconHistory from "../components/icons/IconHistory";
 import IconStethoscope from "../components/icons/IconStethoscope";
-import EmptyState from '../components/EmptyState';
-import { Calendar } from 'lucide-react';
-
+import IconWhatsApp from "../components/icons/IconWhatsApp";
+import EmptyState from "../components/EmptyState";
+import { Calendar } from "lucide-react";
 
 // Confirmation Modal Component
 const ConfirmationModal = ({ isOpen, onClose, onConfirm, title, message }) => {
@@ -45,6 +45,27 @@ const AppointmentCard = ({ appointment, onAppointmentUpdate }) => {
   const appointmentDate = new Date(appointment.appointmentDate);
   // eslint-disable-next-line no-unused-vars
   const isPast = appointmentDate < new Date();
+
+  // WhatsApp sharing function
+  const shareOnWhatsApp = () => {
+    const doctorName = appointment.doctor.name;
+    const specialty = appointment.doctor.specialty;
+    const date = appointmentDate.toLocaleDateString("en-GB", {
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    });
+    const time = appointment.appointmentTime;
+    const bookingType = appointment.bookingType;
+
+    const message = `Hi! Just a reminder about my upcoming Doc@Home appointment with ${doctorName} (${specialty}) on ${date} at ${time}. Booking type: ${bookingType}. 🏥`;
+
+    const encodedMessage = encodeURIComponent(message);
+    const whatsappUrl = `https://wa.me/?text=${encodedMessage}`;
+
+    // Open WhatsApp in a new tab
+    window.open(whatsappUrl, "_blank");
+  };
 
   // Check if appointment can be cancelled (within 2 hours policy)
   const canCancel = () => {
@@ -127,15 +148,28 @@ const AppointmentCard = ({ appointment, onAppointmentUpdate }) => {
           >
             {appointment.status}
           </div>
-          {canCancel() && (
-            <button
-              onClick={() => setShowCancelModal(true)}
-              disabled={cancelling}
-              className="px-3 py-1 text-sm bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {cancelling ? "Cancelling..." : "Cancel Appointment"}
-            </button>
-          )}
+          <div className="flex flex-col sm:flex-row gap-2">
+            {/* WhatsApp Share button - only for confirmed appointments */}
+            {appointment.status === "Confirmed" && (
+              <button
+                onClick={shareOnWhatsApp}
+                className="flex items-center justify-center px-3 py-2 text-sm bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                title="Share on WhatsApp"
+              >
+                <IconWhatsApp className="w-4 h-4 mr-1" />
+                Share
+              </button>
+            )}
+            {canCancel() && (
+              <button
+                onClick={() => setShowCancelModal(true)}
+                disabled={cancelling}
+                className="px-3 py-1 text-sm bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {cancelling ? "Cancelling..." : "Cancel"}
+              </button>
+            )}
+          </div>
         </div>
       </div>
       {appointment.status === "Completed" && appointment.doctorNotes && (
