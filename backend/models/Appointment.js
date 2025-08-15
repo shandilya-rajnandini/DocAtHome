@@ -43,6 +43,11 @@ const AppointmentSchema = new mongoose.Schema({
     type: Number,
     required: true,
   },
+  paymentMethod: {
+    type: String,
+    enum: ['careFund', 'external', 'pending'],
+    default: 'external',
+  },
   doctorNotes: {
     type: String,
     default: '',

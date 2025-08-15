@@ -177,14 +177,21 @@ const appointmentSchemas = {
       .valid('In-Home Visit', 'Video Consultation', 'Nurse Assignment')
       .required(),
     symptoms: secureText(1000).required(),
-    previousMeds: secureText(500).optional(),
-    patientLocation: secureString(5, 200).optional()
+    previousMeds: secureText(500).allow('').optional(),
+    patientLocation: secureString(5, 200).optional(),
+    reportImage: Joi.string().optional(),
+    fee: Joi.number().min(0).required(),
+    paymentMethod: Joi.string()
+      .valid('careFund', 'external', 'pending')
+      .default('external')
+      .optional()
   }),
 
   updateStatus: Joi.object({
     status: Joi.string()
       .valid('Pending', 'Confirmed', 'Completed', 'Cancelled')
-      .required()
+      .required(),
+    doctorNotes: secureText(1000).allow('').optional()
   })
 };
 

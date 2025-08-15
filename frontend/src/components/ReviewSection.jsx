@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { getReviewsForDoctor, createReview } from '../api';
 import toast from 'react-hot-toast';
 import useAuthStore from '../store/useAuthStore';
@@ -10,18 +10,18 @@ const ReviewSection = ({ doctorId }) => {
     const [rating, setRating] = useState(0);
     const [comment, setComment] = useState('');
 
-    const fetchReviews = async () => {
+    const fetchReviews = useCallback(async () => {
         try {
             const { data } = await getReviewsForDoctor(doctorId);
             setReviews(data.data);
         } catch (error) {
             console.error("Failed to fetch reviews", error);
         }
-    };
+    }, [doctorId]);
 
     useEffect(() => {
         fetchReviews();
-    }, [doctorId]);
+    }, [fetchReviews]);
     
     const handleSubmitReview = async (e) => {
         e.preventDefault();

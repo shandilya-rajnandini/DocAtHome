@@ -92,12 +92,22 @@ const DoctorProfilePage = () => {
             symptoms: bookingDetails.symptoms,
             previousMeds: bookingDetails.previousMeds,
             fee: bookingType === 'In-Home Visit' ? 2000 : 400,
-            payFromCareFund: useCareFund,
+            paymentMethod: useCareFund ? 'careFund' : 'external',
         };
 
         try {
-            await bookAppointment(appointmentData);
-            toast.success(`Appointment successfully booked!`, { id: toastId });
+            // eslint-disable-next-line no-unused-vars
+            const response = await bookAppointment(appointmentData);
+            const successMessage = useCareFund 
+                ? `Appointment successfully booked! ₹${appointmentData.fee} deducted from your care fund.`
+                : 'Appointment successfully booked!';
+            toast.success(successMessage, { id: toastId });
+            
+            // Update care fund balance if payment was made from care fund
+            if (useCareFund) {
+                setCareFundBalance(prev => prev - appointmentData.fee);
+            }
+            
             navigate('/my-appointments');
         } catch (error) {
             toast.error(error.response?.data?.msg || "Failed to book appointment.", { id: toastId });

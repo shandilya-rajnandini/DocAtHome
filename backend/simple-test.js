@@ -10,7 +10,7 @@ console.log('✅ Express imported successfully');
 
 // Test error handler import
 try {
-  const { globalErrorHandler, logger } = require('./middleware/errorHandler');
+  const { globalErrorHandler, logger: _logger } = require('./middleware/errorHandler');
   console.log('✅ Error handler middleware imported successfully');
   
   // Create simple app
