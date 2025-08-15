@@ -29,6 +29,7 @@ router.use(detectXSS);
 // GET /api/appointments/my-appointments
 // Fetches all appointments related to the logged-in user (as either patient or professional)
 router.route('/my-appointments').get(protect, getMyAppointments);
+router.route('/my-appointments').get(protect, getMyAppointments);
 
 // GET /api/appointments/:id/summary
 // Gets a smart summary for a specific appointment with ID validation

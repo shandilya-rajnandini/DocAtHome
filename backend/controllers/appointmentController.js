@@ -1,15 +1,14 @@
-const Appointment = require("../models/Appointment");
-const User = require("../models/User");
-const { generateSummary } = require("../utils/aiService");
-const asyncHandler = require("../middleware/asyncHandler");
+const Appointment = require('../models/Appointment');
+const User = require('../models/User');
+const { generateSummary } = require('../utils/aiService');
+const asyncHandler = require('../middleware/asyncHandler');
 
 // @desc    Create a new appointment
 // @route   POST /api/appointments
 
 exports.createAppointment = asyncHandler(async (req, res) => {
-  // Add the patient's ID from the authenticated user token
-  console.log("createAppointment controller called");
-  req.body.patient = req.user.id;
+    // Add the patient's ID from the authenticated user token
+    req.body.patient = req.user.id;
 
   const { doctor, fee, paymentMethod = "external", shareRelayNote } = req.body;
   const shareRelayNoteBool = !!shareRelayNote;
