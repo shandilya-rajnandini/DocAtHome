@@ -1,37 +1,3 @@
-
-import React, { useState, useEffect } from 'react';
-import { getMyAppointments, updateAppointmentStatus, getAppointmentSummary } from '../api';
-import toast from 'react-hot-toast';
-import DoctorNotesModal from '../components/DoctorNotesModal';
-import Modal from '../components/Modal';
-import useAuthStore from '../store/useAuthStore';
-
-const DoctorAppointmentsPage = () => {
-    const [appointments, setAppointments] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const { user } = useAuthStore();
-
-    const [filter, setFilter] = useState('Pending'); // To filter by status
-    const [isNotesModalOpen, setIsNotesModalOpen] = useState(false);
-    const [selectedApptId, setSelectedApptId] = useState(null);
-    const [isSummaryModalOpen, setIsSummaryModalOpen] = useState(false);
-    const [summary, setSummary] = useState('');
-    const [summaryLoading, setSummaryLoading] = useState(false);
-
-    const fetchAppointments = async () => {
-        setLoading(true);
-        try {
-            const { data } = await getMyAppointments();
-            // The API returns an object like { success, count, data: [...] }
-            // We need to set the inner 'data' array to the state.
-            setAppointments(data.data || []);
-        } catch (error) {
-            toast.error("Could not fetch appointments.");
-            setAppointments([]); // Ensure state is an array even on error
-        } finally {
-            setLoading(false);
-        }
-    };
 import React, { useState, useEffect, useRef } from "react";
 import {
   getMyAppointments,
@@ -39,15 +5,15 @@ import {
   getAppointmentSummary,
   saveAppointmentVoiceNote,
 } from "../api";
-import { useAuth } from "../context/AuthContext";
-import toast from "react-hot-toast";
-import DoctorNotesModal from "../components/DoctorNotesModal";
-import Modal from "../components/Modal";
+import toast from 'react-hot-toast';
+import DoctorNotesModal from '../components/DoctorNotesModal';
+import Modal from '../components/Modal';
+import useAuthStore from '../store/useAuthStore';
 
 const DoctorAppointmentsPage = () => {
   const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
-  const { user } = useAuth();
+  const { user } = useAuthStore();
   const [filter, setFilter] = useState("Pending"); // To filter by status
   const [isNotesModalOpen, setIsNotesModalOpen] = useState(false);
   const [selectedApptId, setSelectedApptId] = useState(null);
