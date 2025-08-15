@@ -16,8 +16,16 @@ export default defineConfig({
       ]
     })
   ],
-  // You can keep your optimizeDeps section if you had one
   optimizeDeps: {
     include: ['react-icons/fa'],
+  },
+  server: {
+    open: true,
+    proxy: {
+      '/api': {
+        target: 'http://localhost:5000',
+        changeOrigin: true,
+      },
+    },
   },
 });

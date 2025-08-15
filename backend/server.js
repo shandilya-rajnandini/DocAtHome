@@ -3,93 +3,132 @@ const http = require('http');
 const { Server } = require('socket.io');
 const dotenv = require('dotenv');
 const cors = require('cors');
+const helmet = require('helmet');
 const connectDB = require('./config/db');
+const { generalLimiter } = require('./middleware/rateLimiter');
+const { 
+  globalErrorHandler, 
+  handleUnhandledRejection, 
+  handleUncaughtException, 
+  handleGracefulShutdown,
+  logger 
+} = require('./middleware/errorHandler');
 
-// Load environment variables from .env file
+
+
+// --- Load env vars ---
 dotenv.config();
 
+
+// --- Create Express app ---
+
 const app = express();
-const server = http.createServer(app);
 
-// --- Production-Ready CORS Configuration ---
+// --- Allowlist for CORS ---
 const allowedOrigins = [
-    "http://localhost:5173", // For your local development frontend
-    "https://docathome-rajnandini.netlify.app" // Your live frontend URL
-];
 
+  "http://localhost:5173",
+  "http://localhost:5174",
+  "https://docathome-rajnandini.netlify.app"
+
+];
 const corsOptions = {
-    origin: function (origin, callback) {
-        if (!origin || allowedOrigins.indexOf(origin) !== -1) {
-            callback(null, true);
-        } else {
-            callback(new Error('Not allowed by CORS'));
-        }
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      const error = new Error('Not allowed by CORS');
+      error.statusCode = 403;
+      callback(error);
     }
+  }
 };
 
+
+// --- Middleware ---
 app.use(cors(corsOptions));
-// Middleware to parse JSON request bodies
+app.use(helmet());
+app.use(generalLimiter);
 app.use(express.json());
 
-
-// --- Socket.IO Configuration ---
-const io = new Server(server, {
-  cors: {
-    origin: allowedOrigins,
-    methods: ["GET", "POST"]
-  }
-});
-
-// Basic Socket.IO connection logic
-io.on('connection', (socket) => {
-  console.log(`User Connected: ${socket.id}`);
-  socket.on('disconnect', () => {
-    console.log(`User Disconnected: ${socket.id}`);
-  });
-});
-
-
-// --- API Route Definitions (ALL ROUTES INCLUDED) ---
+// --- Routes ---
 app.use('/api/auth', require('./routes/authRoutes'));
 app.use('/api/admin', require('./routes/adminRoutes'));
 app.use('/api/doctors', require('./routes/doctorRoutes'));
 app.use('/api/nurses', require('./routes/nurseRoutes'));
+
 app.use('/api/profile', require('./routes/profileRoutes'));
 app.use('/api/appointments', require('./routes/appointmentRoutes'));
 app.use('/api/lab-tests', require('./routes/labTestRoutes'));
 app.use('/api/payment', require('./routes/paymentRoutes'));
+app.use('/api/care-circle', require('./routes/careCircle'));
+app.use('/api/quests', require('./routes/questRoutes'));
+app.use('/api/reviews', require('./routes/reviewRoutes'));
+app.use('/api/prescriptions', require('./routes/PrescriptionRoutes'));
+app.use('/api/twofactor', require('./routes/twoFactorAuthRoutes'));
+
+// --- Health check ---
+app.get('/health', (req, res) => res.status(200).send('OK'));
+
+// handle root URL gracefully
+app.get('/', (req, res) => {
+  res.send('Welcome to DocAtHome API!');
+});
+
+// prevent favicon.ico from hitting error logs
+app.get('/favicon.ico', (req, res) => res.status(204).end());
 
 
-// --- Error Handling Middleware ---
-// 404 Not Found handler (if no route matched)
+// --- 404 Handler ---
+
 app.use((req, res, next) => {
-  res.status(404).json({ message: 'API endpoint not found' });
+  const err = new Error(`Can't find ${req.originalUrl} on this server!`);
+  err.statusCode = 404;
+  err.isOperational = true;
+  next(err);
 });
 
-// Global error handler (for any other errors)
-app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).json({ message: 'Internal Server Error' });
-});
+// --- Global Error Handler ---
+app.use(globalErrorHandler);
 
-
-// --- Server Startup ---
 const PORT = process.env.PORT || 5000;
 
+// --- Start Server ---
 const startServer = async () => {
   try {
-    // 1. Connect to the database
     await connectDB();
-    
-    // 2. Start listening for requests
-    server.listen(PORT, () => {
-      console.log(`Server running on port ${PORT}`);
+
+    const server = http.createServer(app);
+    const io = new Server(server, {
+
+      cors: { origin: allowedOrigins, methods: ["GET", "POST"] }
+
     });
+
+    io.on('connection', (socket) => {
+      logger.info(`User Connected: ${socket.id}`);
+
+      socket.on('disconnect', () => logger.info(`User Disconnected: ${socket.id}`));
+
+    });
+
+    server.listen(PORT, () => {
+      logger.info(`🚀 Server running on port ${PORT} in ${process.env.NODE_ENV} mode`);
+    });
+
+    handleUnhandledRejection(server);
+    handleGracefulShutdown(server);
+
   } catch (error) {
-    console.error('FATAL ERROR: Could not connect to the database.');
-    console.error(error);
+      logger.error('FATAL ERROR: Could not start server', { 
+      error: error.message, 
+      stack: error.stack 
+    });
     process.exit(1);
   }
 };
+
+// --- Handle uncaught exceptions ---
+handleUncaughtException();
 
 startServer();

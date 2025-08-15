@@ -1,15 +1,13 @@
 import axios from 'axios';
 
-// --- Smart API URL Configuration ---
-// This automatically selects the correct backend URL based on the environment.
-const API_URL = import.meta.env.PROD 
-    ? 'https://docathome-backend.onrender.com/api' // Your LIVE backend URL from Render
-    : 'http://localhost:5000/api';                // Your LOCAL backend URL for development
 
-// Create a configured instance of Axios
+const API_URL = 'http://localhost:5000/api'; // Local backend server
+
 const API = axios.create({ baseURL: API_URL });
 
-// Interceptor to automatically add the JWT token to every secure request
+
+// Interceptor to automatically add the JWT token to every secure request.
+// This runs before any API call is sent.
 API.interceptors.request.use((req) => {
   if (localStorage.getItem('token')) {
     req.headers.Authorization = `Bearer ${localStorage.getItem('token')}`;
@@ -18,12 +16,15 @@ API.interceptors.request.use((req) => {
 });
 
 
+// === API Function Exports ===
+
 // === Authentication Routes ===
 export const login = (formData) => API.post('/auth/login', formData);
 export const register = (formData) => API.post('/auth/register', formData);
 export const getMe = () => API.get('/auth/me');
-export const forgotPassword = (emailData) => API.post('/auth/forgot-password', emailData);
-export const resetPassword = (token, passwordData) => API.post(`/auth/reset-password/${token}`, passwordData);
+export const forgotPassword = (formData) => API.post('/auth/forgot-password', formData);
+export const resetPassword = (formData) => API.post('/auth/reset-password', formData);
+// Add other auth functions if you have them (forgotPassword, etc.)
 
 // === Admin Routes ===
 export const getPendingUsers = () => API.get('/admin/pending');
@@ -32,11 +33,9 @@ export const approveUser = (id) => API.put(`/admin/approve/${id}`);
 // === Generic Profile Fetching ===
 const getProfessionalById = (id) => API.get(`/profile/${id}`);
 
-// === Doctor Routes ===
+// === Doctor & Nurse Search Routes ===
 export const searchDoctors = (params) => API.get('/doctors', { params });
 export const getDoctorById = (id) => getProfessionalById(id);
-
-// === Nurse Routes ===
 export const searchNurses = (params) => API.get('/nurses', { params });
 export const getNurseById = (id) => getProfessionalById(id);
 
@@ -47,8 +46,10 @@ export const updateMyProfile = (profileData) => API.put('/profile/me', profileDa
 // === Appointment Routes ===
 export const bookAppointment = (appointmentData) => API.post('/appointments', appointmentData);
 export const getMyAppointments = () => API.get('/appointments/my-appointments');
-export const updateAppointmentStatus = (id, updateData) => API.put(`/appointments/${id}`, updateData);
+export const getDoctorAppointments = () => API.get('/appointments/doctor-appointments');
+export const updateAppointmentStatus = (id, statusData) => API.put(`/appointments/${id}`, statusData);
 export const getAppointmentSummary = (id) => API.get(`/appointments/${id}/summary`);
+export const saveAppointmentVoiceNote = (id, noteData) => API.post(`/appointments/${id}/voice-note`, noteData);
 
 // === Care Circle Routes ===
 export const getMyCareCircle = () => API.get('/profile/my-care-circle');
@@ -60,8 +61,12 @@ export const bookLabTest = (testData) => API.post('/lab-tests', testData);
 // === Payment Routes ===
 export const createRazorpayOrder = (orderData) => API.post('/payment/create-order', orderData);
 export const verifyRazorpayPayment = (paymentData) => API.post('/payment/verify', paymentData);
+export const getPaymentHistory = () => API.get('/payment/history');
 
 // === Quest Routes ===
 export const getQuests = () => API.get('/quests');
 export const acceptQuest = (questId) => API.post(`/quests/${questId}/accept`);
-export const logQuestProgress = (userQuestId) => API.post(`/quests/${userQuestId}/log`);
+export const logQuestProgress = (questId, progressData) => API.post(`/quests/${questId}/progress`, progressData);
+
+// Export the API instance as default
+export default API;
