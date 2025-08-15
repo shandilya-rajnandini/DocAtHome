@@ -212,7 +212,7 @@ exports.loginWith2FA = catchAsync(async (req, res, next) => {
 
 // ... Make sure your other functions (register, getMe) are also in this file
 exports.register = catchAsync(async (req, res, next) => {
-  const { name, email, password, role } = req.body;
+  const { name, email, password, role, specialty, city, experience, licenseNumber, govId } = req.body;
   
   // Input validation
   if (!name || !email || !password) {
@@ -252,13 +252,25 @@ exports.register = catchAsync(async (req, res, next) => {
     return next(new ValidationError('Invalid role specified'));
   }
 
-  // Create new user
-  const newUser = new User({
+  // Create user object with basic fields
+  const userData = {
     name: name.trim(),
     email: email.toLowerCase(),
     password, // Will be hashed by the User model pre-save hook
     role: role || 'patient'
-  });
+  };
+
+  // Add professional fields if role is doctor or nurse
+  if (role === 'doctor' || role === 'nurse') {
+    userData.specialty = specialty;
+    userData.city = city;
+    userData.experience = experience;
+    userData.licenseNumber = licenseNumber;
+    userData.govId = govId;
+  }
+
+  // Create new user
+  const newUser = new User(userData);
 
   await newUser.save();
 

@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { getSubscriptionStatus } from '../api';
 
 const StatCard = ({ value, label, currency = '' }) => (
     <div className="bg-secondary-dark p-6 rounded-xl text-center shadow-lg">
@@ -9,19 +10,124 @@ const StatCard = ({ value, label, currency = '' }) => (
     </div>
 );
 
+const ProBenefitCard = ({ icon, title, description, isActive }) => (
+    <div className={`p-4 rounded-lg border-2 ${isActive ? 'border-yellow-400 bg-yellow-50 dark:bg-yellow-900/20' : 'border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-800'}`}>
+        <div className="flex items-start gap-3">
+            <span className="text-2xl">{icon}</span>
+            <div>
+                <h4 className={`font-semibold ${isActive ? 'text-yellow-700 dark:text-yellow-300' : 'text-gray-600 dark:text-gray-300'}`}>
+                    {title}
+                </h4>
+                <p className={`text-sm ${isActive ? 'text-yellow-600 dark:text-yellow-400' : 'text-gray-500 dark:text-gray-400'}`}>
+                    {description}
+                </p>
+                {isActive && (
+                    <span className="inline-block mt-2 px-2 py-1 bg-yellow-200 dark:bg-yellow-800 text-yellow-800 dark:text-yellow-200 text-xs rounded-full font-medium">
+                        ✓ Active
+                    </span>
+                )}
+            </div>
+        </div>
+    </div>
+);
+
 const DoctorDashboard = () => {
     const { user } = useAuth();
+    const [subscriptionStatus, setSubscriptionStatus] = useState(null);
+    const [loading, setLoading] = useState(true);
     const role = user?.role || 'professional'; // 'doctor' or 'nurse'
+
+    useEffect(() => {
+        const fetchSubscriptionStatus = async () => {
+            try {
+                if (user && ['doctor', 'nurse'].includes(user.role)) {
+                    const { data } = await getSubscriptionStatus();
+                    setSubscriptionStatus(data.data);
+                }
+            } catch (error) {
+                console.error('Error fetching subscription status:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchSubscriptionStatus();
+    }, [user]);
+
+    const isPro = user?.subscriptionTier === 'pro' || subscriptionStatus?.tier === 'pro';
 
     return (
         <div className="bg-primary-dark min-h-full py-12 px-4">
             <div className="container mx-auto">
                 <div className="mb-12">
-                    <h1 className="text-4xl md:text-5xl font-bold text-white">
-                        {role.charAt(0).toUpperCase() + role.slice(1)}'s Dashboard
-                    </h1>
+                    <div className="flex items-center gap-4 mb-4">
+                        <h1 className="text-4xl md:text-5xl font-bold text-white">
+                            {role.charAt(0).toUpperCase() + role.slice(1)}'s Dashboard
+                        </h1>
+                        {isPro && (
+                            <span className="bg-gradient-to-r from-yellow-400 to-yellow-600 text-black px-4 py-2 rounded-full text-sm font-bold flex items-center gap-2">
+                                ⭐ PRO MEMBER
+                            </span>
+                        )}
+                    </div>
                     <p className="text-lg text-secondary-text mt-2">Welcome, {user?.name}!</p>
+                    {isPro && subscriptionStatus?.expiry && (
+                        <p className="text-sm text-yellow-400 mt-1">
+                            Pro subscription active until {new Date(subscriptionStatus.expiry).toLocaleDateString()}
+                        </p>
+                    )}
                 </div>
+
+                {/* Pro Subscription Section */}
+                {!loading && !isPro && ['doctor', 'nurse'].includes(user?.role) && (
+                    <div className="mb-8 bg-gradient-to-r from-blue-600 to-purple-600 p-6 rounded-xl shadow-lg">
+                        <div className="flex flex-col md:flex-row items-center justify-between">
+                            <div className="text-white mb-4 md:mb-0">
+                                <h3 className="text-2xl font-bold mb-2">🚀 Upgrade to Pro</h3>
+                                <p className="text-blue-100">Get higher visibility, advanced analytics, and lower fees!</p>
+                            </div>
+                            <Link 
+                                to="/upgrade-pro" 
+                                className="bg-white text-blue-600 px-6 py-3 rounded-lg font-bold hover:bg-gray-100 transition-colors"
+                            >
+                                Learn More
+                            </Link>
+                        </div>
+                    </div>
+                )}
+
+                {/* Pro Features Status (for Pro users) */}
+                {isPro && (
+                    <div className="mb-8 bg-secondary-dark p-6 rounded-xl shadow-lg">
+                        <h3 className="text-2xl font-bold text-white mb-6">Your Pro Features</h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <ProBenefitCard 
+                                icon="🔍"
+                                title="Higher Search Visibility"
+                                description="Appear at the top of search results with Pro badge"
+                                isActive={true}
+                            />
+                            <ProBenefitCard 
+                                icon="📊"
+                                title="Advanced Analytics"
+                                description="Access to Demand Hotspot maps and insights"
+                                isActive={true}
+                            />
+                            <ProBenefitCard 
+                                icon="💰"
+                                title="Lower Platform Fees"
+                                description="Pay only 15% instead of 20% commission"
+                                isActive={true}
+                            />
+                            <ProBenefitCard 
+                                icon="👥"
+                                title="Peer Review Forum"
+                                description="Access to professional community features"
+                                isActive={true}
+                            />
+                        </div>
+                    </div>
+                )}
 
                 {/* --- Stats Section --- */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
@@ -46,6 +152,16 @@ const DoctorDashboard = () => {
                             <Link to={`/${role}/edit-profile`} className="block w-full text-left p-4 bg-gray-700 text-white rounded-lg font-bold hover:bg-gray-600 transition">
                                 Edit My Profile
                             </Link>
+                            {isPro && (
+                                <Link to="/demand-hotspot" className="block w-full text-left p-4 bg-gradient-to-r from-yellow-500 to-yellow-600 text-black rounded-lg font-bold hover:from-yellow-600 hover:to-yellow-700 transition">
+                                    📊 Demand Hotspot Map
+                                </Link>
+                            )}
+                            {!isPro && ['doctor', 'nurse'].includes(user?.role) && (
+                                <Link to="/upgrade-pro" className="block w-full text-left p-4 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg font-bold hover:from-purple-700 hover:to-blue-700 transition">
+                                    ⭐ Upgrade to Pro
+                                </Link>
+                            )}
                         </div>
                     </div>
                     {/* Today's Appointments */}

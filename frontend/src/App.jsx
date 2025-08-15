@@ -45,6 +45,8 @@ import NurseEditProfilePage from './pages/NurseEditProfilePage.jsx';
 import AdminEditProfilePage from './pages/AdminEditProfilePage.jsx';
 import DoctorAppointmentsPage from './pages/DoctorAppointmentsPage.jsx';
 import ProfessionalAvailabilityPage from './pages/ProfessionalAvailabilityPage.jsx';
+import ProUpgradePage from './pages/ProUpgradePage.jsx';
+import DemandHotspotPage from './pages/DemandHotspotPage.jsx';
 
 // Protected Admin Page
 import AdminDashboard from './pages/AdminDashboard.jsx';
@@ -96,6 +98,8 @@ function App() {
             <Route path="/nurse/edit-profile" element={<ProtectedRoute><NurseEditProfilePage /></ProtectedRoute>} />
             <Route path="/doctor/appointments" element={<ProtectedRoute><DoctorAppointmentsPage /></ProtectedRoute>} />
             <Route path="/nurse/appointments" element={<ProtectedRoute><DoctorAppointmentsPage /></ProtectedRoute>} />
+            <Route path="/upgrade-pro" element={<ProtectedRoute><ProUpgradePage /></ProtectedRoute>} />
+            <Route path="/demand-hotspot" element={<ProtectedRoute><DemandHotspotPage /></ProtectedRoute>} />
             <Route path="/doctor/availability" element={<ProtectedRoute><ProfessionalAvailabilityPage /></ProtectedRoute>} />
             <Route path="/nurse/availability" element={<ProtectedRoute><ProfessionalAvailabilityPage /></ProtectedRoute>} />
 

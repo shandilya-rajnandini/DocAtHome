@@ -56,6 +56,7 @@ app.use('/api/profile', require('./routes/profileRoutes'));
 app.use('/api/appointments', require('./routes/appointmentRoutes'));
 app.use('/api/lab-tests', require('./routes/labTestRoutes'));
 app.use('/api/payment', require('./routes/paymentRoutes'));
+app.use('/api/subscription', require('./routes/subscriptionRoutes'));
 app.use('/api/care-circle', require('./routes/careCircle'));
 app.use('/api/quests', require('./routes/questRoutes'));
 app.use('/api/reviews', require('./routes/reviewRoutes'));

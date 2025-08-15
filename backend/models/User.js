@@ -137,6 +137,28 @@ const UserSchema = new mongoose.Schema({
     default: false,
   },
 
+  // --- Subscription Fields ---
+  subscriptionTier: {
+    type: String,
+    enum: ['free', 'pro'],
+    default: 'free',
+    required: function () {
+      return this.role === 'doctor' || this.role === 'nurse';
+    },
+  },
+  subscriptionExpiry: {
+    type: Date,
+    required: function () {
+      return this.subscriptionTier === 'pro';
+    },
+  },
+  razorpaySubscriptionId: {
+    type: String,
+    required: function () {
+      return this.subscriptionTier === 'pro';
+    },
+  },
+
   // --- Geofencing: Professional Service Area ---
   // Optional GeoJSON Polygon that defines where the professional serves.
   // Coordinates must be in [lng, lat] order as per GeoJSON spec.

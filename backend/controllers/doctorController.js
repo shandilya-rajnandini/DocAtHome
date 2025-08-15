@@ -199,8 +199,15 @@ const getDoctors = async (req, res) => {
         // Combine both sets of doctors
         doctors = [...doctorsWithDistance, ...doctorsNearbyByCity];
         
-        // Sort by distance (closest first)
-        doctors.sort((a, b) => a.distance - b.distance);
+        // Sort by subscription tier first (Pro users on top), then by distance
+        doctors.sort((a, b) => {
+          // Pro users get higher priority
+          if (a.subscriptionTier === 'pro' && b.subscriptionTier !== 'pro') return -1;
+          if (b.subscriptionTier === 'pro' && a.subscriptionTier !== 'pro') return 1;
+          
+          // If same subscription tier, sort by distance
+          return a.distance - b.distance;
+        });
         
         // Return response with patient location for localStorage
         const response = {
@@ -215,6 +222,18 @@ const getDoctors = async (req, res) => {
       }
     } else {
       doctors = await User.find(baseQuery).select('-password');
+    }
+
+    // Sort by subscription tier for regular searches too
+    if (doctors && doctors.length > 0) {
+      doctors.sort((a, b) => {
+        // Pro users get higher priority
+        if (a.subscriptionTier === 'pro' && b.subscriptionTier !== 'pro') return -1;
+        if (b.subscriptionTier === 'pro' && a.subscriptionTier !== 'pro') return 1;
+        
+        // If same subscription tier, sort by rating
+        return b.averageRating - a.averageRating;
+      });
     }
 
     res.json({ doctors: doctors });

@@ -281,7 +281,14 @@ const NurseCard = ({ nurse }) => (
         <div className="flex-grow">
             <div className="flex items-start justify-between">
                 <div>
-                    <h3 className="text-2xl font-bold text-white">{nurse.name}</h3>
+                    <div className="flex items-center gap-3 mb-2">
+                        <h3 className="text-2xl font-bold text-white">{nurse.name}</h3>
+                        {nurse.subscriptionTier === 'pro' && (
+                            <span className="bg-gradient-to-r from-yellow-400 to-yellow-600 text-black px-3 py-1 rounded-full text-sm font-bold flex items-center gap-1">
+                                ⭐ PRO
+                            </span>
+                        )}
+                    </div>
                     <p className="text-teal-400 font-semibold">{nurse.specialty}</p>
                     <p className="text-secondary-text mt-1">{nurse.city}</p>
                 </div>
