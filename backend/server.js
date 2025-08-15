@@ -39,6 +39,7 @@ app.use('/api/auth', require('./routes/authRoutes'));
 app.use('/api/admin', require('./routes/adminRoutes'));
 app.use('/api/doctors', require('./routes/doctorRoutes'));
 app.use('/api/nurses', require('./routes/nurseRoutes'));
+app.use('/api/2fa', require('./routes/twoFactorAuthRoutes')); // Add this if needed
 app.use('/api/profile', require('./routes/profileRoutes'));
 app.use('/api/appointments', require('./routes/appointmentRoutes'));
 app.use('/api/lab-tests', require('./routes/labTestRoutes'));
@@ -46,7 +47,7 @@ app.use('/api/payment', require('./routes/paymentRoutes'));
 app.use('/api/quests', require('./routes/questRoutes'));
 app.use('/api/prescriptions', require('./routes/PrescriptionRoutes'));
 app.use('/api/reviews', require('./routes/reviewRoutes'));
-app.use('/api/twofactor', require('./routes/twoFactorAuthRoutes'));
+app.use('/api/refills', require('./routes/refillRequests')); // Add this if needed
 
 // --- Simple Health Check Route ---
 app.get('/health', (req, res) => res.status(200).send('OK'));
