@@ -14,8 +14,7 @@ const {
   logger 
 } = require('./middleware/errorHandler');
 
-// --- Handle uncaught exceptions ---
-handleUncaughtException();
+
 
 // --- Load env vars ---
 dotenv.config();
@@ -34,7 +33,9 @@ const corsOptions = {
     if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
-      callback(new Error('Not allowed by CORS'));
+      const error = new Error('Not allowed by CORS');
+      error.statusCode = 403;
+      callback(error);
     }
   }
 };
@@ -50,7 +51,7 @@ app.use('/api/auth', require('./routes/authRoutes'));
 app.use('/api/admin', require('./routes/adminRoutes'));
 app.use('/api/doctors', require('./routes/doctorRoutes'));
 app.use('/api/nurses', require('./routes/nurseRoutes'));
-app.use('/api/2fa', require('./routes/twoFactorAuthRoutes'));
+
 app.use('/api/profile', require('./routes/profileRoutes'));
 app.use('/api/appointments', require('./routes/appointmentRoutes'));
 app.use('/api/lab-tests', require('./routes/labTestRoutes'));
@@ -109,9 +110,15 @@ const startServer = async () => {
     handleGracefulShutdown(server);
 
   } catch (error) {
-    logger.error('FATAL ERROR: Could not start server', { error: error.message });
+      logger.error('FATAL ERROR: Could not start server', { 
+      error: error.message, 
+      stack: error.stack 
+    });
     process.exit(1);
   }
 };
+
+// --- Handle uncaught exceptions ---
+handleUncaughtException();
 
 startServer();
