@@ -2,12 +2,17 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { getSubscriptionStatus } from '../api';
+import EmptyState from "../components/EmptyState";
+import { Calendar } from "lucide-react";
 
-const StatCard = ({ value, label, currency = '' }) => (
-    <div className="bg-secondary-dark p-6 rounded-xl text-center shadow-lg">
-        <p className="text-4xl font-bold text-accent-blue">{currency}{value}</p>
-        <p className="text-secondary-text mt-1">{label}</p>
-    </div>
+const StatCard = ({ value, label, currency = "" }) => (
+  <div className="bg-secondary-dark p-6 rounded-xl text-center shadow-lg">
+    <p className="text-4xl font-bold text-accent-blue">
+      {currency}
+      {value}
+    </p>
+    <p className="text-secondary-text mt-1">{label}</p>
+  </div>
 );
 
 const ProBenefitCard = ({ icon, title, description, isActive }) => (
@@ -168,7 +173,11 @@ const DoctorDashboard = () => {
                     <div className="lg:col-span-2 bg-secondary-dark p-6 rounded-xl shadow-lg">
                         <h2 className="text-2xl font-bold text-white mb-4">Today's Schedule</h2>
                         <div className="text-center text-secondary-text py-20 border-2 border-dashed border-gray-700 rounded-lg">
-                            <p className="text-lg">No appointments scheduled for today.</p>
+                            <EmptyState
+                                icon={Calendar}
+                                title="No Appointments Today"
+                                message="Your confirmed visits for today will appear here."
+                            />
                         </div>
                     </div>
                 </div>
