@@ -108,7 +108,7 @@ const DoctorProfilePage = () => {
     console.log("Booking appointment with data:", appointmentData);
     try {
       // eslint-disable-next-line no-unused-vars
-      const response = await bookAppointment(appointmentData);
+      const response = await createAppointment(appointmentData);
       const successMessage = useCareFund
         ? `Appointment successfully booked! ₹${appointmentData.fee} deducted from your care fund.`
         : "Appointment successfully booked!";
