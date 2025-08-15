@@ -1,6 +1,6 @@
 const express = require('express');
 const http = require('http');
-const { Server } = require('socket.io');
+const { Server: _Server } = require('socket.io');
 const dotenv = require('dotenv');
 const cors = require('cors');
 const helmet = require('helmet');
@@ -23,8 +23,8 @@ const app = express();
 
 // --- Production-Ready CORS Configuration ---
 const allowedOrigins = [
-  "http://localhost:5173", // For your local development frontend
-  "https://docathome-rajnandini.netlify.app" // Your live frontend URL
+  'http://localhost:5173', // For your local development frontend
+  'https://docathome-rajnandini.netlify.app' // Your live frontend URL
 ];
 
 const corsOptions = {

@@ -75,7 +75,7 @@ exports.getNurses = asyncHandler(async (req, res) => {
       const longitude = parseFloat(lng);
       
       if (!Number.isNaN(latitude) && !Number.isNaN(longitude)) {
-        const radiusInMeters = parseFloat(radius) * 1000; // Convert km to meters
+        const _radiusInMeters = parseFloat(radius) * 1000; // Convert km to meters
         
         // Find all nurses with service areas using distance calculation
         const geoQuery = {
