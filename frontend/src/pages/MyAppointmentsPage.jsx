@@ -5,6 +5,9 @@ import toast from "react-hot-toast";
 import IconCalendarCheck from "../components/icons/IconCalendarCheck";
 import IconHistory from "../components/icons/IconHistory";
 import IconStethoscope from "../components/icons/IconStethoscope";
+import EmptyState from '../components/EmptyState';
+import { Calendar } from 'lucide-react';
+
 
 // Confirmation Modal Component
 const ConfirmationModal = ({ isOpen, onClose, onConfirm, title, message }) => {
@@ -16,9 +19,7 @@ const ConfirmationModal = ({ isOpen, onClose, onConfirm, title, message }) => {
         <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
           {title}
         </h3>
-        <p className="text-gray-700 dark:text-gray-300 mb-6">
-          {message}
-        </p>
+        <p className="text-gray-700 dark:text-gray-300 mb-6">{message}</p>
         <div className="flex justify-end space-x-4">
           <button
             onClick={onClose}
@@ -42,54 +43,57 @@ const AppointmentCard = ({ appointment, onAppointmentUpdate }) => {
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [cancelling, setCancelling] = useState(false);
   const appointmentDate = new Date(appointment.appointmentDate);
+  // eslint-disable-next-line no-unused-vars
   const isPast = appointmentDate < new Date();
 
   // Check if appointment can be cancelled (within 2 hours policy)
   const canCancel = () => {
-    if (!['Pending', 'Confirmed'].includes(appointment.status)) {
+    if (!["Pending", "Confirmed"].includes(appointment.status)) {
       return false;
     }
-    
+
     const appointmentDateStr = appointment.appointmentDate; // e.g., "2025-07-02"
     const appointmentTimeStr = appointment.appointmentTime; // e.g., "01:00 PM"
-    
+
     // Convert 12-hour format to 24-hour format for proper parsing
-    const [time, period] = appointmentTimeStr.split(' ');
-    const [hours, minutes] = time.split(':');
+    const [time, period] = appointmentTimeStr.split(" ");
+    const [hours, minutes] = time.split(":");
     let hour24 = parseInt(hours);
-    
-    if (period === 'PM' && hour24 !== 12) {
+
+    if (period === "PM" && hour24 !== 12) {
       hour24 += 12;
-    } else if (period === 'AM' && hour24 === 12) {
+    } else if (period === "AM" && hour24 === 12) {
       hour24 = 0;
     }
-    
+
     const appointmentDateTime = new Date(appointmentDateStr);
     appointmentDateTime.setHours(hour24, parseInt(minutes), 0, 0);
-    
+
     const now = new Date();
     const timeDifference = appointmentDateTime.getTime() - now.getTime();
     const hoursUntilAppointment = timeDifference / (1000 * 60 * 60);
-    
+
     return hoursUntilAppointment >= 2;
   };
 
   const handleCancelAppointment = async () => {
     setCancelling(true);
     try {
-      await updateAppointmentStatus(appointment._id, { status: 'Cancelled' });
-      
+      await updateAppointmentStatus(appointment._id, { status: "Cancelled" });
+
       // Show different success messages based on payment method
-      if (appointment.paymentMethod === 'careFund') {
-        toast.success(`Appointment cancelled successfully! ₹${appointment.fee} has been refunded to your care fund.`);
+      if (appointment.paymentMethod === "careFund") {
+        toast.success(
+          `Appointment cancelled successfully! ₹${appointment.fee} has been refunded to your care fund.`
+        );
       } else {
-        toast.success('Appointment cancelled successfully');
+        toast.success("Appointment cancelled successfully");
       }
-      
+
       setShowCancelModal(false);
       onAppointmentUpdate(); // Refresh the appointments list
     } catch (error) {
-      toast.error(error.response?.data?.msg || 'Failed to cancel appointment');
+      toast.error(error.response?.data?.msg || "Failed to cancel appointment");
     } finally {
       setCancelling(false);
     }
@@ -129,7 +133,7 @@ const AppointmentCard = ({ appointment, onAppointmentUpdate }) => {
               disabled={cancelling}
               className="px-3 py-1 text-sm bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {cancelling ? 'Cancelling...' : 'Cancel Appointment'}
+              {cancelling ? "Cancelling..." : "Cancel Appointment"}
             </button>
           )}
         </div>
@@ -176,8 +180,16 @@ const AppointmentCard = ({ appointment, onAppointmentUpdate }) => {
           {appointment.paymentMethod && (
             <>
               <p className="font-semibold text-white mt-2">Payment</p>
-              <p className={appointment.paymentMethod === 'careFund' ? 'text-blue-400' : 'text-green-400'}>
-                {appointment.paymentMethod === 'careFund' ? 'Care Fund' : 'External Payment'}
+              <p
+                className={
+                  appointment.paymentMethod === "careFund"
+                    ? "text-blue-400"
+                    : "text-green-400"
+                }
+              >
+                {appointment.paymentMethod === "careFund"
+                  ? "Care Fund"
+                  : "External Payment"}
               </p>
             </>
           )}
@@ -194,7 +206,7 @@ const AppointmentCard = ({ appointment, onAppointmentUpdate }) => {
           </div>
         </>
       )}
-      
+
       <ConfirmationModal
         isOpen={showCancelModal}
         onClose={() => setShowCancelModal(false)}
@@ -240,13 +252,20 @@ const MyAppointmentsPage = () => {
     now.setHours(0, 0, 0, 0);
 
     if (activeTab === "Upcoming") {
-      return (appointmentDate >= now || ['Pending', 'Confirmed'].includes(appt.status)) && 
-             appt.status !== 'Cancelled' && appt.status !== 'Completed';
+      return (
+        (appointmentDate >= now ||
+          ["Pending", "Confirmed"].includes(appt.status)) &&
+        appt.status !== "Cancelled" &&
+        appt.status !== "Completed"
+      );
     } else if (activeTab === "Cancelled") {
-      return appt.status === 'Cancelled';
+      return appt.status === "Cancelled";
     } else {
       // 'Past' - completed appointments and past dates
-      return appt.status === 'Completed' || (appointmentDate < now && appt.status !== 'Cancelled');
+      return (
+        appt.status === "Completed" ||
+        (appointmentDate < now && appt.status !== "Cancelled")
+      );
     }
   });
 
@@ -289,8 +308,16 @@ const MyAppointmentsPage = () => {
                   : "text-gray-500 hover:text-gray-600 dark:hover:text-white"
               }`}
             >
-              <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+              <svg
+                className="w-5 h-5 mr-2"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                  clipRule="evenodd"
+                />
               </svg>
               Cancelled
             </button>
@@ -310,20 +337,19 @@ const MyAppointmentsPage = () => {
           {filteredAppointments.length > 0 ? (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {filteredAppointments.map((appt) => (
-                <AppointmentCard 
-                  key={appt._id} 
-                  appointment={appt} 
+                <AppointmentCard
+                  key={appt._id}
+                  appointment={appt}
                   onAppointmentUpdate={fetchAppointments}
                 />
               ))}
             </div>
           ) : (
-            <div className="text-center text-slate-800 dark:text-secondary-text py-20">
-              <h2 className="text-2xl font-semibold mb-2">
-                No {activeTab} Appointments
-              </h2>
-              <p>It looks like you don't have any appointments here.</p>
-            </div>
+            <EmptyState
+              icon={Calendar}
+              title={`No ${activeTab} Appointments`}
+              message="It looks like you don't have any appointments here."
+            />
           )}
         </div>
       </div>

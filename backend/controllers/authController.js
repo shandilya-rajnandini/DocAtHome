@@ -12,6 +12,7 @@ const {
   ConflictError,
   logger 
 } = require('../middleware/errorHandler');
+const asyncHandler = require('../middleware/asyncHandler');
 
 // (The 'register' and 'getMe' functions can remain as they are)
 // ...
@@ -309,23 +310,17 @@ exports.register = catchAsync(async (req, res, next) => {
     }
   );
 });
-exports.getMe = async (req, res) => {
-  try {
+exports.getMe = asyncHandler(async (req, res) => {
     const user = await User.findById(req.user.id).select('-password');
     if (!user) {
       return res.status(404).json({ msg: 'User not found' });
     }
     res.json(user);
-  } catch (err) {
-    console.error('GETME ERROR:', err.message);
-    res.status(500).send('Server Error');
-  }
-};
+});
 
 // @desc    Forgot password
 // @route   POST /api/auth/forgot-password
-exports.forgotPassword = async (req, res) => {
-  try {
+exports.forgotPassword = asyncHandler(async (req, res) => {
     const { email } = req.body;
     
     // Input validation
@@ -424,19 +419,12 @@ exports.forgotPassword = async (req, res) => {
         message: 'Email service temporarily unavailable. Please try again later.' 
       });
     }
-  } catch (err) {
-    console.error('Forgot password error:', err.message);
-    res.status(500).json({ 
-      success: false,
-      message: 'Server error. Please try again later.' 
-    });
-  }
-};
+
+});
 
 // @desc    Reset password
 // @route   POST /api/auth/reset-password/:token
-exports.resetPassword = async (req, res) => {
-  try {
+exports.resetPassword = asyncHandler(async (req, res) => {
     const { password } = req.body;
     const { token } = req.params;
     
@@ -521,11 +509,4 @@ exports.resetPassword = async (req, res) => {
       success: true, 
       message: 'Password has been reset successfully. You can now login with your new password.' 
     });
-  } catch (err) {
-    console.error('Reset password error:', err.message);
-    res.status(500).json({ 
-      success: false,
-      message: 'Server error. Please try again later.' 
-    });
-  }
-};
+});

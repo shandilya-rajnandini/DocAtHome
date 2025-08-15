@@ -16,6 +16,7 @@ const TwoFactorAuthPage = () => {
         const { data } = await API.post('/twofactor/setup');
         setQrCodeUrl(data.qrCodeUrl);
         setSecret(data.secret);
+      // eslint-disable-next-line no-unused-vars
       } catch (err) {
         setError('Failed to set up 2FA. Please try again later.');
         toast.error('Failed to set up 2FA. Please try again later.');
@@ -37,6 +38,7 @@ const TwoFactorAuthPage = () => {
       setIsVerified(true);
       setError('');
       toast.success('2FA enabled successfully!');
+    // eslint-disable-next-line no-unused-vars
     } catch (err) {
       setError('Invalid token. Please try again.');
       toast.error('Invalid token. Please try again.');

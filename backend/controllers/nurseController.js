@@ -1,4 +1,5 @@
 const User = require('../models/User');
+const asyncHandler = require('../middleware/asyncHandler');
 
 // Helper function to get approximate city coordinates
 const getCityCoordinates = (city) => {
@@ -56,8 +57,7 @@ const calculatePolygonCentroid = (coordinates) => {
 
 // @desc    Search for verified nurses
 // @route   GET /api/nurses
-exports.getNurses = async (req, res) => {
-  try {
+exports.getNurses = asyncHandler(async (req, res) => {
     const baseQuery = { role: 'nurse', isVerified: true };
 
     if (req.query.specialty && req.query.specialty !== '') {
@@ -75,7 +75,7 @@ exports.getNurses = async (req, res) => {
       const longitude = parseFloat(lng);
       
       if (!Number.isNaN(latitude) && !Number.isNaN(longitude)) {
-        const radiusInMeters = parseFloat(radius) * 1000; // Convert km to meters
+        const _radiusInMeters = parseFloat(radius) * 1000; // Convert km to meters
         
         // Find all nurses with service areas using distance calculation
         const geoQuery = {
@@ -173,24 +173,14 @@ exports.getNurses = async (req, res) => {
     }
 
     res.json(nurses);
-
-  } catch (error) {
-    console.error('ERROR in getNurses:', error.message);
-    res.status(500).send('Server Error');
-  }
-};
+});
 
 // @desc    Get a single nurse by ID
 // @route   GET /api/nurses/:id
-exports.getNurseById = async (req, res) => {
-  try {
+exports.getNurseById = asyncHandler(async (req, res) => {
     const nurse = await User.findById(req.params.id).select('-password');
     if (!nurse || nurse.role !== 'nurse') {
       return res.status(404).json({ msg: 'Nurse not found' });
     }
     res.json(nurse);
-  } catch (err) {
-    console.error(err.message);
-    res.status(500).send('Server Error');
-  }
-};
+});
