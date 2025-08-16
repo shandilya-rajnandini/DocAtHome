@@ -235,7 +235,14 @@ const DoctorCard = ({ doctor }) => (
         <div className="flex-grow">
             <div className="flex items-start justify-between">
                 <div>
-                    <h3 className="text-2xl font-bold text-white">{doctor.name}</h3>
+                    <div className="flex items-center gap-3 mb-2">
+                        <h3 className="text-2xl font-bold text-white">{doctor.name}</h3>
+                        {doctor.subscriptionTier === 'pro' && (
+                            <span className="bg-gradient-to-r from-yellow-400 to-yellow-600 text-black px-3 py-1 rounded-full text-sm font-bold flex items-center gap-1">
+                                ⭐ PRO
+                            </span>
+                        )}
+                    </div>
                     <p className="text-accent-blue font-semibold">{doctor.specialty}</p>
                     <p className="text-secondary-text mt-1">{doctor.city}</p>
                 </div>
