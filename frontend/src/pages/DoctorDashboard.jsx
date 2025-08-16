@@ -92,7 +92,7 @@ const DoctorDashboard = () => {
                                 <p className="text-blue-100">Get higher visibility, advanced analytics, and lower fees!</p>
                             </div>
                             <Link
-                                to="/pro-upgrade"
+                                to="/upgrade-pro"
                                 className="bg-white text-blue-600 px-6 py-3 rounded-lg font-bold hover:bg-blue-50 transition"
                             >
                                 Upgrade Now

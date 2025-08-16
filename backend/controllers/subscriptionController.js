@@ -123,7 +123,7 @@ exports.verifySubscription = catchAsync(async (req, res, next) => {
 
   // CRITICAL SECURITY: Block ALL test subscriptions in production
   // This prevents privilege escalation attacks via fake test subscription IDs
-  if (process.env.NODE_ENV === 'production' && razorpay_subscription_id.startsWith('test_sub_')) {
+  if (process.env.NODE_ENV === 'production' && razorpay_subscription_id?.startsWith('test_sub_')) {
     return next(new ValidationError('Test subscriptions are not allowed in production environment'));
   }
   

@@ -15,9 +15,9 @@ const ProUpgradePage = () => {
     const getDashboardRoute = (userRole) => {
         switch (userRole) {
             case 'doctor':
-                return '/doctor-dashboard';
+                return '/doctor/dashboard';
             case 'nurse':
-                return '/nurse-dashboard';
+                return '/nurse/dashboard';
             default:
                 return '/dashboard'; // Fallback for other roles
         }
