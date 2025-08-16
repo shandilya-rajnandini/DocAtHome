@@ -59,7 +59,25 @@ const DoctorDashboard = () => {
         fetchSubscriptionStatus();
     }, [user]);
 
-    const isPro = user?.subscriptionTier === 'pro' || subscriptionStatus?.tier === 'pro';
+    // Helper function to check if subscription is active and not expired
+    const isSubscriptionActive = () => {
+        const hasProTier = user?.subscriptionTier === 'pro' || subscriptionStatus?.tier === 'pro';
+        const hasValidExpiry = subscriptionStatus?.expiry && new Date(subscriptionStatus.expiry) > new Date();
+        const isActiveStatus = subscriptionStatus?.subscription?.status === 'active';
+        
+        return hasProTier && hasValidExpiry && isActiveStatus;
+    };
+
+    // Alternative: Less strict validation (without requiring subscription status to be 'active')
+    // const isSubscriptionActive = () => {
+    //     const hasProTier = user?.subscriptionTier === 'pro' || subscriptionStatus?.tier === 'pro';
+    //     const hasValidExpiry = subscriptionStatus?.expiry && new Date(subscriptionStatus.expiry) > new Date();
+    //     return hasProTier && hasValidExpiry;
+    // };
+
+    // Pro subscription check: Must have pro tier AND valid expiry date AND active status
+    // For less strict validation, remove the last condition: && subscriptionStatus?.subscription?.status === 'active'
+    const isPro = isSubscriptionActive();
 
     return (
         <div className="bg-primary-dark min-h-full py-12 px-4">

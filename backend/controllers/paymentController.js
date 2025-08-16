@@ -8,6 +8,14 @@ const asyncHandler = require('../middleware/asyncHandler');
 // SECURITY: All payment amounts are fetched from Razorpay API to prevent
 // client-side manipulation. We never trust client-provided amounts.
 // This ensures data integrity and prevents financial fraud.
+//
+// INTEGRITY CHECKS:
+// - Payment status must be 'captured'
+// - Order ID must match between payment and request
+// - Currency must be 'INR'
+// - Patient must exist in database
+// - Order context must match donation intent (via notes verification)
+// - Prevents replay attacks, cross-context crediting, and order mismatches
 
 // Initialize Razorpay instance
 const instance = new Razorpay({
@@ -19,7 +27,22 @@ const instance = new Razorpay({
 // @route   POST /api/payment/create-order
 // @access  Private
 exports.createOrder = asyncHandler(async (req, res) => {
-  const { amount, currency = 'INR' } = req.body;
+  const { amount, currency = 'INR', isDonation, patientId, donorName } = req.body;
+
+  // Validate required environment variables before making Razorpay API calls
+  if (!process.env.RAZORPAY_KEY_ID) {
+    return res.status(500).json({
+      success: false,
+      message: 'Payment configuration error: missing RAZORPAY_KEY_ID',
+    });
+  }
+
+  if (!process.env.RAZORPAY_KEY_SECRET) {
+    return res.status(500).json({
+      success: false,
+      message: 'Payment configuration error: missing RAZORPAY_KEY_SECRET',
+    });
+  }
 
   // API expects amount in rupees, convert to paise for storage
   // This ensures all monetary amounts are stored consistently as integer paise
@@ -28,8 +51,24 @@ exports.createOrder = asyncHandler(async (req, res) => {
     currency,
     receipt: `receipt_order_${Date.now()}`,
   };
-    const order = await instance.orders.create(options);
-    return res.status(200).json(order);
+
+  // Add context information to order notes for stronger binding
+  if (isDonation && patientId) {
+    options.notes = {
+      isDonation: 'true',
+      patientId: patientId.toString(),
+      donorName: donorName || 'Anonymous',
+      context: 'donation'
+    };
+  } else {
+    options.notes = {
+      context: 'subscription',
+      userId: req.user.id.toString()
+    };
+  }
+
+  const order = await instance.orders.create(options);
+  return res.status(200).json(order);
 
 });
 
@@ -77,6 +116,13 @@ exports.verifyPayment = asyncHandler(async (req, res) => {
     });
   }
 
+  if (!process.env.RAZORPAY_KEY_ID) {
+    return res.status(500).json({
+      success: false,
+      message: 'Payment verification configuration error: missing RAZORPAY_KEY_ID',
+    });
+  }
+
   const body = `${razorpay_order_id}|${razorpay_payment_id}`;
   const expectedSignature = crypto
     .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET)
@@ -104,9 +150,62 @@ exports.verifyPayment = asyncHandler(async (req, res) => {
         });
       }
 
+      // Integrity checks
+      if (payment.status !== 'captured') {
+        return res.status(400).json({
+          success: false,
+          message: `Payment status is ${payment.status}, not captured`,
+        });
+      }
+      if (payment.order_id !== razorpay_order_id) {
+        return res.status(400).json({
+          success: false,
+          message: 'Payment does not correspond to the provided order',
+        });
+      }
+      if (payment.currency !== 'INR') {
+        return res.status(400).json({
+          success: false,
+          message: `Unsupported currency: ${payment.currency}`,
+        });
+      }
+
+      // Verify order context matches donation intent
+      try {
+        const order = await instance.orders.fetch(razorpay_order_id);
+        if (order.notes && order.notes.isDonation === 'true') {
+          if (order.notes.patientId !== patientId.toString()) {
+            return res.status(400).json({
+              success: false,
+              message: 'Order was created for a different patient',
+            });
+          }
+        } else {
+          return res.status(400).json({
+            success: false,
+            message: 'Order was not created for donation purposes',
+          });
+        }
+      } catch (orderError) {
+        console.error('Error fetching order for context verification:', orderError);
+        return res.status(400).json({
+          success: false,
+          message: 'Unable to verify order context',
+        });
+      }
+
       // Use the canonical amount from Razorpay (already in paise)
       const canonicalAmount = payment.amount;
       
+      // Ensure patient exists
+      const patient = await User.findById(patientId).select('_id');
+      if (!patient) {
+        return res.status(404).json({
+          success: false,
+          message: 'Patient not found',
+        });
+      }
+
       // Create donation with canonical amount from Razorpay
       await Donation.create({
         donorName,
@@ -158,6 +257,26 @@ exports.verifyPayment = asyncHandler(async (req, res) => {
       return res.status(400).json({
         success: false,
         message: 'Unable to fetch payment details from Razorpay',
+      });
+    }
+
+    // Integrity checks for regular transactions
+    if (payment.status !== 'captured') {
+      return res.status(400).json({
+        success: false,
+        message: `Payment status is ${payment.status}, not captured`,
+      });
+    }
+    if (payment.order_id !== razorpay_order_id) {
+      return res.status(400).json({
+        success: false,
+        message: 'Payment does not correspond to the provided order',
+      });
+    }
+    if (payment.currency !== 'INR') {
+      return res.status(400).json({
+        success: false,
+        message: `Unsupported currency: ${payment.currency}`,
       });
     }
 
