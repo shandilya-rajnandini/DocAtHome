@@ -91,43 +91,37 @@ const DoctorDashboard = () => {
                                 <h3 className="text-2xl font-bold mb-2">🚀 Upgrade to Pro</h3>
                                 <p className="text-blue-100">Get higher visibility, advanced analytics, and lower fees!</p>
                             </div>
-                            <Link 
-                                to="/upgrade-pro" 
-                                className="bg-white text-blue-600 px-6 py-3 rounded-lg font-bold hover:bg-gray-100 transition-colors"
+                            <Link
+                                to="/pro-upgrade"
+                                className="bg-white text-blue-600 px-6 py-3 rounded-lg font-bold hover:bg-blue-50 transition"
                             >
-                                Learn More
+                                Upgrade Now
                             </Link>
                         </div>
                     </div>
                 )}
 
-                {/* Pro Features Status (for Pro users) */}
+                {/* Pro Benefits Section */}
                 {isPro && (
-                    <div className="mb-8 bg-secondary-dark p-6 rounded-xl shadow-lg">
-                        <h3 className="text-2xl font-bold text-white mb-6">Your Pro Features</h3>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <ProBenefitCard 
-                                icon="🔍"
-                                title="Higher Search Visibility"
-                                description="Appear at the top of search results with Pro badge"
+                    <div className="mb-8">
+                        <h2 className="text-2xl font-bold text-white mb-4">Pro Benefits</h2>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <ProBenefitCard
+                                icon="⭐"
+                                title="Higher Visibility"
+                                description="Your profile appears first in search results"
                                 isActive={true}
                             />
-                            <ProBenefitCard 
+                            <ProBenefitCard
                                 icon="📊"
                                 title="Advanced Analytics"
-                                description="Access to Demand Hotspot maps and insights"
+                                description="Detailed insights about your performance"
                                 isActive={true}
                             />
-                            <ProBenefitCard 
+                            <ProBenefitCard
                                 icon="💰"
-                                title="Lower Platform Fees"
-                                description="Pay only 15% instead of 20% commission"
-                                isActive={true}
-                            />
-                            <ProBenefitCard 
-                                icon="👥"
-                                title="Peer Review Forum"
-                                description="Access to professional community features"
+                                title="Lower Fees"
+                                description="Reduced platform fees on all transactions"
                                 isActive={true}
                             />
                         </div>
@@ -136,42 +130,57 @@ const DoctorDashboard = () => {
 
                 {/* --- Stats Section --- */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
-                    <StatCard value="0" label={role === 'doctor' ? "Pending Requests" : "Pending Assignments"} />
+                    <StatCard
+                        value="0"
+                        label={
+                            role === "doctor" ? "Pending Requests" : "Pending Assignments"
+                        }
+                    />
                     <StatCard value="0" label="Upcoming Appointments" />
-                    <StatCard value={role === 'doctor' ? "24,500" : "15,800"} label="Earnings This Month" currency="₹" />
-                    <StatCard value={user?.averageRating?.toFixed(1) || 'N/A'} label="Average Rating" />
+                    <StatCard
+                        value={role === "doctor" ? "24,500" : "15,800"}
+                        label="Earnings This Month"
+                        currency="₹"
+                    />
+                    <StatCard
+                        value={user?.averageRating?.toFixed(1) || "N/A"}
+                        label="Average Rating"
+                    />
                 </div>
 
                 {/* --- Actions & Schedule --- */}
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                     {/* Quick Links */}
                     <div className="lg:col-span-1 bg-secondary-dark p-6 rounded-xl shadow-lg h-fit">
-                        <h2 className="text-2xl font-bold text-white mb-4">Quick Actions</h2>
+                        <h2 className="text-2xl font-bold text-white mb-4">
+                            Quick Actions
+                        </h2>
                         <div className="space-y-3">
-                            <Link to={`/${role}/appointments`} className="block w-full text-left p-4 bg-blue-600 text-white rounded-lg font-bold hover:bg-blue-700 transition">
+                            <Link
+                                to={`/${role}/appointments`}
+                                className="block w-full text-left p-4 bg-blue-600 text-white rounded-lg font-bold hover:bg-blue-700 transition"
+                            >
                                 Manage Appointments
                             </Link>
-                            <Link to={`/${role}/availability`} className="block w-full text-left p-4 bg-gray-700 text-white rounded-lg font-bold hover:bg-gray-600 transition">
+                            <Link
+                                to={`/${role}/availability`}
+                                className="block w-full text-left p-4 bg-gray-700 text-white rounded-lg font-bold hover:bg-gray-600 transition"
+                            >
                                 Update Availability
                             </Link>
-                            <Link to={`/${role}/edit-profile`} className="block w-full text-left p-4 bg-gray-700 text-white rounded-lg font-bold hover:bg-gray-600 transition">
+                            <Link
+                                to={`/${role}/edit-profile`}
+                                className="block w-full text-left p-4 bg-gray-700 text-white rounded-lg font-bold hover:bg-gray-600 transition"
+                            >
                                 Edit My Profile
                             </Link>
-                            {isPro && (
-                                <Link to="/demand-hotspot" className="block w-full text-left p-4 bg-gradient-to-r from-yellow-500 to-yellow-600 text-black rounded-lg font-bold hover:from-yellow-600 hover:to-yellow-700 transition">
-                                    📊 Demand Hotspot Map
-                                </Link>
-                            )}
-                            {!isPro && ['doctor', 'nurse'].includes(user?.role) && (
-                                <Link to="/upgrade-pro" className="block w-full text-left p-4 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg font-bold hover:from-purple-700 hover:to-blue-700 transition">
-                                    ⭐ Upgrade to Pro
-                                </Link>
-                            )}
                         </div>
                     </div>
                     {/* Today's Appointments */}
                     <div className="lg:col-span-2 bg-secondary-dark p-6 rounded-xl shadow-lg">
-                        <h2 className="text-2xl font-bold text-white mb-4">Today's Schedule</h2>
+                        <h2 className="text-2xl font-bold text-white mb-4">
+                            Today's Schedule
+                        </h2>
                         <div className="text-center text-secondary-text py-20 border-2 border-dashed border-gray-700 rounded-lg">
                             <EmptyState
                                 icon={Calendar}

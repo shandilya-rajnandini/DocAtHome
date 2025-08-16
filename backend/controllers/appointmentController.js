@@ -1,11 +1,12 @@
 const Appointment = require('../models/Appointment');
 const User = require('../models/User');
 const { generateSummary } = require('../utils/aiService');
+const asyncHandler = require('../middleware/asyncHandler');
 
 // @desc    Create a new appointment
 // @route   POST /api/appointments
-exports.createAppointment = async (req, res, next) => {
-  try {
+
+exports.createAppointment = asyncHandler(async (req, res) => {
     // Add the patient's ID from the authenticated user token
     req.body.patient = req.user.id;
 
@@ -63,17 +64,14 @@ exports.createAppointment = async (req, res, next) => {
         `Appointment booked successfully! ₹${fee} deducted from your care fund.` :
         'Appointment booked successfully!'
     });
-  } catch (err) {
-    console.error('APPOINTMENT CREATION ERROR:', err);
-    next(err); // Pass error to global error handler
-  }
-};
+
+});
+
 
 
 // @desc    Get a smart summary for a specific appointment
 // @route   GET /api/appointments/:id/summary
-exports.getAppointmentSummary = async (req, res) => {
-  try {
+exports.getAppointmentSummary = asyncHandler(async (req, res) => {
     const appointment = await Appointment.findById(req.params.id).populate('patient');
 
     if (!appointment) {
@@ -113,16 +111,13 @@ exports.getAppointmentSummary = async (req, res) => {
     const summary = await generateSummary(patientDataForAI);
 
     res.status(200).json({ success: true, summary });
-  } catch (err) {
-    console.error('SUMMARY_GENERATION_ERROR:', err.message);
-    res.status(500).send('Server Error');
-  }
-};
+});
 
 // @desc    Get all appointments for the logged-in user (patient or professional)
 // @route   GET /api/appointments/my-appointments
-exports.getMyAppointments = async (req, res, next) => {
-    try {
+
+exports.getMyAppointments = asyncHandler(async (req, res) => {
+
         let query;
         // Check the role of the logged-in user to build the correct query
         if (req.user.role === 'doctor' || req.user.role === 'nurse') {
@@ -140,16 +135,12 @@ exports.getMyAppointments = async (req, res, next) => {
             count: appointments.length,
             data: appointments
         });
-    } catch (err) {
-        console.error('GET_MY_APPOINTMENTS_ERROR:', err);
-        next(err); // Pass error to global error handler
-    }
-};
+
+});
 
 // @desc    Update an appointment's status (e.g., confirm or cancel)
 // @route   PUT /api/appointments/:id
-exports.updateAppointmentStatus = async (req, res, next) => {
-  try {
+exports.updateAppointmentStatus = asyncHandler(async (req, res) => {
     const { status, doctorNotes } = req.body;
 
     // Find the appointment by its ID
@@ -237,22 +228,18 @@ exports.updateAppointmentStatus = async (req, res, next) => {
 
     res.json(appointment);
 
-  } catch (err) {
-    console.error('UPDATE APPOINTMENT ERROR:', err);
-    next(err); // Pass error to global error handler
-  }
-};
+});
+
 
 // @desc    Create a voice note 
 // @route   POST /:id/voicenote
 
-exports.saveVoiceNote = async (req, res) => {
-  try {
+exports.saveVoiceNote = asyncHandler(async (req, res) => {
     const { id } = req.params;
     const { voiceUrl } = req.body; // expects { voiceUrl: "https://..." }
 
     if (!voiceUrl) {
-      return res.status(400).json({ success: false, message: "Voice URL is required." });
+      return res.status(400).json({ success: false, message: 'Voice URL is required.' });
     }
 
     const appointment = await Appointment.findByIdAndUpdate(
@@ -262,11 +249,9 @@ exports.saveVoiceNote = async (req, res) => {
     );
 
     if (!appointment) {
-      return res.status(404).json({ success: false, message: "Appointment not found." });
+      return res.status(404).json({ success: false, message: 'Appointment not found.' });
     }
 
     res.json({ success: true, data: appointment });
-  } catch (error) {
-    res.status(500).json({ success: false, message: "Server error.", error: error.message });
-  }
-};
+});
+

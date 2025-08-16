@@ -94,6 +94,7 @@ const DoctorProfilePage = () => {
         };
 
         try {
+            // eslint-disable-next-line no-unused-vars
             const response = await bookAppointment(appointmentData);
             const successMessage = useCareFund 
                 ? `Appointment successfully booked! ₹${appointmentData.fee} deducted from your care fund.`

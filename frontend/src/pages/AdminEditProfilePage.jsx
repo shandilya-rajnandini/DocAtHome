@@ -23,6 +23,7 @@ const AdminEditProfilePage = () => {
                     profilePictureUrl: data.profilePictureUrl || '',
                     isTwoFactorEnabled: data.isTwoFactorEnabled || false,
                 });
+            // eslint-disable-next-line no-unused-vars
             } catch (error) {
                 toast.error("Could not load your profile.");
             } finally {
@@ -83,6 +84,7 @@ const AdminEditProfilePage = () => {
             } else {
                 throw new Error("Upload failed");
             }
+        // eslint-disable-next-line no-unused-vars
         } catch (err) {
             toast.dismiss();
             toast.error("Image upload failed.");
@@ -99,6 +101,7 @@ const AdminEditProfilePage = () => {
 
             await updateMyProfile(profileData);
             toast.success("Profile updated successfully!");
+        // eslint-disable-next-line no-unused-vars
         } catch (error) {
             toast.error("Failed to update profile.");
         }

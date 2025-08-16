@@ -10,7 +10,7 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
  */
 const generateSummary = async (patientData) => {
   if (!process.env.GEMINI_API_KEY || process.env.GEMINI_API_KEY === 'YOUR_GEMINI_API_KEY') {
-    console.log("GEMINI_API_KEY not configured. Returning rule-based summary.");
+    console.log('GEMINI_API_KEY not configured. Returning rule-based summary.');
     // Fallback to a simple rule-based summary if the API key is not set
     return `Rule-based summary for ${patientData.name}:\n- Current Symptoms: ${patientData.currentSymptoms}\n- Allergies: ${patientData.allergies.join(', ') || 'None'}\n- Chronic Conditions: ${patientData.chronicConditions.join(', ') || 'None'}`;
   }
