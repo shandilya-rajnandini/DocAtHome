@@ -52,9 +52,11 @@ const PublicDonationPage = () => {
         }
 
         const numericAmount = parseFloat(amount);
-        if (isNaN(numericAmount) || numericAmount <= 0) {
+        if (!Number.isFinite(numericAmount) || numericAmount <= 0) {
             return toast.error('Please enter a valid amount greater than zero.');
         }
+        // Convert to paise for Razorpay and storage; avoids floating point issues
+        const amountPaise = Math.round(numericAmount * 100);
 
         const toastId = toast.loading('Processing your donation...');
 
@@ -75,7 +77,7 @@ const PublicDonationPage = () => {
 
             const options = {
                 key: import.meta.env.VITE_RAZORPAY_KEY_ID,
-                amount: numericAmount * 100,
+                amount: amountPaise,
                 currency: 'INR',
                 name: 'Doc@Home Care Fund',
                 description: `Donation for ${patient.name}`,
