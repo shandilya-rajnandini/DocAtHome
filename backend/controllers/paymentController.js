@@ -29,6 +29,9 @@ const instance = new Razorpay({
 exports.createOrder = asyncHandler(async (req, res) => {
   const { amount, currency = 'INR', isDonation, patientId, donorName } = req.body;
 
+  // Amount validation: Must be a valid number between ₹1 and ₹1,00,00,000
+  // Will be converted to paise and rounded to nearest integer
+
   // Validate required environment variables before making Razorpay API calls
   if (!process.env.RAZORPAY_KEY_ID) {
     return res.status(500).json({
@@ -44,10 +47,53 @@ exports.createOrder = asyncHandler(async (req, res) => {
     });
   }
 
-  // API expects amount in rupees, convert to paise for storage
+  // Validate and sanitize the incoming amount
+  if (!amount || amount === '') {
+    return res.status(400).json({
+      success: false,
+      message: 'Amount is required and cannot be empty',
+    });
+  }
+
+  // Parse and validate the amount
+  const parsedAmount = parseFloat(amount);
+  
+  if (isNaN(parsedAmount) || !isFinite(parsedAmount)) {
+    return res.status(400).json({
+      success: false,
+      message: 'Amount must be a valid number',
+    });
+  }
+
+  if (parsedAmount <= 0) {
+    return res.status(400).json({
+      success: false,
+      message: 'Amount must be greater than zero',
+    });
+  }
+
+  // Validate reasonable bounds (e.g., minimum 1 rupee, maximum 1 crore rupees)
+  if (parsedAmount < 1) {
+    return res.status(400).json({
+      success: false,
+      message: 'Amount must be at least ₹1',
+    });
+  }
+
+  if (parsedAmount > 10000000) { // 1 crore rupees
+    return res.status(400).json({
+      success: false,
+      message: 'Amount cannot exceed ₹1,00,00,000',
+    });
+  }
+
+  // Convert to paise by rounding to the nearest integer
+  const amountInPaise = Math.round(parsedAmount * 100);
+
+  // API expects amount in paise, convert from rupees to paise for storage
   // This ensures all monetary amounts are stored consistently as integer paise
   const options = {
-    amount: Number(amount) * 100, // Convert rupees to paise
+    amount: amountInPaise, // Use validated and rounded paise amount
     currency,
     receipt: `receipt_order_${Date.now()}`,
   };
