@@ -172,9 +172,6 @@ UserSchema.pre("save", function (next) {
 UserSchema.methods.matchPassword = async function (enteredPassword) {
   return await bcrypt.compare(enteredPassword, this.password);
 };
-
-// Create a 2dsphere index for geospatial queries on serviceArea
-// Note: Ensure MongoDB version supports 2dsphere on Polygon (it does since 2.4+)
 UserSchema.index({ serviceArea: "2dsphere" });
 UserSchema.index({ role: 1, city: 1, specialty: 1 });
 
