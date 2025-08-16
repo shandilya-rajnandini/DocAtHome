@@ -225,15 +225,27 @@ const getDoctors = async (req, res) => {
     }
 
     // Sort by subscription tier for regular searches too
+    // Only apply rating-based sort for non-geo searches to preserve distance ordering
     if (doctors && doctors.length > 0) {
-      doctors.sort((a, b) => {
-        // Pro users get higher priority
-        if (a.subscriptionTier === 'pro' && b.subscriptionTier !== 'pro') return -1;
-        if (b.subscriptionTier === 'pro' && a.subscriptionTier !== 'pro') return 1;
-        
-        // If same subscription tier, sort by rating
-        return b.averageRating - a.averageRating;
-      });
+      // Check if this was a geo search by looking for distance field in results
+      const isGeoSearch = doctors.some(doctor => doctor.distance !== undefined);
+      
+      if (!isGeoSearch) {
+        // Only sort by rating for non-geo searches
+        doctors.sort((a, b) => {
+          // Pro users get higher priority
+          if (a.subscriptionTier === 'pro' && b.subscriptionTier !== 'pro') return -1;
+          if (b.subscriptionTier === 'pro' && a.subscriptionTier !== 'pro') return 1;
+          
+          // If same subscription tier, sort by rating
+          // Coerce ratings to finite numbers, treating null/undefined as 0
+          const ra = Number.isFinite(a.averageRating) ? a.averageRating : 0;
+          const rb = Number.isFinite(b.averageRating) ? b.averageRating : 0;
+          
+          if (rb === ra) return 0;
+          return rb - ra;
+        });
+      }
     }
 
     res.json({ doctors: doctors });

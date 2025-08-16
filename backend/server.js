@@ -44,7 +44,13 @@ const corsOptions = {
 app.use(helmet()); // Security headers
 app.use(cors(corsOptions));
 app.use(generalLimiter); // General rate limiting
-app.use(express.json()); // Middleware to parse JSON bodies
+
+// JSON body parsing with raw body capture for webhook verification
+app.use(express.json({
+  verify: (req, res, buf) => {
+    req.rawBody = buf;
+  }
+}));
 
 // --- API Routes ---
 app.use('/api/auth', require('./routes/authRoutes'));

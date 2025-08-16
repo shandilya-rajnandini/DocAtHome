@@ -16,6 +16,7 @@ router.get('/status', protect, getSubscriptionStatus);
 router.post('/cancel', protect, cancelSubscription);
 
 // Webhook route (no auth needed - Razorpay calls this)
-router.post('/webhook', handleWebhook);
+// Use raw body parsing for webhook signature verification
+router.post('/webhook', express.raw({ type: 'application/json' }), handleWebhook);
 
 module.exports = router;

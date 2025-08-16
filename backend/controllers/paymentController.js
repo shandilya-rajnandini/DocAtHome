@@ -16,6 +16,8 @@ const instance = new Razorpay({
 exports.createOrder = async (req, res) => {
   const { amount, currency = 'INR' } = req.body;
 
+  // API expects amount in rupees, convert to paise for storage
+  // This ensures all monetary amounts are stored consistently as integer paise
   const options = {
     amount: Number(amount) * 100, // Convert rupees to paise
     currency,
@@ -49,6 +51,35 @@ exports.verifyPayment = async (req, res) => {
     patientId,
   } = req.body;
 
+  // Validate required inputs before cryptographic operations
+  if (!razorpay_order_id) {
+    return res.status(400).json({
+      success: false,
+      message: 'Missing required field: razorpay_order_id',
+    });
+  }
+  
+  if (!razorpay_payment_id) {
+    return res.status(400).json({
+      success: false,
+      message: 'Missing required field: razorpay_payment_id',
+    });
+  }
+  
+  if (!razorpay_signature) {
+    return res.status(400).json({
+      success: false,
+      message: 'Missing required field: razorpay_signature',
+    });
+  }
+  
+  if (!process.env.RAZORPAY_KEY_SECRET) {
+    return res.status(500).json({
+      success: false,
+      message: 'Payment verification configuration error',
+    });
+  }
+
   const body = `${razorpay_order_id}|${razorpay_payment_id}`;
   const expectedSignature = crypto
     .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET)
@@ -66,15 +97,16 @@ exports.verifyPayment = async (req, res) => {
 
   try {
     if (isDonation && donorName && patientId && amount) {
-      // Save donation
+      // Note: amount is already in paise from Razorpay webhook
+      // Save donation with amount in paise
       await Donation.create({
         donorName,
         patientId,
-        amount,
+        amount, // Already in paise
         razorpayPaymentId: razorpay_payment_id,
       });
 
-      // Update patient's careFundBalance
+      // Update patient's careFundBalance (amount is already in paise)
       await User.findByIdAndUpdate(patientId, { $inc: { careFundBalance: amount } });
 
       return res.status(200).json({

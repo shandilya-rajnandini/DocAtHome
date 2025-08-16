@@ -11,11 +11,23 @@ const ProUpgradePage = () => {
     const [subscriptionStatus, setSubscriptionStatus] = useState(null);
     const [fetchingStatus, setFetchingStatus] = useState(true);
 
+    // Helper function to get the appropriate dashboard route based on user role
+    const getDashboardRoute = (userRole) => {
+        switch (userRole) {
+            case 'doctor':
+                return '/doctor-dashboard';
+            case 'nurse':
+                return '/nurse-dashboard';
+            default:
+                return '/dashboard'; // Fallback for other roles
+        }
+    };
+
     useEffect(() => {
         // Redirect if not a professional
         if (user && !['doctor', 'nurse'].includes(user.role)) {
             toast.error('Pro subscription is only available for healthcare professionals');
-            navigate('/dashboard');
+            navigate(getDashboardRoute(user.role));
             return;
         }
 
@@ -79,8 +91,8 @@ const ProUpgradePage = () => {
                     setUser(verifyResponse.data.user);
                 }
                 
-                // Redirect to dashboard
-                navigate('/nurse-dashboard');
+                // Redirect to appropriate dashboard based on user role
+                navigate(getDashboardRoute(user.role));
                 return;
             }
 
@@ -113,8 +125,8 @@ const ProUpgradePage = () => {
                                 setUser(verifyResponse.data.user);
                             }
                             
-                            // Redirect to dashboard
-                            navigate('/nurse-dashboard');
+                            // Redirect to appropriate dashboard based on user role
+                            navigate(getDashboardRoute(user.role));
                         } catch (error) {
                             toast.dismiss(toastId);
                             toast.error('Payment verification failed');
@@ -173,7 +185,7 @@ const ProUpgradePage = () => {
                         </p>
                         <div className="space-y-4">
                             <button
-                                onClick={() => navigate('/dashboard')}
+                                onClick={() => navigate(getDashboardRoute(user.role))}
                                 className="bg-accent-blue text-white px-8 py-3 rounded-lg font-semibold hover:bg-accent-blue-hover transition-colors"
                             >
                                 Go to Dashboard

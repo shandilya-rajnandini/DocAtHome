@@ -210,7 +210,64 @@ exports.loginWith2FA = catchAsync(async (req, res, next) => {
   );
 });
 
-// ... Make sure your other functions (register, getMe) are also in this file
+// Helper function to normalize and validate professional fields
+const normalizeAndValidateProfessionalFields = (specialty, city, experience, licenseNumber, govId, role) => {
+  const errors = [];
+  
+  // Trim string fields
+  const normalizedSpecialty = specialty ? specialty.trim() : '';
+  const normalizedCity = city ? city.trim() : '';
+  const normalizedLicenseNumber = licenseNumber ? licenseNumber.trim() : '';
+  const normalizedGovId = govId ? govId.trim() : '';
+  
+  // Validate required fields for doctor/nurse roles
+  if (role === 'doctor' || role === 'nurse') {
+    if (!normalizedSpecialty) {
+      errors.push('Specialty is required for doctors and nurses');
+    }
+    if (!normalizedCity) {
+      errors.push('City is required for doctors and nurses');
+    }
+    if (!normalizedLicenseNumber) {
+      errors.push('License number is required for doctors and nurses');
+    }
+    if (!normalizedGovId) {
+      errors.push('Government ID is required for doctors and nurses');
+    }
+    
+    // Coerce and validate experience
+    let normalizedExperience;
+    if (experience === undefined || experience === null || experience === '') {
+      errors.push('Experience is required for doctors and nurses');
+    } else {
+      normalizedExperience = Number(experience);
+      if (isNaN(normalizedExperience)) {
+        errors.push('Experience must be a valid number');
+      } else if (normalizedExperience < 1) {
+        errors.push('Experience must be at least 1 year');
+      } else if (normalizedExperience > 50) {
+        errors.push('Experience cannot exceed 50 years');
+      } else if (!Number.isInteger(normalizedExperience)) {
+        errors.push('Experience must be a whole number');
+      }
+    }
+    
+    if (errors.length > 0) {
+      throw new ValidationError(`Professional field validation failed: ${errors.join(', ')}`);
+    }
+    
+    return {
+      specialty: normalizedSpecialty,
+      city: normalizedCity,
+      experience: normalizedExperience,
+      licenseNumber: normalizedLicenseNumber,
+      govId: normalizedGovId
+    };
+  }
+  
+  return null;
+};
+
 exports.register = catchAsync(async (req, res, next) => {
   const { name, email, password, role, specialty, city, experience, licenseNumber, govId } = req.body;
   
@@ -262,11 +319,21 @@ exports.register = catchAsync(async (req, res, next) => {
 
   // Add professional fields if role is doctor or nurse
   if (role === 'doctor' || role === 'nurse') {
-    userData.specialty = specialty;
-    userData.city = city;
-    userData.experience = experience;
-    userData.licenseNumber = licenseNumber;
-    userData.govId = govId;
+    try {
+      const professionalFields = normalizeAndValidateProfessionalFields(
+        specialty, city, experience, licenseNumber, govId, role
+      );
+      
+      // Runtime check to ensure normalized values are valid
+      if (!professionalFields) {
+        throw new ValidationError('Failed to normalize professional fields');
+      }
+      
+      // Assign normalized and validated values
+      Object.assign(userData, professionalFields);
+    } catch (error) {
+      return next(error);
+    }
   }
 
   // Create new user

@@ -32,7 +32,10 @@ exports.createProSubscription = catchAsync(async (req, res, next) => {
   }
 
   // For development/testing, bypass Razorpay if test mode is enabled
-  if (process.env.NODE_ENV === 'production' && req.query.test === 'true') {
+  // Only allow test mode when explicitly enabled via environment flag AND not in production
+  if (process.env.ENABLE_TEST_MODE === 'true' && 
+      process.env.NODE_ENV !== 'production' && 
+      req.query.test === 'true') {
     // Create a mock subscription for testing
     const mockSubscriptionId = `test_sub_${Date.now()}`;
     const mockPlanId = `test_plan_${Date.now()}`;
@@ -48,6 +51,16 @@ exports.createProSubscription = catchAsync(async (req, res, next) => {
       }
     });
     return;
+  }
+  
+  // Block test mode requests in production or when test mode is not enabled
+  if (req.query.test === 'true') {
+    if (process.env.NODE_ENV === 'production') {
+      return next(new ValidationError('Test mode is not allowed in production environment'));
+    }
+    if (process.env.ENABLE_TEST_MODE !== 'true') {
+      return next(new ValidationError('Test mode is not enabled'));
+    }
   }
 
   // Create Razorpay subscription plan (monthly recurring)
@@ -108,8 +121,17 @@ exports.verifySubscription = catchAsync(async (req, res, next) => {
     razorpay_signature
   } = req.body;
 
-  // For development/testing, bypass verification if test mode
+  // CRITICAL SECURITY: Block ALL test subscriptions in production
+  // This prevents privilege escalation attacks via fake test subscription IDs
   if (process.env.NODE_ENV === 'production' && razorpay_subscription_id.startsWith('test_sub_')) {
+    return next(new ValidationError('Test subscriptions are not allowed in production environment'));
+  }
+  
+  // For development/testing, bypass verification if test mode is enabled
+  // Only allow test mode when explicitly enabled via environment flag AND not in production
+  if (process.env.ENABLE_TEST_MODE === 'true' && 
+      process.env.NODE_ENV !== 'production' && 
+      razorpay_subscription_id.startsWith('test_sub_')) {
     // Mock verification for test mode
     const endDate = new Date();
     endDate.setMonth(endDate.getMonth() + 1);
@@ -143,6 +165,30 @@ exports.verifySubscription = catchAsync(async (req, res, next) => {
       user: updatedUser
     });
     return;
+  }
+  
+  // Block test mode verification when test mode is not enabled
+  if (razorpay_subscription_id.startsWith('test_sub_')) {
+    if (process.env.ENABLE_TEST_MODE !== 'true') {
+      return next(new ValidationError('Test mode verification is not enabled'));
+    }
+  }
+
+  // Validate required inputs before cryptographic operations
+  if (!razorpay_payment_id) {
+    return next(new ValidationError('Missing required field: razorpay_payment_id'));
+  }
+  
+  if (!razorpay_subscription_id) {
+    return next(new ValidationError('Missing required field: razorpay_subscription_id'));
+  }
+  
+  if (!razorpay_signature) {
+    return next(new ValidationError('Missing required field: razorpay_signature'));
+  }
+  
+  if (!process.env.RAZORPAY_KEY_SECRET) {
+    return next(new AppError('Payment verification configuration error', 500));
   }
 
   // Verify signature
@@ -239,6 +285,33 @@ exports.cancelSubscription = catchAsync(async (req, res, next) => {
     return next(new ValidationError('No active Pro subscription found'));
   }
 
+  // Validate that the subscription ID exists before attempting to cancel
+  if (!user.razorpaySubscriptionId) {
+    console.warn('Attempted to cancel subscription without valid Razorpay ID', {
+      userId: user.id,
+      userEmail: user.email,
+      subscriptionTier: user.subscriptionTier
+    });
+    
+    // Update user and subscription records locally since we can't cancel in Razorpay
+    await User.findByIdAndUpdate(user.id, {
+      subscriptionTier: 'free',
+      subscriptionExpiry: null,
+      razorpaySubscriptionId: null
+    });
+
+    await Subscription.findOneAndUpdate(
+      { user: user.id, status: 'active' },
+      { status: 'cancelled' }
+    );
+
+    return res.status(200).json({
+      success: true,
+      message: 'Subscription cancelled successfully (local cleanup only)',
+      note: 'Subscription was not found in payment system, but local records have been updated'
+    });
+  }
+
   try {
     // Cancel subscription in Razorpay
     await instance.subscriptions.cancel(user.razorpaySubscriptionId);
@@ -271,19 +344,45 @@ exports.cancelSubscription = catchAsync(async (req, res, next) => {
 // @access  Public (Razorpay webhook)
 exports.handleWebhook = catchAsync(async (req, res, next) => {
   const signature = req.headers['x-razorpay-signature'];
-  const body = JSON.stringify(req.body);
+  
+  // Validate required inputs before cryptographic operations
+  if (!signature) {
+    return res.status(400).json({ error: 'Missing required header: x-razorpay-signature' });
+  }
+  
+  if (!process.env.RAZORPAY_WEBHOOK_SECRET) {
+    return res.status(500).json({ error: 'Webhook verification configuration error' });
+  }
 
-  // Verify webhook signature
+  // Get the raw request body for signature verification
+  // The raw body is available from express.raw() middleware or req.rawBody
+  const rawBody = req.body; // This will be a Buffer when using express.raw()
+  
+  if (!Buffer.isBuffer(rawBody)) {
+    return res.status(500).json({ error: 'Webhook body parsing error - raw body not available' });
+  }
+
+  // Verify webhook signature using raw body and timing-safe comparison
   const expectedSignature = crypto
     .createHmac('sha256', process.env.RAZORPAY_WEBHOOK_SECRET)
-    .update(body)
+    .update(rawBody)
     .digest('hex');
 
-  if (signature !== expectedSignature) {
+  // Use timing-safe comparison to prevent timing attacks
+  if (!crypto.timingSafeEqual(
+    Buffer.from(expectedSignature, 'hex'),
+    Buffer.from(signature, 'hex')
+  )) {
     return res.status(400).json({ error: 'Invalid signature' });
   }
 
-  const event = req.body;
+  // Parse the JSON body after signature verification
+  let event;
+  try {
+    event = JSON.parse(rawBody.toString());
+  } catch (parseError) {
+    return res.status(400).json({ error: 'Invalid JSON body' });
+  }
 
   try {
     switch (event.event) {

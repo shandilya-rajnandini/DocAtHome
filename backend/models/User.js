@@ -1,6 +1,11 @@
 const mongoose = require("mongoose");
 const bcrypt = require("bcryptjs");
 
+/**
+ * User Schema
+ * Note: All monetary amounts (careFundBalance) are stored in paise (1 rupee = 100 paise)
+ * This ensures precise financial calculations without floating-point precision issues
+ */
 const UserSchema = new mongoose.Schema({
   name: {
     type: String,
@@ -84,6 +89,14 @@ const UserSchema = new mongoose.Schema({
   careFundBalance: {
     type: Number,
     default: 0,
+    min: [0, 'Care fund balance cannot be negative'],
+    validate: {
+      validator: function(balance) {
+        // Ensure balance is a non-negative integer (stored in paise)
+        return Number.isInteger(balance) && balance >= 0;
+      },
+      message: 'Care fund balance must be a non-negative integer in paise'
+    }
   },
 
   // --- Status & Ratings ---
@@ -157,6 +170,8 @@ const UserSchema = new mongoose.Schema({
     required: function () {
       return this.subscriptionTier === 'pro';
     },
+    unique: true,
+    sparse: true,
   },
 
   // --- Geofencing: Professional Service Area ---
@@ -198,5 +213,8 @@ UserSchema.methods.matchPassword = async function (enteredPassword) {
 // Create a 2dsphere index for geospatial queries on serviceArea
 // Note: Ensure MongoDB version supports 2dsphere on Polygon (it does since 2.4+)
 UserSchema.index({ serviceArea: "2dsphere" });
+
+// Index for subscription ID uniqueness
+UserSchema.index({ razorpaySubscriptionId: 1 }, { unique: true, sparse: true });
 
 module.exports = mongoose.model("User", UserSchema);
