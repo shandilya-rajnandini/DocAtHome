@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 
-import api, { login as loginApi, getMe } from '../api';
+import API, { login as loginApi, getMe } from '../api';
 
 import toast from 'react-hot-toast';
 import useAuthStore from '../store/useAuthStore';
