@@ -1,6 +1,6 @@
 const request = require('supertest');
 const mongoose = require('mongoose');
-const app = require('../app');   
+const app = require('../server');   
 const User = require('../models/User');
 
 beforeAll(async () => {

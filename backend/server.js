@@ -14,14 +14,10 @@ const {
   logger 
 } = require('./middleware/errorHandler');
 
-
-
 // --- Load env vars ---
 dotenv.config();
 
-
 // --- Create Express app ---
-
 const app = express();
 
 // --- Allowlist for CORS ---
@@ -31,7 +27,11 @@ const allowedOrigins = [
   'http://localhost:5174',
   'https://docathome-rajnandini.netlify.app'
 
+  'http://localhost:5173',
+  'http://localhost:5174',
+  'https://docathome-rajnandini.netlify.app'
 ];
+
 const corsOptions = {
   origin: (origin, callback) => {
     if (!origin || allowedOrigins.includes(origin)) {
@@ -44,23 +44,28 @@ const corsOptions = {
   }
 };
 
-
-// --- Middleware ---
+// --- Security & Middleware Configuration ---
+app.use(helmet()); // Security headers
 app.use(cors(corsOptions));
-app.use(helmet());
-app.use(generalLimiter);
-app.use(express.json());
+app.use(generalLimiter); // General rate limiting
+
+// JSON body parsing with raw body capture for webhook verification
+app.use(express.json({
+  verify: (req, res, buf) => {
+    req.rawBody = buf;
+  }
+}));
 
 // --- Routes ---
 app.use('/api/auth', require('./routes/authRoutes'));
 app.use('/api/admin', require('./routes/adminRoutes'));
 app.use('/api/doctors', require('./routes/doctorRoutes'));
 app.use('/api/nurses', require('./routes/nurseRoutes'));
-
 app.use('/api/profile', require('./routes/profileRoutes'));
 app.use('/api/appointments', require('./routes/appointmentRoutes'));
 app.use('/api/lab-tests', require('./routes/labTestRoutes'));
 app.use('/api/payment', require('./routes/paymentRoutes'));
+app.use('/api/subscription', require('./routes/subscriptionRoutes'));
 app.use('/api/care-circle', require('./routes/careCircle'));
 app.use('/api/quests', require('./routes/questRoutes'));
 app.use('/api/reviews', require('./routes/reviewRoutes'));
@@ -78,9 +83,7 @@ app.get('/', (req, res) => {
 // prevent favicon.ico from hitting error logs
 app.get('/favicon.ico', (req, res) => res.status(204).end());
 
-
 // --- 404 Handler ---
-
 app.use((req, res, next) => {
   const err = new Error(`Can't find ${req.originalUrl} on this server!`);
   err.statusCode = 404;
@@ -103,13 +106,14 @@ const startServer = async () => {
 
       cors: { origin: allowedOrigins, methods: ['GET', 'POST'] }
 
+
+      cors: { origin: allowedOrigins, methods: ['GET', 'POST'] }
     });
 
     io.on('connection', (socket) => {
       logger.info(`User Connected: ${socket.id}`);
 
       socket.on('disconnect', () => logger.info(`User Disconnected: ${socket.id}`));
-
     });
 
     server.listen(PORT, () => {
@@ -120,7 +124,7 @@ const startServer = async () => {
     handleGracefulShutdown(server);
 
   } catch (error) {
-      logger.error('FATAL ERROR: Could not start server', { 
+    logger.error('FATAL ERROR: Could not start server', { 
       error: error.message, 
       stack: error.stack 
     });

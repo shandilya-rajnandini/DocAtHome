@@ -493,6 +493,62 @@ const DoctorCard = ({ doctor }) => (
           <h3 className="text-2xl font-bold text-white">{doctor.name}</h3>
           <p className="text-accent-blue font-semibold">{doctor.specialty}</p>
           <p className="text-secondary-text mt-1">{doctor.city}</p>
+    <div className="bg-secondary-dark p-6 rounded-lg shadow-lg flex gap-6">
+        <img src="/doctor-avatar.jpg" alt={doctor.name} className="w-32 h-32 rounded-full object-cover border-4 border-gray-700" />
+        <div className="flex-grow">
+            <div className="flex items-start justify-between">
+                <div>
+                    <div className="flex items-center gap-3 mb-2">
+                        <h3 className="text-2xl font-bold text-white">{doctor.name}</h3>
+                        {doctor.subscriptionTier === 'pro' && (
+                            <span className="bg-gradient-to-r from-yellow-400 to-yellow-600 text-black px-3 py-1 rounded-full text-sm font-bold flex items-center gap-1">
+                                ⭐ PRO
+                            </span>
+                        )}
+                    </div>
+                    <p className="text-accent-blue font-semibold">{doctor.specialty}</p>
+                    <p className="text-secondary-text mt-1">{doctor.city}</p>
+                </div>
+                {(doctor.distance !== undefined) && (
+                    <div className="text-right">
+                        {doctor.hasServiceArea ? (
+                            <div className="space-y-1">
+                                <span className="bg-green-600 text-white px-3 py-1 rounded-full text-sm block">
+                                    {doctor.withinDecagon ? '✅ In 10-Point Zone' : '✅ Service Area'}
+                                </span>
+                                {doctor.distance > 0 && (
+                                    <span className="bg-blue-600 text-white px-3 py-1 rounded-full text-xs block">
+                                        📍 {doctor.distance}km from center
+                                    </span>
+                                )}
+                            </div>
+                        ) : doctor.estimatedFromCity ? (
+                            <div className="space-y-1">
+                                <span className="bg-orange-600 text-white px-3 py-1 rounded-full text-sm block">
+                                    📍 {doctor.distance}km away
+                                </span>
+                                <span className="bg-gray-600 text-white px-2 py-1 rounded-full text-xs block">
+                                    📍 Estimated from city
+                                </span>
+                            </div>
+                        ) : (
+                            <span className="bg-blue-600 text-white px-3 py-1 rounded-full text-sm">
+                                📍 {doctor.distance}km away
+                            </span>
+                        )}
+                    </div>
+                )}
+            </div>
+            <div className="flex items-center gap-4 my-2 text-sm">
+                <span className="bg-gray-700 px-3 py-1 rounded-full">{doctor.experience} Yrs</span>
+                <span className="text-yellow-400">{doctor.averageRating.toFixed(1)} ★ ({doctor.numReviews} reviews)</span>
+            </div>
+            <p className="text-lg font-semibold text-white mt-2">Fee: <span className="text-accent-blue">₹2000</span></p>
+        </div>
+        <div className="flex items-center">
+            <Link to={`/doctors/${doctor._id}`} className="bg-accent-blue text-white font-bold py-3 px-8 rounded-lg hover:bg-accent-blue-hover">
+                View & Book
+            </Link>
         </div>
         {doctor.distance !== undefined && (
           <div className="text-right">
