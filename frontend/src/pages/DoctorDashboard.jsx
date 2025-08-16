@@ -1,8 +1,9 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
+// import { useAuth } from "../context/AuthContext";
 import EmptyState from "../components/EmptyState";
 import { Calendar } from "lucide-react";
+import useAuthStore from "../store/useAuthStore";
 
 const StatCard = ({ value, label, currency = "" }) => (
   <div className="bg-secondary-dark p-6 rounded-xl text-center shadow-lg">
@@ -15,7 +16,7 @@ const StatCard = ({ value, label, currency = "" }) => (
 );
 
 const DoctorDashboard = () => {
-  const { user } = useAuth();
+  const { user } = useAuthStore();
   const role = user?.role || "professional"; // 'doctor' or 'nurse'
 
   return (

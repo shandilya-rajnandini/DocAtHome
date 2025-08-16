@@ -1,6 +1,5 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
+import useAuthStore from '../store/useAuthStore';
 
 // A new, vertical Stat Card component for this design
 const VerticalStatCard = ({ value, label, currency = '', icon }) => (
@@ -14,7 +13,7 @@ const VerticalStatCard = ({ value, label, currency = '', icon }) => (
 );
 
 const NurseDashboard = () => {
-    const { user } = useAuth();
+    const { user } = useAuthStore();
 
     return (
         <div className="bg-primary-dark">

@@ -1,5 +1,5 @@
 
-const CareCircle = require("../models/CareCircle");
+const CareCircle = require('../models/CareCircle');
 const asyncHandler = require('../middleware/asyncHandler');
 
 exports.getCareCircle = asyncHandler(async (req, res) => {
@@ -34,4 +34,3 @@ exports.inviteMember = asyncHandler(async (req, res) => {
 
 
 });
-
