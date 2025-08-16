@@ -27,9 +27,9 @@ const app = express();
 // --- Allowlist for CORS ---
 const allowedOrigins = [
 
-  "http://localhost:5173",
-  "http://localhost:5174",
-  "https://docathome-rajnandini.netlify.app"
+  'http://localhost:5173',
+  'http://localhost:5174',
+  'https://docathome-rajnandini.netlify.app'
 
 ];
 const corsOptions = {
@@ -101,7 +101,7 @@ const startServer = async () => {
     const server = http.createServer(app);
     const io = new Server(server, {
 
-      cors: { origin: allowedOrigins, methods: ["GET", "POST"] }
+      cors: { origin: allowedOrigins, methods: ['GET', 'POST'] }
 
     });
 
