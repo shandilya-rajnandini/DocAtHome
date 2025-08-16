@@ -14,23 +14,17 @@ const {
   logger 
 } = require('./middleware/errorHandler');
 
-
-
 // --- Load env vars ---
 dotenv.config();
 
-
 // --- Create Express app ---
-
 const app = express();
 
 // --- Allowlist for CORS ---
 const allowedOrigins = [
-
-  "http://localhost:5173",
-  "http://localhost:5174",
-  "https://docathome-rajnandini.netlify.app"
-
+  'http://localhost:5173',
+  'http://localhost:5174',
+  'https://docathome-rajnandini.netlify.app'
 ];
 const corsOptions = {
   origin: (origin, callback) => {
@@ -44,7 +38,6 @@ const corsOptions = {
   }
 };
 
-
 // --- Middleware ---
 app.use(cors(corsOptions));
 app.use(helmet());
@@ -56,7 +49,6 @@ app.use('/api/auth', require('./routes/authRoutes'));
 app.use('/api/admin', require('./routes/adminRoutes'));
 app.use('/api/doctors', require('./routes/doctorRoutes'));
 app.use('/api/nurses', require('./routes/nurseRoutes'));
-
 app.use('/api/profile', require('./routes/profileRoutes'));
 app.use('/api/appointments', require('./routes/appointmentRoutes'));
 app.use('/api/lab-tests', require('./routes/labTestRoutes'));
@@ -78,9 +70,7 @@ app.get('/', (req, res) => {
 // prevent favicon.ico from hitting error logs
 app.get('/favicon.ico', (req, res) => res.status(204).end());
 
-
 // --- 404 Handler ---
-
 app.use((req, res, next) => {
   const err = new Error(`Can't find ${req.originalUrl} on this server!`);
   err.statusCode = 404;
@@ -100,16 +90,13 @@ const startServer = async () => {
 
     const server = http.createServer(app);
     const io = new Server(server, {
-
-      cors: { origin: allowedOrigins, methods: ["GET", "POST"] }
-
+      cors: { origin: allowedOrigins, methods: ['GET', 'POST'] }
     });
 
     io.on('connection', (socket) => {
       logger.info(`User Connected: ${socket.id}`);
 
       socket.on('disconnect', () => logger.info(`User Disconnected: ${socket.id}`));
-
     });
 
     server.listen(PORT, () => {
@@ -120,7 +107,7 @@ const startServer = async () => {
     handleGracefulShutdown(server);
 
   } catch (error) {
-      logger.error('FATAL ERROR: Could not start server', { 
+    logger.error('FATAL ERROR: Could not start server', { 
       error: error.message, 
       stack: error.stack 
     });
