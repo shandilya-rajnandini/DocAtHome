@@ -7,7 +7,7 @@ const {
   AppError, 
   ValidationError, 
   NotFoundError 
-} = require('../middleware/errorHandler');
+} = require('../middleware/errorHandler'); 
 
 // Initialize Razorpay instance
 const instance = new Razorpay({
@@ -342,7 +342,7 @@ exports.cancelSubscription = catchAsync(async (req, res, next) => {
 // @desc    Handle Razorpay webhook for payment events (subscriptions)
 // @route   POST /api/subscription/webhook
 // @access  Public (Razorpay webhook)
-exports.handleWebhook = catchAsync(async (req, res, next) => {
+exports.handleWebhook = catchAsync(async (req, res, _next) => {
   const signature = req.headers['x-razorpay-signature'];
   
   // Validate required inputs before cryptographic operations
@@ -380,7 +380,7 @@ exports.handleWebhook = catchAsync(async (req, res, next) => {
   let event;
   try {
     event = JSON.parse(rawBody.toString());
-  } catch (parseError) {
+  } catch (_parseError) {
     return res.status(400).json({ error: 'Invalid JSON body' });
   }
 
