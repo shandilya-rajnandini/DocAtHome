@@ -21,8 +21,6 @@ const SubscriptionSchema = new mongoose.Schema({
     required: function () {
       return this.tier === 'pro';
     },
-    unique: true,
-    sparse: true,
   },
   razorpayPlanId: {
     type: String,

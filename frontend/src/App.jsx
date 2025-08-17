@@ -4,7 +4,8 @@ import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import Navbar from './components/Navbar.jsx';
 import Footer from './components/Footer.jsx';
 import ProtectedRoute from './components/ProtectedRoute.jsx';
-import BackToTopButton from './components/BackToTopButton.jsx'
+import BackToTopButton from './components/BackToTopButton.jsx';
+import AnnouncementBanner from './components/AnnouncementBanner.jsx';
 
 // --- All Page Components ---
 // Public Pages
@@ -59,6 +60,7 @@ function App() {
     <Router>
       <div className="!bg-amber-200 dark:!bg-primary-dark min-h-screen text-primary-text flex flex-col">
         <Navbar />
+        <AnnouncementBanner />
 
         <main className="flex-grow">
           <Routes>

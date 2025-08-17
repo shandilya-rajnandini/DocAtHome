@@ -80,7 +80,7 @@ const DoctorDashboard = () => {
     const isPro = isSubscriptionActive();
 
     return (
-        <div className="bg-primary-dark min-h-full py-12 px-4">
+        <div className="bg-primary-dark min-h-full pt-24 pb-12 px-4">
             <div className="container mx-auto">
                 <div className="mb-12">
                     <div className="flex items-center gap-4 mb-4">

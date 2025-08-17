@@ -11,7 +11,7 @@ const {
   handleUnhandledRejection, 
   handleUncaughtException, 
   handleGracefulShutdown,
-  logger 
+  logger
 } = require('./middleware/errorHandler');
 
 // --- Load env vars ---
@@ -66,6 +66,7 @@ app.use('/api/quests', require('./routes/questRoutes'));
 app.use('/api/reviews', require('./routes/reviewRoutes'));
 app.use('/api/prescriptions', require('./routes/PrescriptionRoutes'));
 app.use('/api/twofactor', require('./routes/twoFactorAuthRoutes'));
+app.use('/api/announcements', require('./routes/announcementRoutes'));
 
 // --- Health check ---
 app.get('/health', (req, res) => res.status(200).send('OK'));
