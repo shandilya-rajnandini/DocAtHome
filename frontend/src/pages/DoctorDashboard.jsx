@@ -1,6 +1,4 @@
-import React from "react";
 import { Link } from "react-router-dom";
-// import { useAuth } from "../context/AuthContext";
 import EmptyState from "../components/EmptyState";
 import { Calendar } from "lucide-react";
 import useAuthStore from "../store/useAuthStore";

@@ -1,4 +1,3 @@
-import React from 'react';
 import useAuthStore from '../store/useAuthStore';
 
 // A new, vertical Stat Card component for this design
