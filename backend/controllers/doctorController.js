@@ -1,4 +1,5 @@
 const User = require('../models/User');
+const asyncHandler = require('../middleware/asyncHandler');
 
 // Helper function to get approximate city coordinates
 const getCityCoordinates = (city) => {
@@ -105,8 +106,7 @@ const isPointInPolygon = (lat, lng, polygon) => {
 };
 
 // @desc    Get all verified doctors, with optional filters
-const getDoctors = async (req, res) => {
-  try {
+const getDoctors = asyncHandler(async (req, res) => {
     const baseQuery = { role: 'doctor', isVerified: true };
 
     if (req.query.specialty && req.query.specialty !== '') {
@@ -199,8 +199,15 @@ const getDoctors = async (req, res) => {
         // Combine both sets of doctors
         doctors = [...doctorsWithDistance, ...doctorsNearbyByCity];
         
-        // Sort by distance (closest first)
-        doctors.sort((a, b) => a.distance - b.distance);
+        // Sort by subscription tier first (Pro users on top), then by distance
+        doctors.sort((a, b) => {
+          // Pro users get higher priority
+          if (a.subscriptionTier === 'pro' && b.subscriptionTier !== 'pro') return -1;
+          if (b.subscriptionTier === 'pro' && a.subscriptionTier !== 'pro') return 1;
+          
+          // If same subscription tier, sort by distance
+          return a.distance - b.distance;
+        });
         
         // Return response with patient location for localStorage
         const response = {
@@ -217,17 +224,35 @@ const getDoctors = async (req, res) => {
       doctors = await User.find(baseQuery).select('-password');
     }
 
-    res.json({ doctors: doctors });
+    // Sort by subscription tier for regular searches too
+    // Only apply rating-based sort for non-geo searches to preserve distance ordering
+    if (doctors && doctors.length > 0) {
+      // Check if this was a geo search by looking for distance field in results
+      const isGeoSearch = doctors.some(doctor => doctor.distance !== undefined);
+      
+      if (!isGeoSearch) {
+        // Only sort by rating for non-geo searches
+        doctors.sort((a, b) => {
+          // Pro users get higher priority
+          if (a.subscriptionTier === 'pro' && b.subscriptionTier !== 'pro') return -1;
+          if (b.subscriptionTier === 'pro' && a.subscriptionTier !== 'pro') return 1;
+          
+          // If same subscription tier, sort by rating
+          // Coerce ratings to finite numbers, treating null/undefined as 0
+          const ra = Number.isFinite(a.averageRating) ? a.averageRating : 0;
+          const rb = Number.isFinite(b.averageRating) ? b.averageRating : 0;
+          
+          if (rb === ra) return 0;
+          return rb - ra;
+        });
+      }
+    }
 
-  } catch (error) {
-    console.error('ERROR in getDoctors:', error.message);
-    res.status(500).send('Server Error');
-  }
-};
+    res.json({ doctors: doctors });
+});
 
 // @desc    Get a single doctor by ID
-const getDoctorById = async (req, res) => {
-  try {
+const getDoctorById = asyncHandler(async (req, res) => {
     const doctor = await User.findById(req.params.id).select('-password');
 
     if (!doctor || doctor.role !== 'doctor') {
@@ -235,18 +260,9 @@ const getDoctorById = async (req, res) => {
     }
 
     res.json(doctor);
+});
 
-  } catch (error) {
-    console.error('ERROR in getDoctorById:', error.message);
-    if (error.kind === 'ObjectId') {
-        return res.status(404).json({ msg: 'Doctor not found' });
-    }
-    res.status(500).send('Server Error');
-  }
-};
-
-const searchDoctors = async (req, res) => {
-    try {
+const searchDoctors = asyncHandler(async (req, res) => {
   const { specialty, city, lat, lng } = req.query;
   const query = { role: 'doctor', isVerified: true };
 
@@ -275,11 +291,7 @@ const searchDoctors = async (req, res) => {
 
     const doctors = await User.find(query).select('-password');
         res.json(doctors);
-    } catch (error) {
-        console.error('ERROR in searchDoctors:', error.message);
-        res.status(500).send('Server Error');
-    }
-};
+});
 
 // This is the most standard way to export multiple functions
 module.exports = {

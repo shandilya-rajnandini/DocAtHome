@@ -1,4 +1,5 @@
 const User = require('../models/User');
+const asyncHandler = require('../middleware/asyncHandler');
 
 // Helper function to get approximate city coordinates
 const getCityCoordinates = (city) => {
@@ -56,8 +57,7 @@ const calculatePolygonCentroid = (coordinates) => {
 
 // @desc    Search for verified nurses
 // @route   GET /api/nurses
-exports.getNurses = async (req, res) => {
-  try {
+exports.getNurses = asyncHandler(async (req, res) => {
     const baseQuery = { role: 'nurse', isVerified: true };
 
     if (req.query.specialty && req.query.specialty !== '') {
@@ -75,7 +75,7 @@ exports.getNurses = async (req, res) => {
       const longitude = parseFloat(lng);
       
       if (!Number.isNaN(latitude) && !Number.isNaN(longitude)) {
-        const radiusInMeters = parseFloat(radius) * 1000; // Convert km to meters
+        const _radiusInMeters = parseFloat(radius) * 1000; // Convert km to meters
         
         // Find all nurses with service areas using distance calculation
         const geoQuery = {
@@ -143,8 +143,15 @@ exports.getNurses = async (req, res) => {
         // Combine both sets of nurses
         nurses = [...nursesWithDistance, ...nursesNearbyByCity];
         
-        // Sort by distance (closest first)
-        nurses.sort((a, b) => a.distance - b.distance);
+        // Sort by subscription tier first (Pro users on top), then by distance
+        nurses.sort((a, b) => {
+          // Pro users get higher priority
+          if (a.subscriptionTier === 'pro' && b.subscriptionTier !== 'pro') return -1;
+          if (b.subscriptionTier === 'pro' && a.subscriptionTier !== 'pro') return 1;
+          
+          // If same subscription tier, sort by distance
+          return a.distance - b.distance;
+        });
         
       } else {
         nurses = await User.find(baseQuery).select('-password');
@@ -153,25 +160,39 @@ exports.getNurses = async (req, res) => {
       nurses = await User.find(baseQuery).select('-password');
     }
 
-    res.json(nurses);
+    // Sort by subscription tier for regular searches too
+    // Only apply rating-based sort for non-geo searches to preserve distance ordering
+    if (nurses && nurses.length > 0) {
+      // Check if this was a geo search by looking for distance field in results
+      const isGeoSearch = nurses.some(nurse => nurse.distance !== undefined);
+      
+      if (!isGeoSearch) {
+        // Only sort by rating for non-geo searches
+        nurses.sort((a, b) => {
+          // Pro users get higher priority
+          if (a.subscriptionTier === 'pro' && b.subscriptionTier !== 'pro') return -1;
+          if (b.subscriptionTier === 'pro' && a.subscriptionTier !== 'pro') return 1;
+          
+          // If same subscription tier, sort by rating
+          // Coerce ratings to finite numbers, treating null/undefined as 0
+          const ra = Number.isFinite(a.averageRating) ? a.averageRating : 0;
+          const rb = Number.isFinite(b.averageRating) ? b.averageRating : 0;
+          
+          if (rb === ra) return 0;
+          return rb - ra;
+        });
+      }
+    }
 
-  } catch (error) {
-    console.error('ERROR in getNurses:', error.message);
-    res.status(500).send('Server Error');
-  }
-};
+    res.json(nurses);
+});
 
 // @desc    Get a single nurse by ID
 // @route   GET /api/nurses/:id
-exports.getNurseById = async (req, res) => {
-  try {
+exports.getNurseById = asyncHandler(async (req, res) => {
     const nurse = await User.findById(req.params.id).select('-password');
     if (!nurse || nurse.role !== 'nurse') {
       return res.status(404).json({ msg: 'Nurse not found' });
     }
     res.json(nurse);
-  } catch (err) {
-    console.error(err.message);
-    res.status(500).send('Server Error');
-  }
-};
+});

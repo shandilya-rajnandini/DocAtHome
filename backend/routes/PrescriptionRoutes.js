@@ -11,7 +11,7 @@ router.get('/', protect, async (req, res) => {
   try {
     const prescriptions = await Prescription.find({ patient: req.user.id });
     res.json(prescriptions);
-  } catch (error) {
+  } catch (_error) {
     res.status(500).json({ error: 'Failed to fetch prescriptions' });
   }
 });
@@ -81,7 +81,7 @@ router.post('/:id/take-dose', protect, async (req, res) => { // ✅ FIXED
 
     await prescription.save();
     res.json({ success: true, pillCount: medicine.pillCount, shouldNotify });
-  } catch (error) {
+  } catch (_error) {
     res.status(500).json({ error: 'Failed to process dose' });
   }
 });

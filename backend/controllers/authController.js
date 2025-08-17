@@ -12,6 +12,7 @@ const {
   ConflictError,
   logger 
 } = require('../middleware/errorHandler');
+const asyncHandler = require('../middleware/asyncHandler');
 
 // (The 'register' and 'getMe' functions can remain as they are)
 // ...
@@ -210,9 +211,66 @@ exports.loginWith2FA = catchAsync(async (req, res, next) => {
   );
 });
 
-// ... Make sure your other functions (register, getMe) are also in this file
+// Helper function to normalize and validate professional fields
+const normalizeAndValidateProfessionalFields = (specialty, city, experience, licenseNumber, govId, role) => {
+  const errors = [];
+  
+  // Trim string fields
+  const normalizedSpecialty = specialty ? specialty.trim() : '';
+  const normalizedCity = city ? city.trim() : '';
+  const normalizedLicenseNumber = licenseNumber ? licenseNumber.trim() : '';
+  const normalizedGovId = govId ? govId.trim() : '';
+  
+  // Validate required fields for doctor/nurse roles
+  if (role === 'doctor' || role === 'nurse') {
+    if (!normalizedSpecialty) {
+      errors.push('Specialty is required for doctors and nurses');
+    }
+    if (!normalizedCity) {
+      errors.push('City is required for doctors and nurses');
+    }
+    if (!normalizedLicenseNumber) {
+      errors.push('License number is required for doctors and nurses');
+    }
+    if (!normalizedGovId) {
+      errors.push('Government ID is required for doctors and nurses');
+    }
+    
+    // Coerce and validate experience
+    let normalizedExperience;
+    if (experience === undefined || experience === null || experience === '') {
+      errors.push('Experience is required for doctors and nurses');
+    } else {
+      normalizedExperience = Number(experience);
+      if (isNaN(normalizedExperience)) {
+        errors.push('Experience must be a valid number');
+      } else if (normalizedExperience < 1) {
+        errors.push('Experience must be at least 1 year');
+      } else if (normalizedExperience > 50) {
+        errors.push('Experience cannot exceed 50 years');
+      } else if (!Number.isInteger(normalizedExperience)) {
+        errors.push('Experience must be a whole number');
+      }
+    }
+    
+    if (errors.length > 0) {
+      throw new ValidationError(`Professional field validation failed: ${errors.join(', ')}`);
+    }
+    
+    return {
+      specialty: normalizedSpecialty,
+      city: normalizedCity,
+      experience: normalizedExperience,
+      licenseNumber: normalizedLicenseNumber,
+      govId: normalizedGovId
+    };
+  }
+  
+  return null;
+};
+
 exports.register = catchAsync(async (req, res, next) => {
-  const { name, email, password, role } = req.body;
+  const { name, email, password, role, specialty, city, experience, licenseNumber, govId } = req.body;
   
   // Input validation
   if (!name || !email || !password) {
@@ -252,13 +310,35 @@ exports.register = catchAsync(async (req, res, next) => {
     return next(new ValidationError('Invalid role specified'));
   }
 
-  // Create new user
-  const newUser = new User({
+  // Create user object with basic fields
+  const userData = {
     name: name.trim(),
     email: email.toLowerCase(),
     password, // Will be hashed by the User model pre-save hook
     role: role || 'patient'
-  });
+  };
+
+  // Add professional fields if role is doctor or nurse
+  if (role === 'doctor' || role === 'nurse') {
+    try {
+      const professionalFields = normalizeAndValidateProfessionalFields(
+        specialty, city, experience, licenseNumber, govId, role
+      );
+      
+      // Runtime check to ensure normalized values are valid
+      if (!professionalFields) {
+        throw new ValidationError('Failed to normalize professional fields');
+      }
+      
+      // Assign normalized and validated values
+      Object.assign(userData, professionalFields);
+    } catch (error) {
+      return next(error);
+    }
+  }
+
+  // Create new user
+  const newUser = new User(userData);
 
   await newUser.save();
 
@@ -297,23 +377,17 @@ exports.register = catchAsync(async (req, res, next) => {
     }
   );
 });
-exports.getMe = async (req, res) => {
-  try {
+exports.getMe = asyncHandler(async (req, res) => {
     const user = await User.findById(req.user.id).select('-password');
     if (!user) {
       return res.status(404).json({ msg: 'User not found' });
     }
     res.json(user);
-  } catch (err) {
-    console.error('GETME ERROR:', err.message);
-    res.status(500).send('Server Error');
-  }
-};
+});
 
 // @desc    Forgot password
 // @route   POST /api/auth/forgot-password
-exports.forgotPassword = async (req, res) => {
-  try {
+exports.forgotPassword = asyncHandler(async (req, res) => {
     const { email } = req.body;
     
     // Input validation
@@ -412,19 +486,12 @@ exports.forgotPassword = async (req, res) => {
         message: 'Email service temporarily unavailable. Please try again later.' 
       });
     }
-  } catch (err) {
-    console.error('Forgot password error:', err.message);
-    res.status(500).json({ 
-      success: false,
-      message: 'Server error. Please try again later.' 
-    });
-  }
-};
+
+});
 
 // @desc    Reset password
 // @route   POST /api/auth/reset-password/:token
-exports.resetPassword = async (req, res) => {
-  try {
+exports.resetPassword = asyncHandler(async (req, res) => {
     const { password } = req.body;
     const { token } = req.params;
     
@@ -509,11 +576,4 @@ exports.resetPassword = async (req, res) => {
       success: true, 
       message: 'Password has been reset successfully. You can now login with your new password.' 
     });
-  } catch (err) {
-    console.error('Reset password error:', err.message);
-    res.status(500).json({ 
-      success: false,
-      message: 'Server error. Please try again later.' 
-    });
-  }
-};
+});

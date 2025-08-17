@@ -90,11 +90,11 @@ const UserSchema = new mongoose.Schema({
     default: 0,
     min: [0, 'Care fund balance cannot be negative'],
     validate: {
-      validator: function (balance) {
+      validator: function(balance) {
         return Number.isInteger(balance) && balance >= 0;
       },
-      message: 'Care fund balance must be a non-negative integer in paise',
-    },
+      message: 'Care fund balance must be a non-negative integer in paise'
+    }
   },
 
   // --- Status & Ratings ---
@@ -186,9 +186,7 @@ const UserSchema = new mongoose.Schema({
 
 // --- Mongoose Middleware & Hooks ---
 UserSchema.pre('save', async function (next) {
-  if (!this.isModified('password')) {
-    return next();
-  }
+  if (!this.isModified('password')) return next();
   const salt = await bcrypt.genSalt(10);
   this.password = await bcrypt.hash(this.password, salt);
   next();

@@ -126,7 +126,7 @@ const LoginPage = () => {
               value={password}
               onChange={onChange}
               required
-              className="w-full p-3 bg-gray-200 dark:bg-primary-dark rounded border border-gray-700 focus:outline-none focus:ring-2 focus:ring-accent-blue"
+              className="w-full p-3 bg-gray-200 dark:bg-primary-dark rounded border border-gray-700 focus:outline-none focus:ring-2 focus:ring-accent-blue text-black dark:text-white"
             />
           </div>
 
