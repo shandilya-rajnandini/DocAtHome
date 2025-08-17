@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { createProSubscription, verifySubscription, getSubscriptionStatus } from '../api';
 import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
-import useAuthStore from '../store/authStore';
+import useAuthStore from '../store/useAuthStore';
 
 const ProUpgradePage = () => {
     const { user, login } = useAuthStore(); 

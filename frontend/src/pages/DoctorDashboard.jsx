@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { getSubscriptionStatus } from '../api';
 import EmptyState from "../components/EmptyState";
 import { Calendar } from "lucide-react";
-import useAuthStore from '../store/authStore';
+import useAuthStore from '../store/useAuthStore';
 
 const StatCard = ({ value, label, currency = "" }) => (
   <div className="bg-secondary-dark p-6 rounded-xl text-center shadow-lg">
