@@ -11,27 +11,20 @@ const ProUpgradePage = () => {
     const [subscriptionStatus, setSubscriptionStatus] = useState(null);
     const [fetchingStatus, setFetchingStatus] = useState(true);
 
-    // Helper function to get the appropriate dashboard route based on user role
     const getDashboardRoute = (userRole) => {
         switch (userRole) {
-            case 'doctor':
-                return '/doctor/dashboard';
-            case 'nurse':
-                return '/nurse/dashboard';
-            default:
-                return '/dashboard'; // Fallback for other roles
+            case 'doctor': return '/doctor/dashboard';
+            case 'nurse': return '/nurse/dashboard';
+            default: return '/dashboard';
         }
     };
 
     useEffect(() => {
-        // Redirect if not a professional
         if (user && !['doctor', 'nurse'].includes(user.role)) {
             toast.error('Pro subscription is only available for healthcare professionals');
             navigate(getDashboardRoute(user.role));
             return;
         }
-
-        // Fetch current subscription status
         fetchSubscriptionStatus();
     }, [user, navigate]);
 
@@ -46,6 +39,7 @@ const ProUpgradePage = () => {
         }
     };
 
+    // ✅ This helper will now actually be used
     const loadRazorpayScript = () => {
         return new Promise((resolve) => {
             const script = document.createElement('script');
@@ -66,17 +60,14 @@ const ProUpgradePage = () => {
         const toastId = toast.loading('Setting up your Pro subscription...');
 
         try {
-            // For development testing, use test mode
             const isDevelopment = import.meta.env.DEV;
             const testMode = isDevelopment ? '?test=true' : '';
-            
-            // Create subscription
-            const { data } = await createProSubscription(testMode);
-            const { subscriptionId, shortUrl, testMode: isTestMode } = data.data;
 
-            // If in test mode, skip Razorpay and directly verify
+            // ✅ Removed shortUrl from destructure
+            const { data } = await createProSubscription(testMode);
+            const { subscriptionId, testMode: isTestMode } = data.data;
+
             if (isTestMode) {
-                // Mock verification for test mode
                 const verifyResponse = await verifySubscription({
                     razorpay_payment_id: 'test_payment_' + Date.now(),
                     razorpay_subscription_id: subscriptionId,
@@ -85,62 +76,54 @@ const ProUpgradePage = () => {
 
                 toast.dismiss(toastId);
                 toast.success('Pro subscription activated successfully! (Test Mode)');
-                
-                // ⬇️ CHANGED: use Zustand login instead of setUser
                 login(verifyResponse.data.user);
-                
-                // Redirect to appropriate dashboard based on user role
                 navigate(getDashboardRoute(user.role));
                 return;
             }
 
-            // Load Razorpay script
-            const script = document.createElement('script');
-            script.src = 'https://checkout.razorpay.com/v1/checkout.js';
-            script.async = true;
-            document.body.appendChild(script);
+            // ✅ Use helper to load Razorpay script
+            const scriptLoaded = await loadRazorpayScript();
+            if (!scriptLoaded) {
+                toast.dismiss(toastId);
+                toast.error('Failed to load Razorpay script');
+                return;
+            }
 
-            script.onload = () => {
-                const options = {
-                    key: import.meta.env.VITE_RAZORPAY_KEY_ID,
-                    subscription_id: subscriptionId,
-                    name: 'Doc@Home Pro',
-                    description: 'Monthly Pro subscription',
-                    image: '/vite.svg',
-                    handler: async function (response) {
-                        try {
-                            const verifyResponse = await verifySubscription({
-                                razorpay_payment_id: response.razorpay_payment_id,
-                                razorpay_subscription_id: response.razorpay_subscription_id,
-                                razorpay_signature: response.razorpay_signature
-                            });
+            const options = {
+                key: import.meta.env.VITE_RAZORPAY_KEY_ID,
+                subscription_id: subscriptionId,
+                name: 'Doc@Home Pro',
+                description: 'Monthly Pro subscription',
+                image: '/vite.svg',
+                handler: async function (response) {
+                    try {
+                        const verifyResponse = await verifySubscription({
+                            razorpay_payment_id: response.razorpay_payment_id,
+                            razorpay_subscription_id: response.razorpay_subscription_id,
+                            razorpay_signature: response.razorpay_signature
+                        });
 
-                            toast.dismiss(toastId);
-                            toast.success('Pro subscription activated successfully!');
-                            
-                            // ⬇️ CHANGED: use Zustand login instead of setUser
-                            login(verifyResponse.data.user);
-                            
-                            // Redirect to appropriate dashboard based on user role
-                            navigate(getDashboardRoute(user.role));
-                        } catch (error) {
-                            toast.dismiss(toastId);
-                            toast.error('Payment verification failed');
-                            console.error('Verification error:', error);
-                        }
-                    },
-                    prefill: {
-                        email: user.email,
-                        name: user.name
-                    },
-                    theme: {
-                        color: '#3B82F6'
+                        toast.dismiss(toastId);
+                        toast.success('Pro subscription activated successfully!');
+                        login(verifyResponse.data.user);
+                        navigate(getDashboardRoute(user.role));
+                    } catch (error) {
+                        toast.dismiss(toastId);
+                        toast.error('Payment verification failed');
+                        console.error('Verification error:', error);
                     }
-                };
-
-                const rzp = new window.Razorpay(options);
-                rzp.open();
+                },
+                prefill: {
+                    email: user.email,
+                    name: user.name
+                },
+                theme: {
+                    color: '#3B82F6'
+                }
             };
+
+            const rzp = new window.Razorpay(options);
+            rzp.open();
 
         } catch (error) {
             toast.dismiss(toastId);
@@ -150,6 +133,7 @@ const ProUpgradePage = () => {
             setLoading(false);
         }
     };
+
 
     if (fetchingStatus) {
         return (

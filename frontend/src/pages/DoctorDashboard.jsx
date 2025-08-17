@@ -1,7 +1,9 @@
-import { Link } from "react-router-dom";
+import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import { getSubscriptionStatus } from '../api';
 import EmptyState from "../components/EmptyState";
 import { Calendar } from "lucide-react";
-import useAuthStore from '../store/useAuthStore';
+import useAuthStore from '../store/authStore';
 
 const StatCard = ({ value, label, currency = "" }) => (
   <div className="bg-secondary-dark p-6 rounded-xl text-center shadow-lg">
@@ -77,17 +79,72 @@ const DoctorDashboard = () => {
     // For less strict validation, remove the last condition: && subscriptionStatus?.subscription?.status === 'active'
     const isPro = isSubscriptionActive();
 
-  return (
-    <div className="bg-primary-dark min-h-full py-12 px-4">
-      <div className="container mx-auto">
-        <div className="mb-12">
-          <h1 className="text-4xl md:text-5xl font-bold text-white">
-            {role.charAt(0).toUpperCase() + role.slice(1)}'s Dashboard
-          </h1>
-          <p className="text-lg text-secondary-text mt-2">
-            Welcome, {user?.name}!
-          </p>
-        </div>
+    return (
+        <div className="bg-primary-dark min-h-full py-12 px-4">
+            <div className="container mx-auto">
+                <div className="mb-12">
+                    <div className="flex items-center gap-4 mb-4">
+                        <h1 className="text-4xl md:text-5xl font-bold text-white">
+                            {role.charAt(0).toUpperCase() + role.slice(1)}'s Dashboard
+                        </h1>
+                        {isPro && (
+                            <span className="bg-gradient-to-r from-yellow-400 to-yellow-600 text-black px-4 py-2 rounded-full text-sm font-bold flex items-center gap-2">
+                                ⭐ PRO MEMBER
+                            </span>
+                        )}
+                    </div>
+                    <p className="text-lg text-secondary-text mt-2">Welcome, {user?.name}!</p>
+                    {isPro && subscriptionStatus?.expiry && (
+                        <p className="text-sm text-yellow-400 mt-1">
+                            Pro subscription active until {new Date(subscriptionStatus.expiry).toLocaleDateString()}
+                        </p>
+                    )}
+                </div>
+
+                {/* Pro Subscription Section */}
+                {!loading && !isPro && ['doctor', 'nurse'].includes(user?.role) && (
+                    <div className="mb-8 bg-gradient-to-r from-blue-600 to-purple-600 p-6 rounded-xl shadow-lg">
+                        <div className="flex flex-col md:flex-row items-center justify-between">
+                            <div className="text-white mb-4 md:mb-0">
+                                <h3 className="text-2xl font-bold mb-2">🚀 Upgrade to Pro</h3>
+                                <p className="text-blue-100">Get higher visibility, advanced analytics, and lower fees!</p>
+                            </div>
+                            <Link
+                                to="/upgrade-pro"
+                                className="bg-white text-blue-600 px-6 py-3 rounded-lg font-bold hover:bg-blue-50 transition"
+                            >
+                                Upgrade Now
+                            </Link>
+                        </div>
+                    </div>
+                )}
+
+                {/* Pro Benefits Section */}
+                {isPro && (
+                    <div className="mb-8">
+                        <h2 className="text-2xl font-bold text-white mb-4">Pro Benefits</h2>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <ProBenefitCard
+                                icon="⭐"
+                                title="Higher Visibility"
+                                description="Your profile appears first in search results"
+                                isActive={true}
+                            />
+                            <ProBenefitCard
+                                icon="📊"
+                                title="Advanced Analytics"
+                                description="Detailed insights about your performance"
+                                isActive={true}
+                            />
+                            <ProBenefitCard
+                                icon="💰"
+                                title="Lower Fees"
+                                description="Reduced platform fees on all transactions"
+                                isActive={true}
+                            />
+                        </div>
+                    </div>
+                )}
 
                 {/* --- Stats Section --- */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
