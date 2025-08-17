@@ -26,6 +26,7 @@ const allowedOrigins = [
   'http://localhost:5174',
   'https://docathome-rajnandini.netlify.app'
 ];
+
 const corsOptions = {
   origin: (origin, callback) => {
     if (!origin || allowedOrigins.includes(origin)) {
@@ -38,11 +39,17 @@ const corsOptions = {
   }
 };
 
-// --- Middleware ---
+// --- Security & Middleware Configuration ---
+app.use(helmet()); // Security headers
 app.use(cors(corsOptions));
-app.use(helmet());
-app.use(generalLimiter);
-app.use(express.json());
+app.use(generalLimiter); // General rate limiting
+
+// JSON body parsing with raw body capture for webhook verification
+app.use(express.json({
+  verify: (req, res, buf) => {
+    req.rawBody = buf;
+  }
+}));
 
 // --- Routes ---
 app.use('/api/auth', require('./routes/authRoutes'));
@@ -53,6 +60,7 @@ app.use('/api/profile', require('./routes/profileRoutes'));
 app.use('/api/appointments', require('./routes/appointmentRoutes'));
 app.use('/api/lab-tests', require('./routes/labTestRoutes'));
 app.use('/api/payment', require('./routes/paymentRoutes'));
+app.use('/api/subscription', require('./routes/subscriptionRoutes'));
 app.use('/api/care-circle', require('./routes/careCircle'));
 app.use('/api/quests', require('./routes/questRoutes'));
 app.use('/api/reviews', require('./routes/reviewRoutes'));
