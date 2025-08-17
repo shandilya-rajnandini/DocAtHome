@@ -23,7 +23,7 @@ const UserSchema = new mongoose.Schema({
   },
   role: {
     type: String,
-    enum: ["patient", "doctor", "nurse", "admin", "technician"], // added technician
+    enum: ["patient", "doctor", "nurse", "admin", "technician"],
     default: "patient",
   },
 
@@ -46,12 +46,11 @@ const UserSchema = new mongoose.Schema({
       return this.role === "doctor" || this.role === "nurse";
     },
   },
-  // New fields for the doctor's editable profile
   qualifications: {
-    type: [String], // An array of strings, e.g., ["MBBS", "MD Cardiology"]
+    type: [String],
   },
   bio: {
-    type: String, // A short professional biography
+    type: String,
   },
   licenseNumber: {
     type: String,
@@ -138,8 +137,6 @@ const UserSchema = new mongoose.Schema({
   },
 
   // --- Geofencing: Professional Service Area ---
-  // Optional GeoJSON Polygon that defines where the professional serves.
-  // Coordinates must be in [lng, lat] order as per GeoJSON spec.
   serviceArea: {
     type: {
       type: String,
@@ -147,19 +144,26 @@ const UserSchema = new mongoose.Schema({
       required: false,
     },
     coordinates: {
-      type: [[[Number]]], // Array of LinearRings: [[ [lng,lat], ... ]]
+      type: [[[Number]]],
       required: false,
     },
+  },
+
+  // --- Subscription ---
+  razorpaySubscriptionId: {
+    type: String,
+    required: false,
   },
 });
 
 // --- Mongoose Middleware & Hooks ---
 UserSchema.pre("save", async function (next) {
   if (!this.isModified("password")) {
-    next();
+    return next();
   }
   const salt = await bcrypt.genSalt(10);
   this.password = await bcrypt.hash(this.password, salt);
+  next();
 });
 
 UserSchema.pre("save", function (next) {
@@ -173,9 +177,17 @@ UserSchema.methods.matchPassword = async function (enteredPassword) {
   return await bcrypt.compare(enteredPassword, this.password);
 };
 
-// Create a 2dsphere index for geospatial queries on serviceArea
-// Note: Ensure MongoDB version supports 2dsphere on Polygon (it does since 2.4+)
+// --- Indexes ---
+// Geospatial index
 UserSchema.index({ serviceArea: "2dsphere" });
+
+// Multi-field query index
 UserSchema.index({ role: 1, city: 1, specialty: 1 });
+
+// Unique subscription index (from main branch)
+UserSchema.index(
+  { razorpaySubscriptionId: 1 },
+  { unique: true, partialFilterExpression: { razorpaySubscriptionId: { $exists: true } } }
+);
 
 module.exports = mongoose.model("User", UserSchema);
