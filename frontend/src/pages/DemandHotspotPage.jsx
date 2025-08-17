@@ -1,9 +1,9 @@
 import React from 'react';
-import { useAuth } from '../context/AuthContext';
 import { Navigate } from 'react-router-dom';
+import useAuthStore from '../store/authStore';
 
 const DemandHotspotPage = () => {
-    const { user } = useAuth();
+    const { user } = useAuthStore();
 
     // Redirect if not Pro user
     if (!user || user.subscriptionTier !== 'pro') {
