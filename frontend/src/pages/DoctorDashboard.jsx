@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import EmptyState from "../components/EmptyState";
 import { Calendar } from "lucide-react";
-import useAuthStore from "../store/useAuthStore";
+import useAuthStore from '../store/useAuthStore';
 
 const StatCard = ({ value, label, currency = "" }) => (
   <div className="bg-secondary-dark p-6 rounded-xl text-center shadow-lg">
@@ -13,9 +13,69 @@ const StatCard = ({ value, label, currency = "" }) => (
   </div>
 );
 
+const ProBenefitCard = ({ icon, title, description, isActive }) => (
+    <div className={`p-4 rounded-lg border-2 ${isActive ? 'border-yellow-400 bg-yellow-50 dark:bg-yellow-900/20' : 'border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-800'}`}>
+        <div className="flex items-start gap-3">
+            <span className="text-2xl">{icon}</span>
+            <div>
+                <h4 className={`font-semibold ${isActive ? 'text-yellow-700 dark:text-yellow-300' : 'text-gray-600 dark:text-gray-300'}`}>
+                    {title}
+                </h4>
+                <p className={`text-sm ${isActive ? 'text-yellow-600 dark:text-yellow-400' : 'text-gray-500 dark:text-gray-400'}`}>
+                    {description}
+                </p>
+                {isActive && (
+                    <span className="inline-block mt-2 px-2 py-1 bg-yellow-200 dark:bg-yellow-800 text-yellow-800 dark:text-yellow-200 text-xs rounded-full font-medium">
+                        ✓ Active
+                    </span>
+                )}
+            </div>
+        </div>
+    </div>
+);
+
 const DoctorDashboard = () => {
-  const { user } = useAuthStore();
-  const role = user?.role || "professional"; // 'doctor' or 'nurse'
+    const { user } = useAuthStore();
+    const [subscriptionStatus, setSubscriptionStatus] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const role = user?.role || 'professional'; // 'doctor' or 'nurse'
+
+    useEffect(() => {
+        const fetchSubscriptionStatus = async () => {
+            try {
+                if (user && ['doctor', 'nurse'].includes(user.role)) {
+                    const { data } = await getSubscriptionStatus();
+                    setSubscriptionStatus(data.data);
+                }
+            } catch (error) {
+                console.error('Error fetching subscription status:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchSubscriptionStatus();
+    }, [user]);
+
+    // Helper function to check if subscription is active and not expired
+    const isSubscriptionActive = () => {
+        const hasProTier = user?.subscriptionTier === 'pro' || subscriptionStatus?.tier === 'pro';
+        const hasValidExpiry = subscriptionStatus?.expiry && new Date(subscriptionStatus.expiry) > new Date();
+        const isActiveStatus = subscriptionStatus?.subscription?.status === 'active';
+        
+        return hasProTier && hasValidExpiry && isActiveStatus;
+    };
+
+    // Alternative: Less strict validation (without requiring subscription status to be 'active')
+    // const isSubscriptionActive = () => {
+    //     const hasProTier = user?.subscriptionTier === 'pro' || subscriptionStatus?.tier === 'pro';
+    //     const hasValidExpiry = subscriptionStatus?.expiry && new Date(subscriptionStatus.expiry) > new Date();
+    //     return hasProTier && hasValidExpiry;
+    // };
+
+    // Pro subscription check: Must have pro tier AND valid expiry date AND active status
+    // For less strict validation, remove the last condition: && subscriptionStatus?.subscription?.status === 'active'
+    const isPro = isSubscriptionActive();
 
   return (
     <div className="bg-primary-dark min-h-full py-12 px-4">
@@ -29,71 +89,71 @@ const DoctorDashboard = () => {
           </p>
         </div>
 
-        {/* --- Stats Section --- */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
-          <StatCard
-            value="0"
-            label={
-              role === "doctor" ? "Pending Requests" : "Pending Assignments"
-            }
-          />
-          <StatCard value="0" label="Upcoming Appointments" />
-          <StatCard
-            value={role === "doctor" ? "24,500" : "15,800"}
-            label="Earnings This Month"
-            currency="₹"
-          />
-          <StatCard
-            value={user?.averageRating?.toFixed(1) || "N/A"}
-            label="Average Rating"
-          />
-        </div>
+                {/* --- Stats Section --- */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+                    <StatCard
+                        value="0"
+                        label={
+                            role === "doctor" ? "Pending Requests" : "Pending Assignments"
+                        }
+                    />
+                    <StatCard value="0" label="Upcoming Appointments" />
+                    <StatCard
+                        value={role === "doctor" ? "24,500" : "15,800"}
+                        label="Earnings This Month"
+                        currency="₹"
+                    />
+                    <StatCard
+                        value={user?.averageRating?.toFixed(1) || "N/A"}
+                        label="Average Rating"
+                    />
+                </div>
 
-        {/* --- Actions & Schedule --- */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Quick Links */}
-          <div className="lg:col-span-1 bg-secondary-dark p-6 rounded-xl shadow-lg h-fit">
-            <h2 className="text-2xl font-bold text-white mb-4">
-              Quick Actions
-            </h2>
-            <div className="space-y-3">
-              <Link
-                to={`/${role}/appointments`}
-                className="block w-full text-left p-4 bg-blue-600 text-white rounded-lg font-bold hover:bg-blue-700 transition"
-              >
-                Manage Appointments
-              </Link>
-              <Link
-                to={`/${role}/availability`}
-                className="block w-full text-left p-4 bg-gray-700 text-white rounded-lg font-bold hover:bg-gray-600 transition"
-              >
-                Update Availability
-              </Link>
-              <Link
-                to={`/${role}/edit-profile`}
-                className="block w-full text-left p-4 bg-gray-700 text-white rounded-lg font-bold hover:bg-gray-600 transition"
-              >
-                Edit My Profile
-              </Link>
+                {/* --- Actions & Schedule --- */}
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    {/* Quick Links */}
+                    <div className="lg:col-span-1 bg-secondary-dark p-6 rounded-xl shadow-lg h-fit">
+                        <h2 className="text-2xl font-bold text-white mb-4">
+                            Quick Actions
+                        </h2>
+                        <div className="space-y-3">
+                            <Link
+                                to={`/${role}/appointments`}
+                                className="block w-full text-left p-4 bg-blue-600 text-white rounded-lg font-bold hover:bg-blue-700 transition"
+                            >
+                                Manage Appointments
+                            </Link>
+                            <Link
+                                to={`/${role}/availability`}
+                                className="block w-full text-left p-4 bg-gray-700 text-white rounded-lg font-bold hover:bg-gray-600 transition"
+                            >
+                                Update Availability
+                            </Link>
+                            <Link
+                                to={`/${role}/edit-profile`}
+                                className="block w-full text-left p-4 bg-gray-700 text-white rounded-lg font-bold hover:bg-gray-600 transition"
+                            >
+                                Edit My Profile
+                            </Link>
+                        </div>
+                    </div>
+                    {/* Today's Appointments */}
+                    <div className="lg:col-span-2 bg-secondary-dark p-6 rounded-xl shadow-lg">
+                        <h2 className="text-2xl font-bold text-white mb-4">
+                            Today's Schedule
+                        </h2>
+                        <div className="text-center text-secondary-text py-20 border-2 border-dashed border-gray-700 rounded-lg">
+                            <EmptyState
+                                icon={Calendar}
+                                title="No Appointments Today"
+                                message="Your confirmed visits for today will appear here."
+                            />
+                        </div>
+                    </div>
+                </div>
             </div>
-          </div>
-          {/* Today's Appointments */}
-          <div className="lg:col-span-2 bg-secondary-dark p-6 rounded-xl shadow-lg">
-            <h2 className="text-2xl font-bold text-white mb-4">
-              Today's Schedule
-            </h2>
-            <div className="text-center text-secondary-text py-20 border-2 border-dashed border-gray-700 rounded-lg">
-              <EmptyState
-                icon={Calendar}
-                title="No Appointments Today"
-                message="Your confirmed visits for today will appear here."
-              />
-            </div>
-          </div>
         </div>
-      </div>
-    </div>
-  );
+    );
 };
 
 export default DoctorDashboard;

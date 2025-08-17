@@ -1,22 +1,23 @@
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 
 // --- Core Layout and Auth Components ---
 import Navbar from './components/Navbar.jsx';
 import Footer from './components/Footer.jsx';
 import ProtectedRoute from './components/ProtectedRoute.jsx';
+import BackToTopButton from './components/BackToTopButton.jsx'
 
 // --- All Page Components ---
 // Public Pages
-import HomePage from './pages/HomePage.jsx';
-import RegisterPage from './pages/RegisterPage.jsx';
-import LoginPage from './pages/LoginPage.jsx';
-import ForgotPasswordPage from './pages/ForgotPasswordPage.jsx';
-import ResetPasswordPage from './pages/ResetPasswordPage.jsx';
-import SearchDoctorsPage from './pages/SearchDoctorsPage.jsx';
-import SearchNursesPage from './pages/SearchNursesPage.jsx';
-import DoctorProfilePage from './pages/DoctorProfilePage.jsx';
-import NurseProfilePage from './pages/NurseProfilePage.jsx';
-import BookAmbulancePage from './pages/BookAmbulancePage.jsx';
+import HomePage from "./pages/HomePage.jsx";
+import RegisterPage from "./pages/RegisterPage.jsx";
+import LoginPage from "./pages/LoginPage.jsx";
+import ForgotPasswordPage from "./pages/ForgotPasswordPage.jsx";
+import ResetPasswordPage from "./pages/ResetPasswordPage.jsx";
+import SearchDoctorsPage from "./pages/SearchDoctorsPage.jsx";
+import SearchNursesPage from "./pages/SearchNursesPage.jsx";
+import DoctorProfilePage from "./pages/DoctorProfilePage.jsx";
+import NurseProfilePage from "./pages/NurseProfilePage.jsx";
+import BookAmbulancePage from "./pages/BookAmbulancePage.jsx";
 
 // Imported About, Services, Testimonials, Contact Page
 import About from './components/About.jsx';
@@ -45,6 +46,8 @@ import NurseEditProfilePage from './pages/NurseEditProfilePage.jsx';
 import AdminEditProfilePage from './pages/AdminEditProfilePage.jsx';
 import DoctorAppointmentsPage from './pages/DoctorAppointmentsPage.jsx';
 import ProfessionalAvailabilityPage from './pages/ProfessionalAvailabilityPage.jsx';
+import ProUpgradePage from './pages/ProUpgradePage.jsx';
+import DemandHotspotPage from './pages/DemandHotspotPage.jsx';
 
 // Protected Admin Page
 import AdminDashboard from './pages/AdminDashboard.jsx';
@@ -96,6 +99,8 @@ function App() {
             <Route path="/nurse/edit-profile" element={<ProtectedRoute><NurseEditProfilePage /></ProtectedRoute>} />
             <Route path="/doctor/appointments" element={<ProtectedRoute><DoctorAppointmentsPage /></ProtectedRoute>} />
             <Route path="/nurse/appointments" element={<ProtectedRoute><DoctorAppointmentsPage /></ProtectedRoute>} />
+            <Route path="/upgrade-pro" element={<ProtectedRoute><ProUpgradePage /></ProtectedRoute>} />
+            <Route path="/demand-hotspot" element={<ProtectedRoute><DemandHotspotPage /></ProtectedRoute>} />
             <Route path="/doctor/availability" element={<ProtectedRoute><ProfessionalAvailabilityPage /></ProtectedRoute>} />
             <Route path="/nurse/availability" element={<ProtectedRoute><ProfessionalAvailabilityPage /></ProtectedRoute>} />
 
@@ -108,7 +113,9 @@ function App() {
           </Routes>
         </main>
 
+        {/* scroll-to-to (absolute) */}
         <Footer />
+        <BackToTopButton />
       </div>
     </Router>
   );
