@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '../context/AuthContext';
 import { createProSubscription, verifySubscription, getSubscriptionStatus } from '../api';
 import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
+import useAuthStore from '../store/authStore';
 
 const ProUpgradePage = () => {
-    const { user, login } = useAuth();
+    const { user, login } = useAuthStore(); 
     const navigate = useNavigate();
     const [loading, setLoading] = useState(false);
     const [subscriptionStatus, setSubscriptionStatus] = useState(null);
@@ -86,10 +86,8 @@ const ProUpgradePage = () => {
                 toast.dismiss(toastId);
                 toast.success('Pro subscription activated successfully! (Test Mode)');
                 
-                // Update user context
-                if (setUser) {
-                    setUser(verifyResponse.data.user);
-                }
+                // ⬇️ CHANGED: use Zustand login instead of setUser
+                login(verifyResponse.data.user);
                 
                 // Redirect to appropriate dashboard based on user role
                 navigate(getDashboardRoute(user.role));
@@ -120,10 +118,8 @@ const ProUpgradePage = () => {
                             toast.dismiss(toastId);
                             toast.success('Pro subscription activated successfully!');
                             
-                            // Update user context
-                            if (setUser) {
-                                setUser(verifyResponse.data.user);
-                            }
+                            // ⬇️ CHANGED: use Zustand login instead of setUser
+                            login(verifyResponse.data.user);
                             
                             // Redirect to appropriate dashboard based on user role
                             navigate(getDashboardRoute(user.role));

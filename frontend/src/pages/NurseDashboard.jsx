@@ -2,7 +2,6 @@ import useAuthStore from '../store/useAuthStore';
 
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
 import { getSubscriptionStatus } from '../api';
 
 
