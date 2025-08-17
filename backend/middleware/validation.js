@@ -99,16 +99,44 @@ const authSchemas = {
     role: Joi.string().valid("patient", "doctor", "nurse").default("patient"),
     specialty: Joi.string()
       .max(100)
-      .when("role", {
-        is: Joi.valid("doctor", "nurse"),
+      .when('role', {
+        is: Joi.valid('doctor', 'nurse'),
         then: Joi.required(),
-        otherwise: Joi.forbidden(),
+        otherwise: Joi.forbidden()
       }),
-    city: secureString(2, 50).when("role", {
-      is: Joi.valid("doctor", "nurse"),
-      then: Joi.required(),
-      otherwise: Joi.optional(),
-    }),
+    city: secureString(2, 50)
+      .when('role', {
+        is: Joi.valid('doctor', 'nurse'),
+        then: Joi.required(),
+        otherwise: Joi.optional()
+      }),
+    experience: Joi.number()
+      .integer()
+      .min(1)
+      .max(50)
+      .when('role', {
+        is: Joi.valid('doctor', 'nurse'),
+        then: Joi.required(),
+        otherwise: Joi.forbidden()
+      })
+      .messages({
+        'number.base': 'Experience must be a number',
+        'number.integer': 'Experience must be a whole number',
+        'number.min': 'Experience must be at least 1 year',
+        'number.max': 'Experience cannot exceed 50 years'
+      }),
+    licenseNumber: secureString(5, 50)
+      .when('role', {
+        is: Joi.valid('doctor', 'nurse'),
+        then: Joi.required(),
+        otherwise: Joi.forbidden()
+      }),
+    govId: secureString(5, 50)
+      .when('role', {
+        is: Joi.valid('doctor', 'nurse'),
+        then: Joi.required(),
+        otherwise: Joi.forbidden()
+      })
   }),
 
   login: Joi.object({

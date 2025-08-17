@@ -73,6 +73,12 @@ export const verifyRazorpayPayment = (paymentData) =>
   API.post("/payment/verify", paymentData);
 export const getPaymentHistory = () => API.get("/payment/history");
 
+// === Subscription Routes ===
+export const createProSubscription = (testMode = '') => API.post(`/subscription/create-plan${testMode}`);
+export const verifySubscription = (subscriptionData) => API.post('/subscription/verify', subscriptionData);
+export const getSubscriptionStatus = () => API.get('/subscription/status');
+export const cancelSubscription = () => API.post('/subscription/cancel');
+
 // === Quest Routes ===
 export const getQuests = () => API.get("/quests");
 export const acceptQuest = (questId) => API.post(`/quests/${questId}/accept`);

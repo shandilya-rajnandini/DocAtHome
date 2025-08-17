@@ -216,30 +216,29 @@ exports.updateAppointmentStatus = asyncHandler(async (req, res) => {
       });
     }
 
-    // If the appointment was paid using care fund, refund the amount
-    if (appointment.paymentMethod === "careFund") {
-      await User.findByIdAndUpdate(req.user.id, {
-        $inc: { careFundBalance: appointment.fee },
+          // If the appointment was paid using care fund, refund the amount
+    // Note: appointment.fee is stored in paise, so careFundBalance increment is consistent
+    if (appointment.paymentMethod === 'careFund') {
+      await User.findByIdAndUpdate(req.user.id, { 
+        $inc: { careFundBalance: appointment.fee } // fee is in paise
       });
-
+      
       // Create a transaction record for the refund
-      const Transaction = require("../models/Transaction");
+      const Transaction = require('../models/Transaction');
       await Transaction.create({
         userId: req.user.id,
         razorpayOrderId: `refund_${Date.now()}`,
         razorpayPaymentId: `refund_payment_${Date.now()}`,
-        amount: appointment.fee,
-        currency: "INR",
+        amount: appointment.fee, // fee is in paise
+        currency: 'INR',
         description: `Care Fund Refund for cancelled appointment`,
-        status: "refunded",
+        status: 'refunded',
       });
     }
-  } else if (appointment.doctor.toString() !== req.user.id) {
-    // For all other status updates, only the assigned doctor/nurse can update
-    return res
-      .status(401)
-      .json({ msg: "User not authorized to update this appointment" });
-  }
+    } else if (appointment.doctor.toString() !== req.user.id) {
+      // For all other status updates, only the assigned doctor/nurse can update
+      return res.status(401).json({ msg: 'User not authorized to update this appointment' });
+    }
 
   // Update the status
   appointment.status = status;
