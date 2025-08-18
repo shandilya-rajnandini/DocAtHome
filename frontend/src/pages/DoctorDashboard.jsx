@@ -175,7 +175,7 @@ const DoctorDashboard = () => {
                         </h2>
                         <div className="space-y-3">
                             <Link
-                                to={`/${role}/appointments`}
+                                to={user.role === 'patient' ? '/my-appointments' : `/${role}/appointments`}
                                 className="block w-full text-left p-4 bg-blue-600 text-white rounded-lg font-bold hover:bg-blue-700 transition"
                             >
                                 Manage Appointments

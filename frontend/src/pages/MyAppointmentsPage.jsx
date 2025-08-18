@@ -106,10 +106,10 @@ const AppointmentCard = ({ appointment, onAppointmentUpdate }) => {
           <IconStethoscope className="w-8 h-8 text-accent mr-4" />
           <div>
             <h3 className="text-xl font-bold text-white">
-              {appointment.doctor.name}
+              {appointment.doctor?.name || 'N/A'}
             </h3>
             <p className="text-secondary-text">
-              {appointment.doctor.specialty}
+              {appointment.doctor?.specialty || 'N/A'}
             </p>
           </div>
         </div>

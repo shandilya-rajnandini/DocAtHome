@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 import API, { login as loginApi, getMe } from '../api';
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
@@ -10,6 +10,7 @@ const LoginPage = () => {
   const [userId, setUserId] = useState(null);
   const [token, setToken] = useState('');
   const navigate = useNavigate();
+  const location = useLocation();
   const { login } = useAuth();
   
   const { email, password } = formData;
@@ -30,11 +31,14 @@ const LoginPage = () => {
         
         toast.success('Login successful!');
 
+        const params = new URLSearchParams(location.search);
+        const redirect = params.get('redirect');
+        const from = redirect || '/dashboard';
         // Final redirect logic based on user's role
         if (userData.role === 'admin') {
           navigate('/admin');
         } else if (userData.role === 'patient') {
-          navigate('/dashboard');
+          navigate(from, { replace: true });
         } else if (userData.role === 'doctor' || userData.role === 'nurse') {
           // Redirect both doctors and nurses to the professional dashboard
           navigate('/doctor/dashboard');

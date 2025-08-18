@@ -19,6 +19,7 @@ import SearchNursesPage from "./pages/SearchNursesPage.jsx";
 import DoctorProfilePage from "./pages/DoctorProfilePage.jsx";
 import NurseProfilePage from "./pages/NurseProfilePage.jsx";
 import BookAmbulancePage from "./pages/BookAmbulancePage.jsx";
+import FollowUpRedirectPage from "./pages/FollowUpRedirectPage.jsx";
 
 // Imported About, Services, Testimonials, Contact Page
 import About from './components/About.jsx';
@@ -73,9 +74,10 @@ function App() {
             <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
             <Route path="/search" element={<SearchDoctorsPage />} />
             <Route path="/search-nurses" element={<SearchNursesPage />} />
-            <Route path="/doctors/:id" element={<DoctorProfilePage />} />
+            <Route path="/doctors/:id" element={<ProtectedRoute patientOnly={true}><DoctorProfilePage /></ProtectedRoute>} />
             <Route path="/nurses/:id" element={<NurseProfilePage />} />
             <Route path="/book-ambulance" element={<BookAmbulancePage />} />
+            <Route path="/follow-up/:id" element={<FollowUpRedirectPage />} />
             <Route path="/care-navigator" element={<CareNavigatorPage />} />
             <Route path="/care-circle" element={<CareCirclePage />} />
             <Route path="/about" element={<About />} />

@@ -35,7 +35,7 @@ const Navbar = () => {
   };
 
   return (
-    <nav className="fixed top-0 left-0 w-full z-50 backdrop-blur-lg bg-[#0d172a]/70 dark:bg-secondary-dark/70 shadow-lg transition-colors">
+    <nav className="fixed top-0 left-0 w-full z-50 backdrop-blur-lg bg-[#0d172a]/70 dark:bg-secondary-dark/70 shadow-lg transition-colors mb-20">
       <div className="container mx-auto px-6 py-3 flex items-center justify-between">
         {/* Logo */}
         <Link
@@ -78,6 +78,7 @@ const Navbar = () => {
           )}
           {user ? (
             <>
+            <span className="text-white">Welcome, {user.name}</span>
               <button
                 onClick={handleLogout}
                 className="bg-red-600 px-4 py-2 rounded hover:bg-red-700 transition-colors text-white dark:text-black"

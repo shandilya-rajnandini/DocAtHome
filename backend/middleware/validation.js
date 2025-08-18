@@ -219,6 +219,16 @@ const appointmentSchemas = {
       .valid('Pending', 'Confirmed', 'Completed', 'Cancelled')
       .required(),
     doctorNotes: secureText(1000).allow('').optional()
+  }),
+
+  scheduleFollowUp: Joi.object({
+    followUpDate: Joi.string()
+      .pattern(/^\d{4}-\d{2}-\d{2}$/)
+      .required()
+      .messages({
+        'string.pattern.base': 'Date must be in YYYY-MM-DD format'
+      }),
+    note: secureText(1000).allow('').optional()
   })
 };
 
