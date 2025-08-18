@@ -104,6 +104,14 @@ const PatientDashboard = () => {
             />
 
             <NewFeatureCard 
+                icon="📋"
+                title="Health Records"
+                description="Securely store and manage your medical documents."
+                link="/my-health-records"
+                color="from-indigo-500 to-indigo-700"
+            />
+
+            <NewFeatureCard 
                 icon="💰"
                 title="Payment History"
                 description="Quick access to all your payment history."
