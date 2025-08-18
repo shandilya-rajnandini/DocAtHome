@@ -28,7 +28,7 @@ const UserSchema = new mongoose.Schema({
   },
   role: {
     type: String,
-    enum: ['patient', 'doctor', 'nurse', 'admin', 'technician'], // added technician
+    enum: ['patient', 'doctor', 'nurse', 'admin', 'technician'],
     default: 'patient',
   },
 
@@ -51,12 +51,11 @@ const UserSchema = new mongoose.Schema({
       return this.role === 'doctor' || this.role === 'nurse';
     },
   },
-  // New fields for the doctor's editable profile
   qualifications: {
-    type: [String], // An array of strings, e.g., ["MBBS", "MD Cardiology"]
+    type: [String],
   },
   bio: {
-    type: String, // A short professional biography
+    type: String,
   },
   licenseNumber: {
     type: String,
@@ -92,7 +91,6 @@ const UserSchema = new mongoose.Schema({
     min: [0, 'Care fund balance cannot be negative'],
     validate: {
       validator: function(balance) {
-        // Ensure balance is a non-negative integer (stored in paise)
         return Number.isInteger(balance) && balance >= 0;
       },
       message: 'Care fund balance must be a non-negative integer in paise'
@@ -170,13 +168,9 @@ const UserSchema = new mongoose.Schema({
     required: function () {
       return this.subscriptionTier === 'pro';
     },
-    unique: true,
-    sparse: true,
   },
 
   // --- Geofencing: Professional Service Area ---
-  // Optional GeoJSON Polygon that defines where the professional serves.
-  // Coordinates must be in [lng, lat] order as per GeoJSON spec.
   serviceArea: {
     type: {
       type: String,
@@ -184,7 +178,7 @@ const UserSchema = new mongoose.Schema({
       required: false,
     },
     coordinates: {
-      type: [[[Number]]], // Array of LinearRings: [[ [lng,lat], ... ]]
+      type: [[[Number]]],
       required: false,
     },
   },
@@ -192,11 +186,10 @@ const UserSchema = new mongoose.Schema({
 
 // --- Mongoose Middleware & Hooks ---
 UserSchema.pre('save', async function (next) {
-  if (!this.isModified('password')) {
-    next();
-  }
+  if (!this.isModified('password')) return next();
   const salt = await bcrypt.genSalt(10);
   this.password = await bcrypt.hash(this.password, salt);
+  next();
 });
 
 UserSchema.pre('save', function (next) {
@@ -210,11 +203,17 @@ UserSchema.methods.matchPassword = async function (enteredPassword) {
   return await bcrypt.compare(enteredPassword, this.password);
 };
 
-// Create a 2dsphere index for geospatial queries on serviceArea
-// Note: Ensure MongoDB version supports 2dsphere on Polygon (it does since 2.4+)
+// --- Indexes ---
+// Geospatial index
 UserSchema.index({ serviceArea: '2dsphere' });
 
-// Index for subscription ID uniqueness
-UserSchema.index({ razorpaySubscriptionId: 1 }, { unique: true, sparse: true });
+// Multi-field query index
+UserSchema.index({ role: 1, city: 1, specialty: 1 });
+
+// Unique subscription index
+UserSchema.index(
+  { razorpaySubscriptionId: 1 },
+  { unique: true, partialFilterExpression: { razorpaySubscriptionId: { $exists: true } } }
+);
 
 module.exports = mongoose.model('User', UserSchema);
