@@ -8,6 +8,7 @@ const {
   updateAppointmentStatus,
   getAppointmentSummary,
   saveVoiceNote,
+  scheduleFollowUp,
 } = require('../controllers/appointmentController');
 
 const { protect } = require('../middleware/authMiddleware');
@@ -52,5 +53,13 @@ router.route('/')
 //POST /:id/voicenote
 //Creates a voice note for the appointment
 router.post('/:id/voicenote', protect, saveVoiceNote);
+
+// POST /api/appointments/:id/schedule-follow-up
+// Schedules a follow-up for a specific appointment
+router.route('/:id/schedule-follow-up')
+    .post(protect, 
+        validateObjectId('id'), 
+        validate(appointmentSchemas.scheduleFollowUp), 
+        scheduleFollowUp);
 
 module.exports = router;

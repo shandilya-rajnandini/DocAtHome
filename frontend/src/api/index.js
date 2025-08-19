@@ -50,6 +50,7 @@ export const getDoctorAppointments = () => API.get('/appointments/doctor-appoint
 export const updateAppointmentStatus = (id, statusData) => API.put(`/appointments/${id}`, statusData);
 export const getAppointmentSummary = (id) => API.get(`/appointments/${id}/summary`);
 export const saveAppointmentVoiceNote = (id, noteData) => API.post(`/appointments/${id}/voice-note`, noteData);
+export const scheduleFollowUp = (id, followUpData) => API.post(`/appointments/${id}/schedule-follow-up`, followUpData);
 
 // === Care Circle Routes ===
 export const getMyCareCircle = () => API.get('/profile/my-care-circle');
