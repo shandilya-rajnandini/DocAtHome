@@ -1,11 +1,10 @@
-import { Link, useNavigate } from 'react-router-dom';
-import { useState,useEffect } from 'react';
+import { Link, useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
 import { IoSunnySharp } from "react-icons/io5";
 import { BsFillMoonStarsFill } from "react-icons/bs";
 import useAuthStore from "../store/useAuthStore";
 
 const Navbar = () => {
-  
   const { user, logout, checkUser } = useAuthStore();
 
   const navigate = useNavigate();
@@ -23,10 +22,9 @@ const Navbar = () => {
     localStorage.setItem("pagemode", theme);
   }, [theme]);
 
-    useEffect(() => {
+  useEffect(() => {
     checkUser();
   }, [checkUser]);
-
 
   const toggleTheme = () => {
     setTheme((prev) => (prev === "light" ? "dark" : "light"));
@@ -50,8 +48,8 @@ const Navbar = () => {
             user && user.role === "patient"
               ? "/dashboard"
               : user
-              ? "/doctor/dashboard"
-              : "/"
+                ? "/doctor/dashboard"
+                : "/"
           }
           className="text-2xl font-bold text-accent-blue tracking-wide hover:scale-105 transition-transform"
         >
@@ -85,7 +83,7 @@ const Navbar = () => {
           )}
           {user ? (
             <>
-            <span className="text-white">Welcome, {user.name}</span>
+              <span className="text-white">Welcome, {user.name}</span>
               <button
                 onClick={handleLogout}
                 className="bg-red-600 px-4 py-2 rounded hover:bg-red-700 transition-colors text-white dark:text-black"

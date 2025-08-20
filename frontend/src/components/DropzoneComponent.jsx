@@ -1,30 +1,39 @@
-import React, { useCallback, useState } from 'react';
-import { useDropzone } from 'react-dropzone';
-import { IconUpload, IconX, IconFile, IconCheck } from '@tabler/icons-react';
+import React, { useCallback, useState } from "react";
+import { useDropzone } from "react-dropzone";
+import { IconUpload, IconX, IconFile, IconCheck } from "@tabler/icons-react";
 
-const DropzoneComponent = ({ onFilesSelected, maxFiles = 10, acceptedFileTypes = ['image/*', 'application/pdf', 'text/plain'] }) => {
+const DropzoneComponent = ({
+  onFilesSelected,
+  maxFiles = 10,
+  acceptedFileTypes = ["image/*", "application/pdf", "text/plain"],
+}) => {
   const [files, setFiles] = useState([]);
   const [uploading, setUploading] = useState(false);
 
-  const onDrop = useCallback((acceptedFiles) => {
-    const newFiles = acceptedFiles.map(file => ({
-      file,
-      id: Math.random().toString(36).substr(2, 9),
-      name: file.name,
-      size: file.size,
-      type: file.type,
-      preview: file.type.startsWith('image/') ? URL.createObjectURL(file) : null
-    }));
+  const onDrop = useCallback(
+    (acceptedFiles) => {
+      const newFiles = acceptedFiles.map((file) => ({
+        file,
+        id: Math.random().toString(36).substr(2, 9),
+        name: file.name,
+        size: file.size,
+        type: file.type,
+        preview: file.type.startsWith("image/")
+          ? URL.createObjectURL(file)
+          : null,
+      }));
 
-    setFiles(prev => [...prev, ...newFiles]);
-    if (onFilesSelected) {
-      onFilesSelected([...files, ...newFiles]);
-    }
-  }, [files, onFilesSelected]);
+      setFiles((prev) => [...prev, ...newFiles]);
+      if (onFilesSelected) {
+        onFilesSelected([...files, ...newFiles]);
+      }
+    },
+    [files, onFilesSelected],
+  );
 
   const removeFile = (fileId) => {
-    setFiles(prev => {
-      const updatedFiles = prev.filter(f => f.id !== fileId);
+    setFiles((prev) => {
+      const updatedFiles = prev.filter((f) => f.id !== fileId);
       if (onFilesSelected) {
         onFilesSelected(updatedFiles);
       }
@@ -34,50 +43,51 @@ const DropzoneComponent = ({ onFilesSelected, maxFiles = 10, acceptedFileTypes =
 
   const uploadAllFiles = async () => {
     if (files.length === 0) return;
-    
+
     setUploading(true);
     try {
       // Simulate upload - replace with actual API call
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+
       // Here you would typically send files to your backend
-      console.log('Uploading files:', files);
-      
+      console.log("Uploading files:", files);
+
       // Clear files after successful upload
       setFiles([]);
       if (onFilesSelected) {
         onFilesSelected([]);
       }
     } catch (error) {
-      console.error('Upload failed:', error);
+      console.error("Upload failed:", error);
     } finally {
       setUploading(false);
     }
   };
 
-  const { getRootProps, getInputProps, isDragActive, isDragReject } = useDropzone({
-    onDrop,
-    accept: acceptedFileTypes.reduce((acc, type) => {
-      acc[type] = [];
-      return acc;
-    }, {}),
-    maxFiles,
-    multiple: true
-  });
+  const { getRootProps, getInputProps, isDragActive, isDragReject } =
+    useDropzone({
+      onDrop,
+      accept: acceptedFileTypes.reduce((acc, type) => {
+        acc[type] = [];
+        return acc;
+      }, {}),
+      maxFiles,
+      multiple: true,
+    });
 
   const formatFileSize = (bytes) => {
-    if (bytes === 0) return '0 Bytes';
+    if (bytes === 0) return "0 Bytes";
     const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const sizes = ["Bytes", "KB", "MB", "GB"];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
   };
 
   const getFileIcon = (fileType) => {
-    if (fileType.startsWith('image/')) return '🖼️';
-    if (fileType === 'application/pdf') return '📄';
-    if (fileType.startsWith('text/')) return '📝';
-    return '📁';
+    if (fileType.startsWith("image/")) return "🖼️";
+    if (fileType === "application/pdf") return "📄";
+    if (fileType.startsWith("text/")) return "📝";
+    return "📁";
   };
 
   return (
@@ -87,21 +97,22 @@ const DropzoneComponent = ({ onFilesSelected, maxFiles = 10, acceptedFileTypes =
         {...getRootProps()}
         className={`
           border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-all duration-200
-          ${isDragActive && !isDragReject 
-            ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20' 
-            : isDragReject 
-            ? 'border-red-500 bg-red-50 dark:bg-red-900/20'
-            : 'border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-800/50'
+          ${
+            isDragActive && !isDragReject
+              ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20"
+              : isDragReject
+                ? "border-red-500 bg-red-50 dark:bg-red-900/20"
+                : "border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-800/50"
           }
           hover:border-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20
         `}
       >
         <input {...getInputProps()} />
         <IconUpload className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-        
+
         {isDragActive ? (
           <p className="text-lg font-medium text-blue-600 dark:text-blue-400">
-            {isDragReject ? 'Invalid file type!' : 'Drop the files here...'}
+            {isDragReject ? "Invalid file type!" : "Drop the files here..."}
           </p>
         ) : (
           <div>
@@ -127,9 +138,10 @@ const DropzoneComponent = ({ onFilesSelected, maxFiles = 10, acceptedFileTypes =
               disabled={uploading}
               className={`
                 px-4 py-2 rounded-lg font-medium transition-all duration-200
-                ${uploading
-                  ? 'bg-gray-400 cursor-not-allowed'
-                  : 'bg-blue-600 hover:bg-blue-700 text-white'
+                ${
+                  uploading
+                    ? "bg-gray-400 cursor-not-allowed"
+                    : "bg-blue-600 hover:bg-blue-700 text-white"
                 }
               `}
             >
@@ -184,14 +196,17 @@ const DropzoneComponent = ({ onFilesSelected, maxFiles = 10, acceptedFileTypes =
 
                 {/* File Info */}
                 <div className="space-y-1">
-                  <p className="text-sm font-medium text-gray-900 dark:text-white truncate" title={file.name}>
+                  <p
+                    className="text-sm font-medium text-gray-900 dark:text-white truncate"
+                    title={file.name}
+                  >
                     {file.name}
                   </p>
                   <p className="text-xs text-gray-500 dark:text-gray-400">
                     {formatFileSize(file.size)}
                   </p>
                   <p className="text-xs text-gray-400 dark:text-gray-500 capitalize">
-                    {file.type.split('/')[1] || file.type}
+                    {file.type.split("/")[1] || file.type}
                   </p>
                 </div>
               </div>

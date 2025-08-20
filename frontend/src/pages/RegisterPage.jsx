@@ -20,7 +20,15 @@ const nurseCategories = [
   "General Nursing (GNM)",
   "Auxiliary Nursing (ANM)",
 ];
-const cities = ["Mumbai", "Delhi", "Bangalore", "Pune", "Patna", "Kolkata", "Chennai"];
+const cities = [
+  "Mumbai",
+  "Delhi",
+  "Bangalore",
+  "Pune",
+  "Patna",
+  "Kolkata",
+  "Chennai",
+];
 const experienceLevels = Array.from({ length: 30 }, (_, i) => i + 1);
 
 const RegisterPage = () => {
@@ -65,7 +73,10 @@ const RegisterPage = () => {
     setErrors((prev) => ({ ...prev, [name]: error }));
 
     if (name === "password") {
-      const confirmPasswordError = validateField("confirmPassword", confirmPassword);
+      const confirmPasswordError = validateField(
+        "confirmPassword",
+        confirmPassword,
+      );
       setErrors((prev) => ({ ...prev, confirmPassword: confirmPasswordError }));
     }
   };
@@ -116,7 +127,9 @@ const RegisterPage = () => {
         navigate("/");
       }
     } catch (err) {
-      toast.error(err.response?.data?.msg || "Registration failed. Please try again.");
+      toast.error(
+        err.response?.data?.msg || "Registration failed. Please try again.",
+      );
     }
   };
 
@@ -195,7 +208,9 @@ const RegisterPage = () => {
                 errors.password ? "border-red-500" : "border-gray-700"
               }`}
             />
-            {errors.password && <p className="text-red-500 text-sm mt-1">{errors.password}</p>}
+            {errors.password && (
+              <p className="text-red-500 text-sm mt-1">{errors.password}</p>
+            )}
           </div>
           <div>
             <label className="block text-slate-700 dark:text-secondary-text mb-2">
@@ -213,7 +228,9 @@ const RegisterPage = () => {
               }`}
             />
             {errors.confirmPassword && (
-              <p className="text-red-500 text-sm mt-1">{errors.confirmPassword}</p>
+              <p className="text-red-500 text-sm mt-1">
+                {errors.confirmPassword}
+              </p>
             )}
           </div>
         </div>
@@ -221,7 +238,9 @@ const RegisterPage = () => {
         {/* Professional Fields */}
         {isProfessional && (
           <div className="border-t border-gray-700 pt-6 mt-6">
-            <h3 className="text-xl font-semibold text-accent-blue mb-4">Professional Details</h3>
+            <h3 className="text-xl font-semibold text-accent-blue mb-4">
+              Professional Details
+            </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="mb-4">
                 <label className="block text-slate-700 dark:text-secondary-text mb-2">
@@ -235,7 +254,10 @@ const RegisterPage = () => {
                   className="w-full p-3 bg-gray-200 dark:bg-primary-dark text-black dark:text-white rounded border-gray-700"
                 >
                   <option value="">Select an option</option>
-                  {(role === "doctor" ? doctorSpecialties : nurseCategories).map((opt) => (
+                  {(role === "doctor"
+                    ? doctorSpecialties
+                    : nurseCategories
+                  ).map((opt) => (
                     <option key={opt} value={opt}>
                       {opt}
                     </option>
@@ -329,7 +351,10 @@ const RegisterPage = () => {
         <button
           type="submit"
           className="w-full bg-accent-blue text-white p-3 rounded font-bold hover:bg-accent-blue-hover mt-6 disabled:bg-gray-500 disabled:cursor-not-allowed"
-          disabled={Object.values(errors).some((e) => e !== "") || password !== confirmPassword}
+          disabled={
+            Object.values(errors).some((e) => e !== "") ||
+            password !== confirmPassword
+          }
         >
           Register
         </button>

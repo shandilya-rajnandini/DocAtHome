@@ -16,13 +16,12 @@ const AppointmentCard = ({ appointment }) => {
           <IconStethoscope className="w-8 h-8 text-accent mr-4" />
           <div>
             <h3 className="text-xl font-bold text-white">
-              {appointment.doctor?.name || 'N/A'}
+              {appointment.doctor?.name || "N/A"}
             </h3>
 
             <p className="text-secondary-text">
-              {appointment.doctor?.specialty || 'N/A'}
+              {appointment.doctor?.specialty || "N/A"}
             </p>
-
           </div>
         </div>
         <div
@@ -30,8 +29,8 @@ const AppointmentCard = ({ appointment }) => {
             appointment.status === "Completed"
               ? "bg-green-900 text-green-300"
               : appointment.status === "Confirmed"
-              ? "bg-blue-900 text-blue-300"
-              : "bg-yellow-900 text-yellow-300"
+                ? "bg-blue-900 text-blue-300"
+                : "bg-yellow-900 text-yellow-300"
           }`}
         >
           {appointment.status}
