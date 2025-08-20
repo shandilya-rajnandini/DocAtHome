@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { getDoctorById, bookAppointment } from '../api';
 
 import toast from 'react-hot-toast';
@@ -26,8 +26,12 @@ const availableDates = generateDates();
 const DoctorProfilePage = () => {
     const { id } = useParams();
     const navigate = useNavigate();
+
     
     const { user } = useAuthStore();
+
+    const location = useLocation();
+
     const [doctor, setDoctor] = useState(null);
     const [loading, setLoading] = useState(true);
 
@@ -63,7 +67,26 @@ const DoctorProfilePage = () => {
                 .then(res => res.json())
                 .then(data => setCareFundBalance(data.careFundBalance || 0));
         }
-    }, [id, user]);
+
+        const params = new URLSearchParams(location.search);
+        const previousMeds = params.get('previousMeds');
+        const symptoms = params.get('symptoms');
+        const lastVisitTime = params.get('lastVisitTime');
+        const followUpDate = params.get('followUpDate');
+
+        if (previousMeds) {
+            setBookingDetails(prev => ({ ...prev, previousMeds }));
+        }
+        if (symptoms) {
+            setBookingDetails(prev => ({ ...prev, symptoms }));
+        }
+        if (lastVisitTime) {
+            setSelectedTime(lastVisitTime);
+        }
+        if (followUpDate) {
+            setSelectedDate(new Date(followUpDate).toISOString().split('T')[0]);
+        }
+    }, [id, user, location.search, navigate]);
 
     const handleBookingDetailChange = (e) => {
         if (e.target.name === 'reportImage') {
@@ -169,8 +192,8 @@ const DoctorProfilePage = () => {
                         <div className="mt-8 border-t border-gray-700 pt-6">
                             <h3 className="text-xl font-bold text-white mb-4">Tell us about your condition</h3>
                             <div className="space-y-4">
-                                <textarea name="symptoms" onChange={handleBookingDetailChange} placeholder="Describe your symptoms or reason for visit..." rows="4" className="w-full p-3 bg-primary-dark rounded-md border-gray-700 text-white"></textarea>
-                                <input type="text" name="previousMeds" onChange={handleBookingDetailChange} placeholder="List any previous medications (optional)" className="w-full p-3 bg-primary-dark rounded-md border-gray-700 text-white"/>
+<textarea name="symptoms" value={bookingDetails.symptoms} onChange={handleBookingDetailChange} placeholder="Describe your symptoms or reason for visit..." rows="4" className="w-full p-3 bg-primary-dark rounded-md border-gray-700 text-white"></textarea>
+<input type="text" name="previousMeds" value={bookingDetails.previousMeds} onChange={handleBookingDetailChange} placeholder="List any previous medications (optional)" className="w-full p-3 bg-primary-dark rounded-md border-gray-700 text-white"/>
                                 <div>
                                     <label className="block text-secondary-text mb-2">Upload previous report/photo (optional)</label>
                                     <input type="file" name="reportImage" onChange={handleBookingDetailChange} className="w-full text-secondary-text file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-accent-blue file:text-white hover:file:bg-accent-blue-hover"/>
