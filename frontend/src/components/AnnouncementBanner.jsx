@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { XMarkIcon } from '@heroicons/react/24/solid';
 import api from '../api';
-import { useAuth } from '../context/AuthContext';
+import useAuthStore from '../store/useAuthStore';
 
 const AnnouncementCard = ({ announcement, onDismiss }) => {
   const [isVisible, setIsVisible] = useState(false);
@@ -73,7 +73,7 @@ const AnnouncementCard = ({ announcement, onDismiss }) => {
 
 const AnnouncementBanner = () => {
   const [announcements, setAnnouncements] = useState([]);
-  const { user, loading: authLoading } = useAuth();
+  const { user, loading: authLoading } = useAuthStore();
 
   useEffect(() => {
     const fetchAndFilterAnnouncements = async () => {
