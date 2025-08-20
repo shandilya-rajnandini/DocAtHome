@@ -19,6 +19,7 @@ const AnnouncementManager = () => {
       const { data } = await api.get('/announcements');
       setAnnouncements(data);
     } catch (error) {
+      console.error(error);
       toast.error('Failed to fetch announcements');
     }
   };
@@ -38,6 +39,7 @@ const AnnouncementManager = () => {
       resetForm();
       fetchAnnouncements();
     } catch (error) {
+      console.error(error);
       toast.error('Failed to save announcement');
     }
   };
@@ -57,6 +59,7 @@ const AnnouncementManager = () => {
         toast.success('Announcement deleted successfully');
         fetchAnnouncements();
       } catch (error) {
+        console.error(error);
         toast.error('Failed to delete announcement');
       }
     }
