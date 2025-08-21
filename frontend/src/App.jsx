@@ -4,7 +4,8 @@ import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import Navbar from './components/Navbar.jsx';
 import Footer from './components/Footer.jsx';
 import ProtectedRoute from './components/ProtectedRoute.jsx';
-import BackToTopButton from './components/BackToTopButton.jsx'
+import BackToTopButton from './components/BackToTopButton.jsx';
+import AnnouncementBanner from './components/AnnouncementBanner.jsx';
 
 // --- All Page Components ---
 // Public Pages
@@ -18,6 +19,7 @@ import SearchNursesPage from "./pages/SearchNursesPage.jsx";
 import DoctorProfilePage from "./pages/DoctorProfilePage.jsx";
 import NurseProfilePage from "./pages/NurseProfilePage.jsx";
 import BookAmbulancePage from "./pages/BookAmbulancePage.jsx";
+import FollowUpRedirectPage from "./pages/FollowUpRedirectPage.jsx";
 
 // Imported About, Services, Testimonials, Contact Page
 import About from './components/About.jsx';
@@ -32,6 +34,7 @@ import BookLabTestPage from './pages/BookLabTestPage.jsx';
 import VideoConsultPage from './pages/VideoConsultPage.jsx';
 import MyAppointmentsPage from './pages/MyAppointmentsPage.jsx';
 import MyPrescriptionsPage from './pages/MyPrescriptionsPage.jsx';
+import MyHealthRecordsPage from './pages/MyHealthRecordsPage.jsx';
 import HealthQuestsPage from './pages/HealthQuestsPage.jsx';
 import PaymentHistoryPage from './pages/PaymentHistoryPage.jsx';
 import CareNavigatorPage from './pages/CareNavigatorPage.jsx';
@@ -46,6 +49,8 @@ import NurseEditProfilePage from './pages/NurseEditProfilePage.jsx';
 import AdminEditProfilePage from './pages/AdminEditProfilePage.jsx';
 import DoctorAppointmentsPage from './pages/DoctorAppointmentsPage.jsx';
 import ProfessionalAvailabilityPage from './pages/ProfessionalAvailabilityPage.jsx';
+import ProUpgradePage from './pages/ProUpgradePage.jsx';
+import DemandHotspotPage from './pages/DemandHotspotPage.jsx';
 
 // Protected Admin Page
 import AdminDashboard from './pages/AdminDashboard.jsx';
@@ -57,6 +62,7 @@ function App() {
     <Router>
       <div className="!bg-amber-200 dark:!bg-primary-dark min-h-screen text-primary-text flex flex-col">
         <Navbar />
+        <AnnouncementBanner />
 
         <main className="flex-grow">
           <Routes>
@@ -68,9 +74,10 @@ function App() {
             <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
             <Route path="/search" element={<SearchDoctorsPage />} />
             <Route path="/search-nurses" element={<SearchNursesPage />} />
-            <Route path="/doctors/:id" element={<DoctorProfilePage />} />
+            <Route path="/doctors/:id" element={<ProtectedRoute patientOnly={true}><DoctorProfilePage /></ProtectedRoute>} />
             <Route path="/nurses/:id" element={<NurseProfilePage />} />
             <Route path="/book-ambulance" element={<BookAmbulancePage />} />
+            <Route path="/follow-up/:id" element={<FollowUpRedirectPage />} />
             <Route path="/care-navigator" element={<CareNavigatorPage />} />
             <Route path="/care-circle" element={<CareCirclePage />} />
             <Route path="/about" element={<About />} />
@@ -86,6 +93,7 @@ function App() {
             <Route path="/video-consult" element={<ProtectedRoute><VideoConsultPage /></ProtectedRoute>} />
             <Route path="/my-appointments" element={<ProtectedRoute><MyAppointmentsPage /></ProtectedRoute>} />
             <Route path="/my-prescriptions" element={<ProtectedRoute><MyPrescriptionsPage /></ProtectedRoute>} />
+            <Route path="/my-health-records" element={<ProtectedRoute><MyHealthRecordsPage /></ProtectedRoute>} />
             <Route path="/payment-history" element={<ProtectedRoute><PaymentHistoryPage /></ProtectedRoute>} />
             <Route path="/care-fund" element={<ProtectedRoute><CareFundPage /></ProtectedRoute>} />
             {/* <Route path="/health-quests" element={<ProtectedRoute><HealthQuestsPage /></ProtectedRoute>} /> */}
@@ -97,6 +105,8 @@ function App() {
             <Route path="/nurse/edit-profile" element={<ProtectedRoute><NurseEditProfilePage /></ProtectedRoute>} />
             <Route path="/doctor/appointments" element={<ProtectedRoute><DoctorAppointmentsPage /></ProtectedRoute>} />
             <Route path="/nurse/appointments" element={<ProtectedRoute><DoctorAppointmentsPage /></ProtectedRoute>} />
+            <Route path="/upgrade-pro" element={<ProtectedRoute><ProUpgradePage /></ProtectedRoute>} />
+            <Route path="/demand-hotspot" element={<ProtectedRoute><DemandHotspotPage /></ProtectedRoute>} />
             <Route path="/doctor/availability" element={<ProtectedRoute><ProfessionalAvailabilityPage /></ProtectedRoute>} />
             <Route path="/nurse/availability" element={<ProtectedRoute><ProfessionalAvailabilityPage /></ProtectedRoute>} />
 

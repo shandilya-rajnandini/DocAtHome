@@ -109,6 +109,33 @@ const authSchemas = {
         is: Joi.valid('doctor', 'nurse'),
         then: Joi.required(),
         otherwise: Joi.optional()
+      }),
+    experience: Joi.number()
+      .integer()
+      .min(1)
+      .max(50)
+      .when('role', {
+        is: Joi.valid('doctor', 'nurse'),
+        then: Joi.required(),
+        otherwise: Joi.forbidden()
+      })
+      .messages({
+        'number.base': 'Experience must be a number',
+        'number.integer': 'Experience must be a whole number',
+        'number.min': 'Experience must be at least 1 year',
+        'number.max': 'Experience cannot exceed 50 years'
+      }),
+    licenseNumber: secureString(5, 50)
+      .when('role', {
+        is: Joi.valid('doctor', 'nurse'),
+        then: Joi.required(),
+        otherwise: Joi.forbidden()
+      }),
+    govId: secureString(5, 50)
+      .when('role', {
+        is: Joi.valid('doctor', 'nurse'),
+        then: Joi.required(),
+        otherwise: Joi.forbidden()
       })
   }),
 
@@ -192,6 +219,16 @@ const appointmentSchemas = {
       .valid('Pending', 'Confirmed', 'Completed', 'Cancelled')
       .required(),
     doctorNotes: secureText(1000).allow('').optional()
+  }),
+
+  scheduleFollowUp: Joi.object({
+    followUpDate: Joi.string()
+      .pattern(/^\d{4}-\d{2}-\d{2}$/)
+      .required()
+      .messages({
+        'string.pattern.base': 'Date must be in YYYY-MM-DD format'
+      }),
+    note: secureText(1000).allow('').optional()
   })
 };
 

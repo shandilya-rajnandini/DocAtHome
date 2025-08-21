@@ -267,6 +267,29 @@ const getDoctors = asyncHandler(async (req, res) => {
       // Sort by distance first, then by other criteria
       if (sortBy === 'distance') {
         allDoctors.sort((a, b) => a.distance - b.distance);
+        }).filter(Boolean);
+        
+        // Combine both sets of doctors
+        doctors = [...doctorsWithDistance, ...doctorsNearbyByCity];
+        
+        // Sort by subscription tier first (Pro users on top), then by distance
+        doctors.sort((a, b) => {
+          // Pro users get higher priority
+          if (a.subscriptionTier === 'pro' && b.subscriptionTier !== 'pro') return -1;
+          if (b.subscriptionTier === 'pro' && a.subscriptionTier !== 'pro') return 1;
+          
+          // If same subscription tier, sort by distance
+          return a.distance - b.distance;
+        });
+        
+        // Return response with patient location for localStorage
+        const response = {
+          doctors: doctors,
+          patientLocation: patientLocation
+        };
+        
+        return res.json(response);
+        
       } else {
         // Sort by criteria and then by distance
         allDoctors.sort((a, b) => {
@@ -339,6 +362,31 @@ const getDoctors = asyncHandler(async (req, res) => {
   };
 
   res.json(response);
+    // Sort by subscription tier for regular searches too
+    // Only apply rating-based sort for non-geo searches to preserve distance ordering
+    if (doctors && doctors.length > 0) {
+      // Check if this was a geo search by looking for distance field in results
+      const isGeoSearch = doctors.some(doctor => doctor.distance !== undefined);
+      
+      if (!isGeoSearch) {
+        // Only sort by rating for non-geo searches
+        doctors.sort((a, b) => {
+          // Pro users get higher priority
+          if (a.subscriptionTier === 'pro' && b.subscriptionTier !== 'pro') return -1;
+          if (b.subscriptionTier === 'pro' && a.subscriptionTier !== 'pro') return 1;
+          
+          // If same subscription tier, sort by rating
+          // Coerce ratings to finite numbers, treating null/undefined as 0
+          const ra = Number.isFinite(a.averageRating) ? a.averageRating : 0;
+          const rb = Number.isFinite(b.averageRating) ? b.averageRating : 0;
+          
+          if (rb === ra) return 0;
+          return rb - ra;
+        });
+      }
+    }
+
+    res.json({ doctors: doctors });
 });
 
 // @desc    Get a single doctor by ID

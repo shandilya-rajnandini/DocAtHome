@@ -50,6 +50,7 @@ export const getDoctorAppointments = () => API.get('/appointments/doctor-appoint
 export const updateAppointmentStatus = (id, statusData) => API.put(`/appointments/${id}`, statusData);
 export const getAppointmentSummary = (id) => API.get(`/appointments/${id}/summary`);
 export const saveAppointmentVoiceNote = (id, noteData) => API.post(`/appointments/${id}/voice-note`, noteData);
+export const scheduleFollowUp = (id, followUpData) => API.post(`/appointments/${id}/schedule-follow-up`, followUpData);
 
 // === Care Circle Routes ===
 export const getMyCareCircle = () => API.get('/profile/my-care-circle');
@@ -62,6 +63,12 @@ export const bookLabTest = (testData) => API.post('/lab-tests', testData);
 export const createRazorpayOrder = (orderData) => API.post('/payment/create-order', orderData);
 export const verifyRazorpayPayment = (paymentData) => API.post('/payment/verify', paymentData);
 export const getPaymentHistory = () => API.get('/payment/history');
+
+// === Subscription Routes ===
+export const createProSubscription = (testMode = '') => API.post(`/subscription/create-plan${testMode}`);
+export const verifySubscription = (subscriptionData) => API.post('/subscription/verify', subscriptionData);
+export const getSubscriptionStatus = () => API.get('/subscription/status');
+export const cancelSubscription = () => API.post('/subscription/cancel');
 
 // === Quest Routes ===
 export const getQuests = () => API.get('/quests');
