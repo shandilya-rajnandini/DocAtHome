@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { searchDoctors } from '../api';
 import toast from 'react-hot-toast';
+import DoctorCardSkeleton from '../components/DoctorCardSkeleton';
 
 const doctorSpecialties = ['Cardiologist', 'Dermatologist', 'Gynecologist', 'Dentist', 'Pediatrician', 'General Physician', 'Neurologist'];
 const cities = ['Mumbai', 'Delhi', 'Bangalore', 'Pune', 'Patna', 'Kolkata', 'Chennai'];
@@ -16,9 +17,9 @@ const SearchDoctorsPage = () => {
     const fetchDoctors = async (currentFilters) => {
         setIsLoading(true);
         try {
-            // Pass the filters object directly to the API call
-            const { data } = await searchDoctors(currentFilters);
             
+            const { data } = await searchDoctors(currentFilters);
+
             // Handle new response format with patient location
             if (data.doctors) {
                 setDoctors(data.doctors);
@@ -38,6 +39,7 @@ const SearchDoctorsPage = () => {
             setIsLoading(false);
         }
     };
+    
     
     // This hook runs ONLY once when the page first loads
     useEffect(() => {
@@ -158,6 +160,7 @@ const SearchDoctorsPage = () => {
                                 <option value="10">10 km radius</option>
                                 <option value="15">15 km radius</option>
                                 <option value="20">20 km radius</option>
+
                             </select>
                         </div>
                         <button
@@ -201,18 +204,22 @@ const SearchDoctorsPage = () => {
                         )}
                     </div>
                 <button
-  type="submit"
-  className="w-full bg-accent-blue text-white p-3 rounded font-bold hover:bg-accent-blue-hover disabled:opacity-50"
-  disabled={isLoading}
->
-  {isLoading ? 'Searching...' : 'Search Doctors'}
-</button>
+                    type="submit"
+                    className="w-full bg-accent-blue text-white p-3 rounded font-bold hover:bg-accent-blue-hover disabled:opacity-50"
+                    disabled={isLoading}
+                    >
+                    {isLoading ? 'Searching...' : 'Search Doctors'}
+                 </button>
                 </form>
 
                 {/* Results Section */}
                 <main className="lg:col-span-3">
                     {isLoading ? (
-                        <p className="text-center text-white">Loading...</p>
+                        <div className="space-y-6">
+                            {[...Array(3)].map((_, idx) => (
+                                <DoctorCardSkeleton key={idx} />
+                            ))}
+                        </div>
                     ) : doctors.length > 0 ? (
                         <div className="space-y-6">
                             {doctors.map(doctor => <DoctorCard key={doctor._id} doctor={doctor} />)}
