@@ -23,7 +23,7 @@ const FollowUpModal = ({ isOpen, onClose, appointmentId, onFollowUpScheduled }) 
       toast.success('Follow-up scheduled successfully!');
       onFollowUpScheduled();
       onClose();
-    } catch (error) {
+    } catch {
       toast.error('Failed to schedule follow-up.');
     } finally {
       setLoading(false);
