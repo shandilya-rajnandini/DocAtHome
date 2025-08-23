@@ -2,6 +2,11 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { searchDoctors } from '../api';
 import toast from 'react-hot-toast';
+import DoctorCardSkeleton from '../components/DoctorCardSkeleton';
+
+// --- NEW IMPORTS ---
+import Modal from '../components/Modal.jsx';
+import axios from 'axios';
 
 const doctorSpecialties = ['Cardiologist', 'Dermatologist', 'Gynecologist', 'Dentist', 'Pediatrician', 'General Physician', 'Neurologist'];
 const cities = ['Mumbai', 'Delhi', 'Bangalore', 'Pune', 'Patna', 'Kolkata', 'Chennai'];
@@ -13,12 +18,19 @@ const SearchDoctorsPage = () => {
     const [isGettingLocation, setIsGettingLocation] = useState(false);
     const [userLocation, setUserLocation] = useState(null);
 
+    // --- AI MODAL STATE ---
+    const [showAIModal, setShowAIModal] = useState(false);
+    const [symptomsInput, setSymptomsInput] = useState('');
+    const [aiSuggestion, setAISuggestion] = useState('');
+    const [aiReasoning, setAIReasoning] = useState('');
+    const [aiLoading, setAILoading] = useState(false);
+
     const fetchDoctors = async (currentFilters) => {
         setIsLoading(true);
         try {
-            // Pass the filters object directly to the API call
-            const { data } = await searchDoctors(currentFilters);
             
+            const { data } = await searchDoctors(currentFilters);
+
             // Handle new response format with patient location
             if (data.doctors) {
                 setDoctors(data.doctors);
@@ -38,6 +50,7 @@ const SearchDoctorsPage = () => {
             setIsLoading(false);
         }
     };
+    
     
     // This hook runs ONLY once when the page first loads
     useEffect(() => {
@@ -115,6 +128,40 @@ const SearchDoctorsPage = () => {
         );
     };
 
+    // --- AI SUGGESTION HANDLERS ---
+    const handleAIModalOpen = () => {
+        setShowAIModal(true);
+        setSymptomsInput('');
+        setAISuggestion('');
+    };
+
+    const handleAIModalClose = () => {
+        setShowAIModal(false);
+        setSymptomsInput('');
+        setAISuggestion('');
+        setAIReasoning('');
+    };
+
+    const handleAISubmit = async () => {
+        if (!symptomsInput.trim()) {
+            toast.error('Please enter your symptoms.');
+            return;
+        }
+        setAILoading(true);
+        try {
+            const { data } = await axios.post('/api/ai/suggest-specialty', { symptoms: symptomsInput });
+            setAISuggestion(data.specialty);
+            setAIReasoning(data.reasoning || '');
+            setFilters(f => ({ ...f, specialty: data.specialty }));
+        } catch (err) {
+            toast.error('Could not get a suggestion. Try again.');
+            setAISuggestion('');
+            setAIReasoning('');
+        } finally {
+            setAILoading(false);
+        }
+    };
+
     return (
         <div>
             {/* Header Section */}
@@ -131,19 +178,28 @@ const SearchDoctorsPage = () => {
                     <h2 className="text-2xl font-bold text-slate-800 dark:text-white mb-6">Filters</h2>
                     <div className="mb-6">
                         <label className="block text-slate-700 dark:text-secondary-text mb-2 font-semibold">Specialty</label>
-                        <select name="specialty" value={filters.specialty} onChange={handleFilterChange} className="w-full p-3 bg-gray-200 dark:bg-primary-dark text-black dark:text-white rounded border-gray-700 ">
-                            <option value="">All Specialties</option>
-                            {doctorSpecialties.map(spec => <option key={spec} value={spec}>{spec}</option>)}
-                        </select>
+                        <div className="flex gap-2">
+                            <select name="specialty" value={filters.specialty} onChange={handleFilterChange} className="w-full p-3 bg-gray-200 dark:bg-primary-dark text-black dark:text-white rounded border-gray-700 ">
+                                <option value="">All Specialties</option>
+                                {doctorSpecialties.map(spec => <option key={spec} value={spec}>{spec}</option>)}
+                            </select>
+                            <button
+                                type="button"
+                                className="bg-blue-500 text-white px-3 py-2 rounded hover:bg-blue-600 font-semibold"
+                                onClick={handleAIModalOpen}
+                            >
+                                Need help choosing?
+                            </button>
+                        </div>
                     </div>
-                                        <div className="mb-6">
+                    <div className="mb-6">
                         <label className="block text-slate-700 dark:text-secondary-text mb-2 font-semibold">City</label>
                         <select name="city" value={filters.city} onChange={handleFilterChange} className="w-full p-3 bg-gray-200 dark:bg-primary-dark text-black dark:text-white rounded border-gray-700 ">
                             <option value="">All Cities</option>
                             {cities.map(city => <option key={city} value={city}>{city}</option>)}
                         </select>
                     </div>
-                                        <div className="mb-6">
+                    <div className="mb-6">
                         <label className="block text-slate-700 dark:text-secondary-text mb-2 font-semibold">Location</label>
                         <div className="mb-3">
                             <label className="block text-sm text-slate-600 dark:text-secondary-text mb-1">Search Radius</label>
@@ -158,6 +214,7 @@ const SearchDoctorsPage = () => {
                                 <option value="10">10 km radius</option>
                                 <option value="15">15 km radius</option>
                                 <option value="20">20 km radius</option>
+
                             </select>
                         </div>
                         <button
@@ -201,18 +258,22 @@ const SearchDoctorsPage = () => {
                         )}
                     </div>
                 <button
-  type="submit"
-  className="w-full bg-accent-blue text-white p-3 rounded font-bold hover:bg-accent-blue-hover disabled:opacity-50"
-  disabled={isLoading}
->
-  {isLoading ? 'Searching...' : 'Search Doctors'}
-</button>
+                    type="submit"
+                    className="w-full bg-accent-blue text-white p-3 rounded font-bold hover:bg-accent-blue-hover disabled:opacity-50"
+                    disabled={isLoading}
+                    >
+                    {isLoading ? 'Searching...' : 'Search Doctors'}
+                 </button>
                 </form>
 
                 {/* Results Section */}
                 <main className="lg:col-span-3">
                     {isLoading ? (
-                        <p className="text-center text-white">Loading...</p>
+                        <div className="space-y-6">
+                            {[...Array(3)].map((_, idx) => (
+                                <DoctorCardSkeleton key={idx} />
+                            ))}
+                        </div>
                     ) : doctors.length > 0 ? (
                         <div className="space-y-6">
                             {doctors.map(doctor => <DoctorCard key={doctor._id} doctor={doctor} />)}
@@ -224,6 +285,103 @@ const SearchDoctorsPage = () => {
                     )}
                 </main>
             </div>
+
+            {/* AI Modal */}
+            <Modal isOpen={showAIModal} onClose={handleAIModalClose} showDefaultClose={false}>
+                <div className="max-h-[80vh] overflow-y-auto">
+                    {/* Header with close button */}
+                    <div className="flex items-center justify-between mb-6 sticky top-0 bg-white dark:bg-gray-800 pb-4 border-b border-gray-200 dark:border-gray-600">
+                        <div className="flex items-center gap-3">
+                            <div>
+                                <h2 className="text-xl font-bold text-slate-800 dark:text-white">Describe your Symptoms</h2>
+                                <p className="text-slate-600 dark:text-gray-300 text-sm">For personalized recommendations</p>
+                            </div>
+                        </div>
+                        <button
+                            onClick={handleAIModalClose}
+                            aria-label="Close"
+                            className="p-2 rounded-full transition-all duration-200 bg-gray-100 dark:bg-gray-700 hover:bg-red-500/20 dark:hover:bg-red-500/30 group"
+                        >
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" className="transition-colors duration-200">
+                                <path 
+                                    d="M18 6L6 18M6 6L18 18" 
+                                    stroke="currentColor" 
+                                    strokeWidth="2.5" 
+                                    strokeLinecap="round" 
+                                    className="text-gray-600 dark:text-gray-300 group-hover:text-red-600 dark:group-hover:text-red-400"
+                                />
+                            </svg>
+                        </button>
+                    </div>
+
+                    {/* Scrollable content area */}
+                    <div className="space-y-6">
+                        {/* Symptoms input */}
+                        <div>
+                            <textarea
+                                className="w-full p-4 border-2 border-gray-300 dark:border-gray-600 rounded-lg text-base focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 dark:focus:ring-blue-800 dark:bg-gray-800 dark:text-white transition-all duration-200 resize-none shadow-inner"
+                                rows={3}
+                                value={symptomsInput}
+                                onChange={e => setSymptomsInput(e.target.value)}
+                                placeholder="Describe your symptoms in detail... e.g., 'I have a persistent headache with nausea and sensitivity to light'"
+                            />
+                        </div>
+
+                        {/* Submit button */}
+                        <button
+                            className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white px-6 py-3 rounded-lg font-bold text-base transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none disabled:shadow-lg"
+                            onClick={handleAISubmit}
+                            disabled={aiLoading}
+                        >
+                            {aiLoading ? (
+                                <div className="flex items-center justify-center gap-3">
+                                    <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
+                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"/>
+                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                                    </svg>
+                                    Analyzing your symptoms...
+                                </div>
+                            ) : (
+                                <div className="flex items-center justify-center gap-2">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                                        <path d="M12 2L13.09 8.26L22 9L13.09 9.74L12 16L10.91 9.74L2 9L10.91 8.26L12 2Z" fill="currentColor"/>
+                                    </svg>
+                                    Get AI Recommendation
+                                </div>
+                            )}
+                        </button>
+
+                        {/* Results */}
+                        {aiSuggestion && (
+                            <div className="space-y-4 animate-fadeIn">
+                                <div className="p-4 bg-gradient-to-r from-green-100 to-emerald-100 dark:from-green-900 dark:to-emerald-900 rounded-lg border-l-4 border-green-500 shadow-md">
+                                    <div className="flex items-center gap-2 mb-2">
+                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                                            <path d="M9 12L11 14L15 10M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-green-600 dark:text-green-400"/>
+                                        </svg>
+                                        <h3 className="text-green-800 dark:text-green-200 font-bold text-sm">Recommendation</h3>
+                                    </div>
+                                    <p className="text-green-800 dark:text-green-200 text-sm">
+                                        We recommend seeing a <span className="font-bold">{aiSuggestion}.</span>
+                                    </p>
+                                </div>
+                                
+                                {aiReasoning && (
+                                    <div className="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900 dark:to-indigo-900 rounded-lg border-l-4 border-blue-500 shadow-md">
+                                        <div className="flex items-center gap-2 mb-2">
+                                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                                                <path d="M13 16H12V12H11M12 8H12.01M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-blue-600 dark:text-blue-400"/>
+                                            </svg>
+                                            <h4 className="text-blue-800 dark:text-blue-200 font-bold text-sm">Why this recommendation?</h4>
+                                        </div>
+                                        <p className="text-blue-800 dark:text-blue-200 text-sm leading-relaxed">{aiReasoning}</p>
+                                    </div>
+                                )}
+                            </div>
+                        )}
+                    </div>
+                </div>
+            </Modal>
         </div>
     );
 };
@@ -289,6 +447,5 @@ const DoctorCard = ({ doctor }) => (
         </div>
     </div>
 );
-
 
 export default SearchDoctorsPage;
