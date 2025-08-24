@@ -12,27 +12,22 @@ const EMERGENCY_PHONE_DISPLAY = "+91 9700 001298";
 const steps = [
   {
     icon: "📱",
-    icon: "📱",
     title: "Step 1",
-    text: "Fill out the form with patient and location details.",
     text: "Fill out the form with patient and location details.",
   },
   {
     icon: "📍",
     title: "Step 2",
     text: "Submit the request to find available ambulances.",
-    text: "Submit the request to find available ambulances.",
   },
   {
     icon: "🚑",
     title: "Step 3",
     text: "An ambulance driver accepts your request.",
-    text: "An ambulance driver accepts your request.",
   },
   {
     icon: "🏥",
     title: "Step 4",
-    text: "Ambulance arrives at your location within minutes.",
     text: "Ambulance arrives at your location within minutes.",
   },
 ];
