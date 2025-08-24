@@ -43,9 +43,9 @@ const SearchDoctorsPage = () => {
                 // Fallback for old response format
                 setDoctors(data);
             }
-        } catch (err) {
+        } catch (error) {
             toast.error('Failed to fetch doctors. Is the server running?');
-            console.error("API Error:", err);
+            console.error("API Error:", error);
         } finally {
             setIsLoading(false);
         }
@@ -153,6 +153,7 @@ const SearchDoctorsPage = () => {
             setAISuggestion(data.specialty);
             setAIReasoning(data.reasoning || '');
             setFilters(f => ({ ...f, specialty: data.specialty }));
+        // eslint-disable-next-line no-unused-vars
         } catch (err) {
             toast.error('Could not get a suggestion. Try again.');
             setAISuggestion('');

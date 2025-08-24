@@ -46,7 +46,7 @@ const ProUpgradePage = () => {
         }
     };
 
-    // Removed unused loadRazorpayScript
+    // Removed unused loadRazorpayScript - script loading is handled inline in handleUpgrade
 
     const handleUpgrade = async () => {
         if (!user) {

@@ -28,8 +28,13 @@ const UserSchema = new mongoose.Schema({
   },
   role: {
     type: String,
-    enum: ['patient', 'doctor', 'nurse', 'admin', 'technician'],
+    enum: ['patient', 'doctor', 'nurse', 'admin', 'technician', 'ambulance'],
     default: 'patient',
+  },
+  
+  isOnline: {
+    type: Boolean,
+    default: false,
   },
 
   // --- Professional Details ---

@@ -19,7 +19,7 @@ const suggestSpecialty = asyncHandler(async (req, res) => {
     } catch (geminiError) {
       console.log('Gemini AI failed, falling back to keyword matching:', geminiError.message);
       specialty = getSpecialtyFromKeywords(symptoms);
-      reasoning = "Based on keyword matching analysis of your symptoms.";
+      reasoning = 'Based on keyword matching analysis of your symptoms.';
     }
 
     if (!specialty) {
@@ -35,7 +35,7 @@ const suggestSpecialty = asyncHandler(async (req, res) => {
 
 const getSpecialtyFromGemini = async (symptoms) => {
   const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-  const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+  const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
 
   const prompt = `You are a medical AI assistant. Based on the following symptoms, suggest the most appropriate medical specialty for the patient to consult. 
 

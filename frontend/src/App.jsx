@@ -44,6 +44,7 @@ import PublicDonationPage from './pages/PublicDonationPage.jsx';
 // Protected Professional Pages
 import DoctorDashboard from './pages/DoctorDashboard.jsx';
 import NurseDashboard from './pages/NurseDashboard.jsx';
+import DriverDashboard from './pages/DriverDashboard.jsx';
 import DoctorEditProfilePage from './pages/DoctorEditProfilePage.jsx';
 import NurseEditProfilePage from './pages/NurseEditProfilePage.jsx';
 import AdminEditProfilePage from './pages/AdminEditProfilePage.jsx';
@@ -98,9 +99,10 @@ function App() {
             <Route path="/care-fund" element={<ProtectedRoute><CareFundPage /></ProtectedRoute>} />
             {/* <Route path="/health-quests" element={<ProtectedRoute><HealthQuestsPage /></ProtectedRoute>} /> */}
 
-            {/* --- Protected Professional (Doctor/Nurse) Routes --- */}
+            {/* --- Protected Professional (Doctor/Nurse/Ambulance) Routes --- */}
             <Route path="/doctor/dashboard" element={<ProtectedRoute><DoctorDashboard /></ProtectedRoute>} />
             <Route path="/nurse/dashboard" element={<ProtectedRoute><NurseDashboard /></ProtectedRoute>} />
+            <Route path="/driver/dashboard" element={<ProtectedRoute><DriverDashboard /></ProtectedRoute>} />
             <Route path="/doctor/edit-profile" element={<ProtectedRoute><DoctorEditProfilePage /></ProtectedRoute>} />
             <Route path="/nurse/edit-profile" element={<ProtectedRoute><NurseEditProfilePage /></ProtectedRoute>} />
             <Route path="/doctor/appointments" element={<ProtectedRoute><DoctorAppointmentsPage /></ProtectedRoute>} />
