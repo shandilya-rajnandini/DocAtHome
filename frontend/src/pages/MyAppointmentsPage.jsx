@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from "react";
-import { getMyAppointments } from "../api";
+import { getMyAppointments, updateAppointmentStatus } from "../api";
+
 import toast from "react-hot-toast";
 import IconCalendarCheck from "../components/icons/IconCalendarCheck";
 import IconHistory from "../components/icons/IconHistory";
 import IconStethoscope from "../components/icons/IconStethoscope";
 import EmptyState from "../components/EmptyState";
 import { Calendar, MessageCircle } from "lucide-react";
+import useAuthStore from "../store/useAuthStore";
 
 // Confirmation Modal Component
 const ConfirmationModal = ({ isOpen, onClose, onConfirm, title, message }) => {
@@ -36,7 +38,6 @@ const ConfirmationModal = ({ isOpen, onClose, onConfirm, title, message }) => {
     </div>
   );
 };
-import useAuthStore from "../store/useAuthStore";
 
 const AppointmentCard = ({ appointment, onAppointmentUpdate }) => {
   // Helper to generate WhatsApp share text
@@ -129,8 +130,6 @@ const AppointmentCard = ({ appointment, onAppointmentUpdate }) => {
       setCancelling(false);
     }
   };
-const AppointmentCard = ({ appointment }) => {
-  const appointmentDate = new Date(appointment.appointmentDate);
 
   return (
     <div className="bg-accent-cream dark:bg-primary-dark p-5 rounded-lg shadow-lg border border-gray-700 hover:border-accent transition-all duration-300">
@@ -140,21 +139,21 @@ const AppointmentCard = ({ appointment }) => {
           <div>
             <h3 className="text-xl font-bold text-white">
               {appointment.doctor?.name || "N/A"}
-              {appointment.doctor?.name || "N/A"}
             </h3>
-
             <p className="text-secondary-text">
-              {appointment.doctor?.specialty || "N/A"}
               {appointment.doctor?.specialty || "N/A"}
             </p>
           </div>
         </div>
-        <div
-          className={`text-sm font-semibold px-3 py-1 rounded-full h-fit ${
-            appointment.status === "Completed"
-              ? "bg-green-900 text-green-300"
-              : appointment.status === "Confirmed"
+        <div className="flex flex-col items-end space-y-2">
+          <div
+            className={`text-sm font-semibold px-3 py-1 rounded-full h-fit ${
+              appointment.status === "Completed"
+                ? "bg-green-900 text-green-300"
+                : appointment.status === "Confirmed"
                 ? "bg-blue-900 text-blue-300"
+                : appointment.status === "Cancelled"
+                ? "bg-red-900 text-red-300"
                 : "bg-yellow-900 text-yellow-300"
             }`}
           >
@@ -180,12 +179,8 @@ const AppointmentCard = ({ appointment }) => {
               <span>Share</span>
             </button>
           )}
-          }`}
-        >
-          {appointment.status}
         </div>
       </div>
-
       {appointment.status === "Completed" && appointment.doctorNotes && (
         <>
           <div className="border-t border-gray-700 my-4"></div>
@@ -197,14 +192,13 @@ const AppointmentCard = ({ appointment }) => {
           </div>
         </>
       )}
-
+      {/* Show voice note if present */}
       {appointment.voiceRecording && (
         <div className="mt-4">
           <h4 className="font-bold text-white mb-2">Voice Note:</h4>
           <audio controls src={appointment.voiceRecording} className="w-full" />
         </div>
       )}
-
       <div className="border-t border-gray-700 my-4"></div>
       <div className="flex justify-between items-center text-secondary-text">
         <div>
@@ -220,8 +214,49 @@ const AppointmentCard = ({ appointment }) => {
         <div className="text-right">
           <p className="font-semibold text-white">Booking Type</p>
           <p>{appointment.bookingType}</p>
+          {appointment.fee && (
+            <>
+              <p className="font-semibold text-white mt-2">Fee</p>
+              <p>₹{appointment.fee}</p>
+            </>
+          )}
+          {appointment.paymentMethod && (
+            <>
+              <p className="font-semibold text-white mt-2">Payment</p>
+              <p
+                className={
+                  appointment.paymentMethod === "careFund"
+                    ? "text-blue-400"
+                    : "text-green-400"
+                }
+              >
+                {appointment.paymentMethod === "careFund"
+                  ? "Care Fund"
+                  : "External Payment"}
+              </p>
+            </>
+          )}
         </div>
       </div>
+      {appointment.status === "Completed" && appointment.doctorNotes && (
+        <>
+          <div className="border-t border-gray-700 my-4"></div>
+          <div>
+            <h4 className="font-bold text-white mb-2">Doctor's Notes:</h4>
+            <p className="text-secondary-text bg-primary-dark rounded">
+              {appointment.doctorNotes}
+            </p>
+          </div>
+        </>
+      )}
+
+      <ConfirmationModal
+        isOpen={showCancelModal}
+        onClose={() => setShowCancelModal(false)}
+        onConfirm={handleCancelAppointment}
+        title="Cancel Appointment"
+        message="Are you sure you want to cancel this appointment? This action cannot be undone."
+      />
     </div>
   );
 };
@@ -232,29 +267,49 @@ const MyAppointmentsPage = () => {
   const [activeTab, setActiveTab] = useState("Upcoming");
   const { user } = useAuthStore();
 
+  const fetchAppointments = async () => {
+    try {
+      const { data } = await getMyAppointments();
+      setAppointments(data.data || []); // Handle the case where data.data might not exist
+    } catch (error) {
+      toast.error("Could not fetch your appointments.");
+      console.error(error);
+    }
+  };
+
   useEffect(() => {
-    const fetchAppointments = async () => {
-      try {
-        const { data } = await getMyAppointments();
-        setAppointments(data.data || []);
-      } catch (error) {
-        toast.error("Could not fetch your appointments.");
-        console.error(error);
-      } finally {
-        setLoading(false);
-      }
+    const loadAppointments = async () => {
+      setLoading(true);
+      await fetchAppointments();
+      setLoading(false);
     };
 
-    if (user) fetchAppointments();
+    if (user) {
+      loadAppointments();
+    }
   }, [user]);
 
   const filteredAppointments = appointments.filter((appt) => {
     const appointmentDate = new Date(appt.appointmentDate);
     const now = new Date();
     now.setHours(0, 0, 0, 0);
-    return activeTab === "Upcoming"
-      ? appointmentDate >= now
-      : appointmentDate < now;
+
+    if (activeTab === "Upcoming") {
+      return (
+        (appointmentDate >= now ||
+          ["Pending", "Confirmed"].includes(appt.status)) &&
+        appt.status !== "Cancelled" &&
+        appt.status !== "Completed"
+      );
+    } else if (activeTab === "Cancelled") {
+      return appt.status === "Cancelled";
+    } else {
+      // 'Past' - completed appointments and past dates
+      return (
+        appt.status === "Completed" ||
+        (appointmentDate < now && appt.status !== "Cancelled")
+      );
+    }
   });
 
   if (loading) {
@@ -266,7 +321,7 @@ const MyAppointmentsPage = () => {
   }
 
   return (
-    <div className="dark:bg-background-dark min-h-screen">
+    <div className=" dark:bg-background-dark min-h-screen">
       <div className="relative bg-my-appointments-bg bg-cover bg-center h-60">
         <div className="absolute inset-0 bg-black bg-opacity-60 flex justify-center items-center">
           <h1 className="text-5xl font-bold text-white tracking-wider">
@@ -281,18 +336,39 @@ const MyAppointmentsPage = () => {
               onClick={() => setActiveTab("Upcoming")}
               className={`flex items-center py-3 px-6 font-semibold text-lg transition-all duration-300 ${
                 activeTab === "Upcoming"
-                  ? "text-black dark:text-gray-400 border-b-2 border-accent"
-                  : "text-gray-500 hover:text-gray-600 dark:hover:text-white"
+                  ? "text-black  dark:text-gray-400 border-b-2 border-accent"
+                  : "  text-gray-500 hover:text-gray-600 dark:hover:text-white"
               }`}
             >
               <IconCalendarCheck className="w-5 h-5 mr-2" />
               Upcoming
             </button>
             <button
+              onClick={() => setActiveTab("Cancelled")}
+              className={`flex items-center py-3 px-6 font-semibold text-lg transition-all duration-300 ${
+                activeTab === "Cancelled"
+                  ? "text-black  dark:text-gray-400 border-b-2 border-accent"
+                  : "text-gray-500 hover:text-gray-600 dark:hover:text-white"
+              }`}
+            >
+              <svg
+                className="w-5 h-5 mr-2"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                  clipRule="evenodd"
+                />
+              </svg>
+              Cancelled
+            </button>
+            <button
               onClick={() => setActiveTab("Past")}
               className={`flex items-center py-3 px-6 font-semibold text-lg transition-all duration-300 ${
                 activeTab === "Past"
-                  ? "text-black dark:text-gray-400 border-b-2 border-accent"
+                  ? "text-black  dark:text-gray-400 border-b-2 border-accent"
                   : "text-gray-500 hover:text-gray-600 dark:hover:text-white"
               }`}
             >
@@ -304,16 +380,19 @@ const MyAppointmentsPage = () => {
           {filteredAppointments.length > 0 ? (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {filteredAppointments.map((appt) => (
-                <AppointmentCard key={appt._id} appointment={appt} />
+                <AppointmentCard
+                  key={appt._id}
+                  appointment={appt}
+                  onAppointmentUpdate={fetchAppointments}
+                />
               ))}
             </div>
           ) : (
-            <div className="text-center text-slate-800 dark:text-secondary-text py-20">
-              <h2 className="text-2xl font-semibold mb-2">
-                No {activeTab} Appointments
-              </h2>
-              <p>It looks like you don't have any appointments here.</p>
-            </div>
+            <EmptyState
+              icon={Calendar}
+              title={`No ${activeTab} Appointments`}
+              message="It looks like you don't have any appointments here."
+            />
           )}
         </div>
       </div>

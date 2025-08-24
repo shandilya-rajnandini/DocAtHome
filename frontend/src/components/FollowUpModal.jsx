@@ -1,16 +1,11 @@
-import React, { useState } from "react";
-import Modal from "./Modal";
-import toast from "react-hot-toast";
-import { scheduleFollowUp } from "../api";
+import React, { useState } from 'react';
+import Modal from './Modal';
+import toast from 'react-hot-toast';
+import { scheduleFollowUp } from '../api';
 
-const FollowUpModal = ({
-  isOpen,
-  onClose,
-  appointmentId,
-  onFollowUpScheduled,
-}) => {
-  const [timeframe, setTimeframe] = useState("14");
-  const [note, setNote] = useState("");
+const FollowUpModal = ({ isOpen, onClose, appointmentId, onFollowUpScheduled }) => {
+  const [timeframe, setTimeframe] = useState('14');
+  const [note, setNote] = useState('');
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e) => {
@@ -22,15 +17,14 @@ const FollowUpModal = ({
 
     try {
       await scheduleFollowUp(appointmentId, {
-        followUpDate: followUpDate.toISOString().split("T")[0],
+        followUpDate: followUpDate.toISOString().split('T')[0],
         note,
       });
-      toast.success("Follow-up scheduled successfully!");
+      toast.success('Follow-up scheduled successfully!');
       onFollowUpScheduled();
       onClose();
-    } catch (error) {
-      console.error(error);
-      toast.error("Failed to schedule follow-up.");
+    } catch {
+      toast.error('Failed to schedule follow-up.');
     } finally {
       setLoading(false);
     }
@@ -38,15 +32,9 @@ const FollowUpModal = ({
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="Schedule Follow-up">
-      <form
-        onSubmit={handleSubmit}
-        className="space-y-6 bg-primary-dark p-6 rounded-xl shadow-lg"
-      >
+      <form onSubmit={handleSubmit} className="space-y-6 bg-primary-dark p-6 rounded-xl shadow-lg">
         <div>
-          <label
-            htmlFor="timeframe"
-            className="block text-sm font-semibold text-accent-blue mb-2"
-          >
+          <label htmlFor="timeframe" className="block text-sm font-semibold text-accent-blue mb-2">
             Remind in
           </label>
           <select
@@ -63,10 +51,7 @@ const FollowUpModal = ({
           </select>
         </div>
         <div>
-          <label
-            htmlFor="note"
-            className="block text-sm font-semibold text-accent-blue mb-2"
-          >
+          <label htmlFor="note" className="block text-sm font-semibold text-accent-blue mb-2">
             Personal Note
           </label>
           <textarea
@@ -91,7 +76,7 @@ const FollowUpModal = ({
             disabled={loading}
             className="px-4 py-2 rounded-lg bg-gradient-to-r from-accent-blue to-indigo-600 text-white font-bold shadow hover:from-indigo-600 hover:to-accent-blue transition"
           >
-            {loading ? "Scheduling..." : "Schedule"}
+            {loading ? 'Scheduling...' : 'Schedule'}
           </button>
         </div>
       </form>
