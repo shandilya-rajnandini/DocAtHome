@@ -4,8 +4,131 @@ import toast from "react-hot-toast";
 import IconCalendarCheck from "../components/icons/IconCalendarCheck";
 import IconHistory from "../components/icons/IconHistory";
 import IconStethoscope from "../components/icons/IconStethoscope";
+import EmptyState from "../components/EmptyState";
+import { Calendar, MessageCircle } from "lucide-react";
+
+// Confirmation Modal Component
+const ConfirmationModal = ({ isOpen, onClose, onConfirm, title, message }) => {
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white dark:bg-primary-dark p-6 rounded-lg shadow-xl max-w-md w-full mx-4">
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+          {title}
+        </h3>
+        <p className="text-gray-700 dark:text-gray-300 mb-6">{message}</p>
+        <div className="flex justify-end space-x-4">
+          <button
+            onClick={onClose}
+            className="px-4 py-2 text-gray-600 dark:text-gray-400 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={onConfirm}
+            className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+          >
+            Confirm
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
 import useAuthStore from "../store/useAuthStore";
 
+const AppointmentCard = ({ appointment, onAppointmentUpdate }) => {
+  // Helper to generate WhatsApp share text
+  const getShareText = () => {
+    const doctorName = appointment.doctor?.name || "N/A";
+    const specialty = appointment.doctor?.specialty || "";
+    const date = new Date(appointment.appointmentDate).toLocaleDateString(
+      "en-GB",
+      {
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+      }
+    );
+    const time = appointment.appointmentTime;
+    return `Hi! Just a reminder about my upcoming Doc@Home appointment with Dr. ${doctorName} (${specialty}) on ${date} at ${time}.`;
+  };
+
+  // Handler for WhatsApp share
+  const handleShareWhatsApp = () => {
+    const text = encodeURIComponent(getShareText());
+    const url = `https://wa.me/?text=${text}`;
+    window.open(url, "_blank");
+  };
+  const [showCancelModal, setShowCancelModal] = useState(false);
+  const [cancelling, setCancelling] = useState(false);
+  // Combine date and time for accurate comparison
+  const appointmentDateStr = appointment.appointmentDate; // e.g., "2025-07-02"
+  const appointmentTimeStr = appointment.appointmentTime; // e.g., "01:00 PM"
+  const [time, period] = appointmentTimeStr.split(" ");
+  const [hours, minutes] = time.split(":");
+  let hour24 = parseInt(hours);
+  if (period === "PM" && hour24 !== 12) hour24 += 12;
+  if (period === "AM" && hour24 === 12) hour24 = 0;
+  const appointmentDateTime = new Date(appointmentDateStr);
+  appointmentDateTime.setHours(hour24, parseInt(minutes), 0, 0);
+  const now = new Date();
+  const isUpcoming =
+    appointment.status === "Confirmed" && appointmentDateTime > now;
+
+  // Check if appointment can be cancelled (within 2 hours policy)
+  const canCancel = () => {
+    if (!["Pending", "Confirmed"].includes(appointment.status)) {
+      return false;
+    }
+
+    const appointmentDateStr = appointment.appointmentDate; // e.g., "2025-07-02"
+    const appointmentTimeStr = appointment.appointmentTime; // e.g., "01:00 PM"
+
+    // Convert 12-hour format to 24-hour format for proper parsing
+    const [time, period] = appointmentTimeStr.split(" ");
+    const [hours, minutes] = time.split(":");
+    let hour24 = parseInt(hours);
+
+    if (period === "PM" && hour24 !== 12) {
+      hour24 += 12;
+    } else if (period === "AM" && hour24 === 12) {
+      hour24 = 0;
+    }
+
+    const appointmentDateTime = new Date(appointmentDateStr);
+    appointmentDateTime.setHours(hour24, parseInt(minutes), 0, 0);
+
+    const now = new Date();
+    const timeDifference = appointmentDateTime.getTime() - now.getTime();
+    const hoursUntilAppointment = timeDifference / (1000 * 60 * 60);
+
+    return hoursUntilAppointment >= 2;
+  };
+
+  const handleCancelAppointment = async () => {
+    setCancelling(true);
+    try {
+      await updateAppointmentStatus(appointment._id, { status: "Cancelled" });
+
+      // Show different success messages based on payment method
+      if (appointment.paymentMethod === "careFund") {
+        toast.success(
+          `Appointment cancelled successfully! ₹${appointment.fee} has been refunded to your care fund.`
+        );
+      } else {
+        toast.success("Appointment cancelled successfully");
+      }
+
+      setShowCancelModal(false);
+      onAppointmentUpdate(); // Refresh the appointments list
+    } catch (error) {
+      toast.error(error.response?.data?.msg || "Failed to cancel appointment");
+    } finally {
+      setCancelling(false);
+    }
+  };
 const AppointmentCard = ({ appointment }) => {
   const appointmentDate = new Date(appointment.appointmentDate);
 
@@ -17,9 +140,11 @@ const AppointmentCard = ({ appointment }) => {
           <div>
             <h3 className="text-xl font-bold text-white">
               {appointment.doctor?.name || "N/A"}
+              {appointment.doctor?.name || "N/A"}
             </h3>
 
             <p className="text-secondary-text">
+              {appointment.doctor?.specialty || "N/A"}
               {appointment.doctor?.specialty || "N/A"}
             </p>
           </div>
@@ -31,6 +156,30 @@ const AppointmentCard = ({ appointment }) => {
               : appointment.status === "Confirmed"
                 ? "bg-blue-900 text-blue-300"
                 : "bg-yellow-900 text-yellow-300"
+            }`}
+          >
+            {appointment.status}
+          </div>
+          {canCancel() && (
+            <button
+              onClick={() => setShowCancelModal(true)}
+              disabled={cancelling}
+              className="px-3 py-1 text-sm bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {cancelling ? "Cancelling..." : "Cancel Appointment"}
+            </button>
+          )}
+          {/* Share button for confirmed, upcoming appointments */}
+          {isUpcoming && (
+            <button
+              onClick={handleShareWhatsApp}
+              className="px-3 py-1 text-sm bg-green-600 text-white rounded-lg flex items-center space-x-2 hover:bg-green-700 transition-colors mt-2"
+              title="Share via WhatsApp"
+            >
+              <MessageCircle className="w-4 h-4 mr-1" />
+              <span>Share</span>
+            </button>
+          )}
           }`}
         >
           {appointment.status}
@@ -60,7 +209,7 @@ const AppointmentCard = ({ appointment }) => {
       <div className="flex justify-between items-center text-secondary-text">
         <div>
           <p className="font-semibold text-white">
-            {appointmentDate.toLocaleDateString("en-GB", {
+            {appointmentDateStr.toLocaleDateString("en-GB", {
               day: "numeric",
               month: "long",
               year: "numeric",

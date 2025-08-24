@@ -67,6 +67,7 @@ app.use('/api/reviews', require('./routes/reviewRoutes'));
 app.use('/api/prescriptions', require('./routes/PrescriptionRoutes'));
 app.use('/api/twofactor', require('./routes/twoFactorAuthRoutes'));
 app.use('/api/announcements', require('./routes/announcementRoutes'));
+app.use('/api/ai', require('./routes/aiRoutes'));
 
 // --- Health check ---
 app.get('/health', (req, res) => res.status(200).send('OK'));

@@ -380,7 +380,11 @@ exports.handleWebhook = catchAsync(async (req, res, _next) => {
   let event;
   try {
     event = JSON.parse(rawBody.toString());
+<<<<<<< HEAD
   } catch (_parseError) {
+=======
+  } catch {
+>>>>>>> upstream/main
     return res.status(400).json({ error: 'Invalid JSON body' });
   }
 

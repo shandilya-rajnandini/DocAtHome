@@ -48,6 +48,7 @@ const ProUpgradePage = () => {
     }
   };
 
+    // Removed unused loadRazorpayScript
   // ✅ This helper will now actually be used
   const loadRazorpayScript = () => {
     return new Promise((resolve) => {
@@ -68,6 +69,14 @@ const ProUpgradePage = () => {
     setLoading(true);
     const toastId = toast.loading("Setting up your Pro subscription...");
 
+        try {
+            // For development testing, use test mode
+            const isDevelopment = import.meta.env.DEV;
+            const testMode = isDevelopment ? '?test=true' : '';
+            
+            // Create subscription
+            const { data } = await createProSubscription(testMode);
+            const { subscriptionId, testMode: isTestMode } = data.data;
     try {
       const isDevelopment = import.meta.env.DEV;
       const testMode = isDevelopment ? "?test=true" : "";

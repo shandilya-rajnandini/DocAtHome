@@ -1,6 +1,6 @@
 import React from "react";
 
-const Modal = ({ isOpen, onClose, title, children }) => {
+const Modal = ({ isOpen, onClose, title, children, showDefaultClose = true }) => {
   // Handle escape key press
   React.useEffect(() => {
     const handleEscape = (e) => {
