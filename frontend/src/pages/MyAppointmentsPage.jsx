@@ -5,9 +5,8 @@ import toast from "react-hot-toast";
 import IconCalendarCheck from "../components/icons/IconCalendarCheck";
 import IconHistory from "../components/icons/IconHistory";
 import IconStethoscope from "../components/icons/IconStethoscope";
-import EmptyState from '../components/EmptyState';
-import { Calendar } from 'lucide-react';
-
+import EmptyState from "../components/EmptyState";
+import { Calendar, MessageCircle } from "lucide-react";
 
 // Confirmation Modal Component
 const ConfirmationModal = ({ isOpen, onClose, onConfirm, title, message }) => {
@@ -40,11 +39,43 @@ const ConfirmationModal = ({ isOpen, onClose, onConfirm, title, message }) => {
 };
 
 const AppointmentCard = ({ appointment, onAppointmentUpdate }) => {
+  // Helper to generate WhatsApp share text
+  const getShareText = () => {
+    const doctorName = appointment.doctor?.name || "N/A";
+    const specialty = appointment.doctor?.specialty || "";
+    const date = new Date(appointment.appointmentDate).toLocaleDateString(
+      "en-GB",
+      {
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+      }
+    );
+    const time = appointment.appointmentTime;
+    return `Hi! Just a reminder about my upcoming Doc@Home appointment with Dr. ${doctorName} (${specialty}) on ${date} at ${time}.`;
+  };
+
+  // Handler for WhatsApp share
+  const handleShareWhatsApp = () => {
+    const text = encodeURIComponent(getShareText());
+    const url = `https://wa.me/?text=${text}`;
+    window.open(url, "_blank");
+  };
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [cancelling, setCancelling] = useState(false);
-  const appointmentDate = new Date(appointment.appointmentDate);
-  // eslint-disable-next-line no-unused-vars
-  const isPast = appointmentDate < new Date();
+  // Combine date and time for accurate comparison
+  const appointmentDateStr = appointment.appointmentDate; // e.g., "2025-07-02"
+  const appointmentTimeStr = appointment.appointmentTime; // e.g., "01:00 PM"
+  const [time, period] = appointmentTimeStr.split(" ");
+  const [hours, minutes] = time.split(":");
+  let hour24 = parseInt(hours);
+  if (period === "PM" && hour24 !== 12) hour24 += 12;
+  if (period === "AM" && hour24 === 12) hour24 = 0;
+  const appointmentDateTime = new Date(appointmentDateStr);
+  appointmentDateTime.setHours(hour24, parseInt(minutes), 0, 0);
+  const now = new Date();
+  const isUpcoming =
+    appointment.status === "Confirmed" && appointmentDateTime > now;
 
   // Check if appointment can be cancelled (within 2 hours policy)
   const canCancel = () => {
@@ -106,10 +137,10 @@ const AppointmentCard = ({ appointment, onAppointmentUpdate }) => {
           <IconStethoscope className="w-8 h-8 text-accent mr-4" />
           <div>
             <h3 className="text-xl font-bold text-white">
-              {appointment.doctor?.name || 'N/A'}
+              {appointment.doctor?.name || "N/A"}
             </h3>
             <p className="text-secondary-text">
-              {appointment.doctor?.specialty || 'N/A'}
+              {appointment.doctor?.specialty || "N/A"}
             </p>
           </div>
         </div>
@@ -136,6 +167,17 @@ const AppointmentCard = ({ appointment, onAppointmentUpdate }) => {
               {cancelling ? "Cancelling..." : "Cancel Appointment"}
             </button>
           )}
+          {/* Share button for confirmed, upcoming appointments */}
+          {isUpcoming && (
+            <button
+              onClick={handleShareWhatsApp}
+              className="px-3 py-1 text-sm bg-green-600 text-white rounded-lg flex items-center space-x-2 hover:bg-green-700 transition-colors mt-2"
+              title="Share via WhatsApp"
+            >
+              <MessageCircle className="w-4 h-4 mr-1" />
+              <span>Share</span>
+            </button>
+          )}
         </div>
       </div>
       {appointment.status === "Completed" && appointment.doctorNotes && (
@@ -160,7 +202,7 @@ const AppointmentCard = ({ appointment, onAppointmentUpdate }) => {
       <div className="flex justify-between items-center text-secondary-text">
         <div>
           <p className="font-semibold text-white">
-            {appointmentDate.toLocaleDateString("en-GB", {
+            {appointmentDateStr.toLocaleDateString("en-GB", {
               day: "numeric",
               month: "long",
               year: "numeric",
