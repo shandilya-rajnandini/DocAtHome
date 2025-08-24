@@ -87,5 +87,11 @@ export const acceptQuest = (questId) => API.post(`/quests/${questId}/accept`);
 export const logQuestProgress = (questId, progressData) =>
   API.post(`/quests/${questId}/progress`, progressData);
 
+// === Ambulance Routes ===
+export const bookAmbulance = (bookingData) => API.post('/ambulance/book', bookingData);
+export const respondToAmbulanceRequest = (requestId, responseData) => 
+  API.put(`/ambulance/respond/${requestId}`, responseData);
+export const updateDriverStatus = (statusData) => API.put('/ambulance/status', statusData);
+
 // Export the API instance as default
 export default API;
