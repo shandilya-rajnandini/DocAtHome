@@ -19,7 +19,7 @@ const suggestSpecialty = asyncHandler(async (req, res) => {
     } catch (geminiError) {
       console.log('Gemini AI failed, falling back to keyword matching:', geminiError.message);
       specialty = getSpecialtyFromKeywords(symptoms);
-      reasoning = "Based on keyword matching analysis of your symptoms.";
+      reasoning = 'Based on keyword matching analysis of your symptoms.';
     }
 
     if (!specialty) {
@@ -35,16 +35,16 @@ const suggestSpecialty = asyncHandler(async (req, res) => {
 
 const getSpecialtyFromGemini = async (symptoms) => {
   const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-  const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+  const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
 
   const prompt = `You are a medical AI assistant. Based on the following symptoms, suggest the most appropriate medical specialty for the patient to consult. 
 
-Symptoms: "${symptoms}"
+Symptoms: '${symptoms}'
 
 Please respond in the following JSON format:
 {
-  "specialty": "exact specialty name",
-  "reasoning": "brief explanation of why this specialty is recommended"
+  'specialty': 'exact specialty name',
+  'reasoning': 'brief explanation of why this specialty is recommended'
 }
 
 Available specialties to choose from:
@@ -88,7 +88,7 @@ Available specialties to choose from:
 - Travel Medicine Specialist
 - Wound Care Specialist
 
-If symptoms are general or unclear, recommend "General Physician".
+If symptoms are general or unclear, recommend 'General Physician'.
 Only respond with valid JSON.`;
 
   const result = await model.generateContent(prompt);

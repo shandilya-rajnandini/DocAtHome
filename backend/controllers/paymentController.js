@@ -126,11 +126,7 @@ exports.verifyPayment = asyncHandler(async (req, res) => {
     razorpay_order_id,
     razorpay_payment_id,
     razorpay_signature,
-<<<<<<< HEAD
-    _amount, // Note: This is no longer used - we fetch canonical amount from Razorpay
-=======
   // amount, // Note: This is no longer used - we fetch canonical amount from Razorpay
->>>>>>> upstream/main
     description,
     isDonation,
     donorName,

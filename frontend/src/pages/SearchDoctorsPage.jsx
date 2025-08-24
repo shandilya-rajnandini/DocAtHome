@@ -44,8 +44,9 @@ const SearchDoctorsPage = () => {
                 setDoctors(data);
             }
         } catch (err) {
-            toast.error('Failed to fetch doctors. Is the server running?');
             console.error("API Error:", err);
+            toast.error('Failed to fetch doctors. Is the server running?');
+            
         } finally {
             setIsLoading(false);
         }
@@ -154,6 +155,7 @@ const SearchDoctorsPage = () => {
             setAIReasoning(data.reasoning || '');
             setFilters(f => ({ ...f, specialty: data.specialty }));
         } catch (err) {
+            console.error(err);
             toast.error('Could not get a suggestion. Try again.');
             setAISuggestion('');
             setAIReasoning('');
