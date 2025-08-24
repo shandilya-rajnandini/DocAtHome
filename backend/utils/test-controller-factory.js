@@ -1,3 +1,4 @@
+/* eslint-disable quotes */
 /**
  * Simple test to verify the controller factory works correctly
  * Run this with: node backend/utils/test-controller-factory.js
