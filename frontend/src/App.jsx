@@ -56,6 +56,7 @@ import DemandHotspotPage from './pages/DemandHotspotPage.jsx';
 // Protected Admin Page
 import AdminDashboard from './pages/AdminDashboard.jsx';
 import TwoFactorAuthPage from './pages/TwoFactorAuthPage.jsx';
+import NotFoundPage from './pages/NotFoundPage.jsx';
 
 
 function App() {
@@ -118,6 +119,9 @@ function App() {
 
             {/* --- 2FA Route --- */}
             <Route path="/2fa-setup" element={<ProtectedRoute><TwoFactorAuthPage /></ProtectedRoute>} />
+
+            {/* --- 404 Not Found Route (Catch-all) --- */}
+            <Route path="*" element={<NotFoundPage />} />
           </Routes>
         </main>
 
