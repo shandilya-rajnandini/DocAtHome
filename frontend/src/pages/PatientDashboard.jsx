@@ -21,7 +21,7 @@ const PatientDashboard = () => {
 
   return (
     // The background is now a clean, dark slate color from our tailwind config
-    <div className="bg-amber-200 dark:bg-primary-dark min-h-full py-12 px-4">
+    <div className="bg-amber-200 dark:bg-primary-dark min-h-full pt-24 pb-12 px-4">
       <div className="container mx-auto">
         <div className="mb-12">
             <h1 className="text-4xl md:text-5xl font-bold text-black dark:text-white">Hello, {user?.name}!</h1>
@@ -101,6 +101,14 @@ const PatientDashboard = () => {
                 description="Manage your community-funded care balance."
                 link="/care-fund"
                 color="from-pink-500 to-pink-700"
+            />
+
+            <NewFeatureCard 
+                icon="📋"
+                title="Health Records"
+                description="Securely store and manage your medical documents."
+                link="/my-health-records"
+                color="from-indigo-500 to-indigo-700"
             />
 
             <NewFeatureCard 

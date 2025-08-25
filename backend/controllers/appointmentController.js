@@ -1,5 +1,6 @@
 const Appointment = require('../models/Appointment');
 const User = require('../models/User');
+const FollowUp = require('../models/FollowUp');
 const { generateSummary } = require('../utils/aiService');
 const asyncHandler = require('../middleware/asyncHandler');
 
@@ -128,7 +129,7 @@ exports.getMyAppointments = asyncHandler(async (req, res) => {
 
         const appointments = await Appointment.find(query)
             .populate('doctor', 'name specialty')
-            .populate('patient', 'name allergies chronicConditions'); // Populate patient details for the doctor's view
+            .populate('patient', 'name allergies chronicConditions');
 
         res.status(200).json({
             success: true,
@@ -255,3 +256,49 @@ exports.saveVoiceNote = asyncHandler(async (req, res) => {
     res.json({ success: true, data: appointment });
 });
 
+const sendEmail = require('../utils/sendEmail');
+
+// @desc    Schedule a follow-up for an appointment
+// @route   POST /api/appointments/:id/schedule-follow-up
+exports.scheduleFollowUp = asyncHandler(async (req, res) => {
+    const { followUpDate, note } = req.body;
+    const appointmentId = req.params.id;
+
+    const appointment = await Appointment.findById(appointmentId).populate('patient doctor');
+
+    if (!appointment) {
+        return res.status(404).json({ msg: 'Appointment not found' });
+    }
+
+    // Authorization: Only the assigned doctor can schedule a follow-up
+    if (req.user.role !== 'doctor' || appointment.doctor._id.toString() !== req.user.id) {
+        return res.status(401).json({ msg: 'User not authorized' });
+    }
+
+    if (appointment.status !== 'Completed') {
+        return res.status(400).json({ msg: 'Follow-up can only be scheduled for completed appointments' });
+    }
+
+    const followUp = await FollowUp.create({
+        patient: appointment.patient,
+        doctor: appointment.doctor,
+        appointment: appointmentId,
+        followUpDate,
+        note,
+    });
+
+    // Send email notification immediately
+    const { patient, doctor } = appointment;
+    const bookingLink = `http://localhost:5173/follow-up/${doctor._id}`;
+    const emailOptions = {
+        email: patient.email,
+        subject: 'Follow-up Reminder',
+        message: `Hi ${patient.name},\n\nThis is a reminder from Dr. ${doctor.name} to schedule a follow-up appointment.\n\nNote from your doctor: ${note}\n\nClick here to book your follow-up: ${bookingLink}`,
+    };
+    await sendEmail(emailOptions);
+
+    res.status(201).json({
+        success: true,
+        data: followUp,
+    });
+});

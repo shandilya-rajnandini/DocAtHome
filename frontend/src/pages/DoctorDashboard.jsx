@@ -80,7 +80,7 @@ const DoctorDashboard = () => {
     const isPro = isSubscriptionActive();
 
     return (
-        <div className="bg-primary-dark min-h-full py-12 px-4">
+        <div className="bg-primary-dark min-h-full pt-24 pb-12 px-4">
             <div className="container mx-auto">
                 <div className="mb-12">
                     <div className="flex items-center gap-4 mb-4">
@@ -175,7 +175,7 @@ const DoctorDashboard = () => {
                         </h2>
                         <div className="space-y-3">
                             <Link
-                                to={`/${role}/appointments`}
+                                to={user.role === 'patient' ? '/my-appointments' : `/${role}/appointments`}
                                 className="block w-full text-left p-4 bg-blue-600 text-white rounded-lg font-bold hover:bg-blue-700 transition"
                             >
                                 Manage Appointments

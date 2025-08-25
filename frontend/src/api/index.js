@@ -1,9 +1,16 @@
+// Make sure your api/index.js looks exactly like this at the top
 import axios from 'axios';
 
+<<<<<<< HEAD
+const API_URL = 'https://docathome-backend.onrender.com/api'; // Hardcode the live Render URL
+=======
 
 const API_URL = 'http://localhost:5000/api'; // Local backend server
+>>>>>>> 3d4ee15fca785f163581cbe18a77e236d5b044d5
 
 const API = axios.create({ baseURL: API_URL });
+
+// ... rest of the file
 
 
 // Interceptor to automatically add the JWT token to every secure request.
@@ -50,6 +57,7 @@ export const getDoctorAppointments = () => API.get('/appointments/doctor-appoint
 export const updateAppointmentStatus = (id, statusData) => API.put(`/appointments/${id}`, statusData);
 export const getAppointmentSummary = (id) => API.get(`/appointments/${id}/summary`);
 export const saveAppointmentVoiceNote = (id, noteData) => API.post(`/appointments/${id}/voice-note`, noteData);
+export const scheduleFollowUp = (id, followUpData) => API.post(`/appointments/${id}/schedule-follow-up`, followUpData);
 
 // === Care Circle Routes ===
 export const getMyCareCircle = () => API.get('/profile/my-care-circle');
@@ -73,6 +81,12 @@ export const cancelSubscription = () => API.post('/subscription/cancel');
 export const getQuests = () => API.get('/quests');
 export const acceptQuest = (questId) => API.post(`/quests/${questId}/accept`);
 export const logQuestProgress = (questId, progressData) => API.post(`/quests/${questId}/progress`, progressData);
+
+// === Ambulance Routes ===
+export const bookAmbulance = (bookingData) => API.post('/ambulance/book', bookingData);
+export const respondToAmbulanceRequest = (requestId, responseData) => 
+  API.put(`/ambulance/respond/${requestId}`, responseData);
+export const updateDriverStatus = (statusData) => API.put('/ambulance/status', statusData);
 
 // Export the API instance as default
 export default API;
