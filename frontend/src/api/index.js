@@ -1,9 +1,11 @@
+// Make sure your api/index.js looks exactly like this at the top
 import axios from 'axios';
 
-
-const API_URL = 'http://localhost:5000/api'; // Local backend server
+const API_URL = 'https://docathome-backend.onrender.com/api'; // Hardcode the live Render URL
 
 const API = axios.create({ baseURL: API_URL });
+
+// ... rest of the file
 
 
 // Interceptor to automatically add the JWT token to every secure request.
