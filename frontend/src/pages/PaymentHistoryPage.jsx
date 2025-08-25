@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-// import { useAuth } from '../context/AuthContext';
 import { getPaymentHistory } from "../api/index";
 import toast from "react-hot-toast";
 import useAuthStore from "../store/useAuthStore";
