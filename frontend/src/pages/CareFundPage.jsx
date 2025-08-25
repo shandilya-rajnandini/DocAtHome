@@ -4,7 +4,7 @@ import toast from "react-hot-toast";
 import useAuthStore from "../store/useAuthStore";
 
 const CareFundPage = () => {
-  const { user } = useAthStore();
+  const { user } = useAuthStore();
 
   const [balance, setBalance] = useState(0);
   const [donations, setDonations] = useState([]);
