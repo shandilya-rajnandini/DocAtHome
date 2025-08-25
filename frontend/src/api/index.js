@@ -32,6 +32,8 @@ export const approveUser = (id) => API.put(`/admin/approve/${id}`);
 
 // === Generic Profile Fetching ===
 const getProfessionalById = (id) => API.get(`/profile/${id}`);
+export const getAvailability = (id) => API.get(`/availability/${id}`);
+export const updateAvailability = (id, data) => API.post(`/availability/${id}`, data);
 
 // === Doctor & Nurse Search Routes ===
 export const searchDoctors = (params) => API.get('/doctors', { params });
