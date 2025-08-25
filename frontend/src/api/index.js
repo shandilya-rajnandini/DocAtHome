@@ -1,12 +1,7 @@
 // Make sure your api/index.js looks exactly like this at the top
 import axios from 'axios';
 
-<<<<<<< HEAD
 const API_URL = 'https://docathome-backend.onrender.com/api'; // Hardcode the live Render URL
-=======
-
-const API_URL = 'http://localhost:5000/api'; // Local backend server
->>>>>>> 3d4ee15fca785f163581cbe18a77e236d5b044d5
 
 const API = axios.create({ baseURL: API_URL });
 
