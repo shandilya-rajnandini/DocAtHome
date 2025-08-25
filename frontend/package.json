@@ -14,6 +14,7 @@
     "@heroicons/react": "^2.2.0",
     "@tabler/icons-react": "^3.34.1",
     "axios": "^1.10.0",
+    "framer-motion": "^12.23.12",
     "jspdf": "^3.0.1",
     "leaflet": "^1.9.4",
     "lucide-react": "^0.534.0",
