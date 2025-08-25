@@ -52,14 +52,38 @@ const RegisterPage = () => {
   const { role, password, confirmPassword } = formData;
   const isProfessional = role === "doctor" || role === "nurse";
 
+  //Password strength checking by regex
+  const weakRegex = /^[a-zA-Z0-9]+$/; // only letters and numbers
+  const mediumRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/; // letters + numbers
+  const strongRegex =
+    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+
+  //VAlidation of password and email is done here
   const validateField = (name, value, allFormData = formData) => {
     switch (name) {
-      case "password":
-        if (value.length < 6) return "Password must be at least 6 characters.";
+      case "name":
+        if (!value.trim()) return "Name is required.";
         break;
+      case "email":
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value))
+          return "Invalid email format.";
+        break;
+      case "password":
+        if (strongRegex.test(value)) {
+          return ""; // no error
+        } else if (mediumRegex.test(value)) {
+          return "Password is okay, but consider adding uppercase, symbols for better security.";
+        } else if (weakRegex.test(value)) {
+          return "Password is weak. Use a mix of uppercase, numbers, and special characters.";
+        }
+
+        return "Password is very weak. Try mixing uppercase, lowercase, numbers, and symbols.";
+
       case "confirmPassword":
-        if (value.length < 6) return "Password must be at least 6 characters.";
+        if (value.length < 8) return "Password must be at least 8 characters.";
         if (allFormData.password !== value) return "Passwords do not match.";
+        break;
+      default:
         break;
     }
     return "";
@@ -91,8 +115,8 @@ const RegisterPage = () => {
       toast.error("Passwords do not match.");
       return;
     }
-    if (password.length < 6) {
-      toast.error("Password must be at least 6 characters.");
+    if (password.length < 8) {
+      toast.error("Password must be at least 8 characters.");
       return;
     }
 
@@ -139,6 +163,30 @@ const RegisterPage = () => {
       );
     }
   };
+  const getRequiredFields = (role) => {
+    if (role === "technician") {
+      return ["name", "email", "password", "certificationId"];
+    } else if (role === "doctor" || role === "nurse") {
+      return [
+        "name",
+        "email",
+        "password",
+        "specialty",
+        "city",
+        "experience",
+        "licenseNumber",
+        "govId",
+      ];
+    } else {
+      return ["name", "email", "password"];
+    }
+  };
+
+  const requiredFields = getRequiredFields(formData.role);
+
+  const isFormInvalid =
+    Object.values(errors).some((err) => err) ||
+    requiredFields.some((field) => !formData[field]);
 
   return (
     <div className="flex justify-center items-center mt-10 mb-20">
@@ -208,7 +256,7 @@ const RegisterPage = () => {
               value={formData.password}
               onChange={onChange}
               required
-              minLength="6"
+              minLength="8"
               className={`w-full p-3 bg-gray-200 dark:bg-primary-dark rounded border text-black dark:text-white  ${
                 errors.password ? "border-red-500" : "border-gray-700"
               }`}
@@ -227,7 +275,7 @@ const RegisterPage = () => {
               value={formData.confirmPassword}
               onChange={onChange}
               required
-              minLength="6"
+              minLength="8"
               className={`w-full p-3 bg-gray-200 dark:bg-primary-dark rounded border text-black dark:text-white ${
                 errors.confirmPassword ? "border-red-500" : "border-gray-700"
               }`}
@@ -360,13 +408,15 @@ const RegisterPage = () => {
             />
           </div>
         )}
+
         <button
           type="submit"
-          className="w-full bg-accent-blue text-white p-3 rounded font-bold hover:bg-accent-blue-hover mt-6 disabled:bg-gray-500 disabled:cursor-not-allowed "
-          disabled={
-            Object.values(errors).some((e) => e !== "") ||
-            password !== confirmPassword
-          }
+          disabled={isFormInvalid}
+          className={`p-3 w-full rounded ${
+            isFormInvalid
+              ? "bg-gray-400 cursor-not-allowed"
+              : "bg-blue-500 text-white"
+          }`}
         >
           Register
         </button>
