@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { getMyProfile, updateMyProfile } from '../api';
 import toast from 'react-hot-toast';
 import ServiceAreaMap from '../components/ServiceAreaMap';
+import { useNavigate } from 'react-router-dom';
 
 const DoctorEditProfilePage = () => {
     const [profile, setProfile] = useState({ 
@@ -18,6 +19,9 @@ const DoctorEditProfilePage = () => {
     const [loading, setLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
     const [isDisabling2FA, setIsDisabling2FA] = useState(false);
+    const navigate = useNavigate();
+    const [showDeactivateModal, setShowDeactivateModal] = useState(false);
+    const [isDeactivating, setIsDeactivating] = useState(false);
 
     useEffect(() => {
         const fetchProfile = async () => {
@@ -192,6 +196,41 @@ const DoctorEditProfilePage = () => {
                 </div>
                 </form>
             </div>
+            <div className="max-w-4xl mx-auto bg-secondary-dark p-8 rounded-lg shadow-lg mt-8">
+                <h2 className="text-xl font-bold text-red-500 mb-4">Deactivate Account</h2>
+                <p className="mb-4 text-secondary-text">Deactivating your account will disable your access. This action cannot be undone.</p>
+                <button
+                    type="button"
+                    className="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
+                    onClick={() => setShowDeactivateModal(true)}
+                >
+                    Deactivate Account
+                </button>
+            </div>
+            {showDeactivateModal && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                    <div className="bg-white rounded-lg p-8 shadow-lg max-w-md w-full">
+                        <h3 className="text-lg font-bold mb-4 text-red-600">Are you sure?</h3>
+                        <p className="mb-6">This action cannot be undone. Your account will be deactivated and you will be logged out.</p>
+                        <div className="flex justify-end space-x-4">
+                            <button
+                                className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded"
+                                onClick={() => setShowDeactivateModal(false)}
+                                disabled={isDeactivating}
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                className="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
+                                onClick={handleDeactivate}
+                                disabled={isDeactivating}
+                            >
+                                {isDeactivating ? 'Deactivating...' : 'Confirm'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
@@ -200,3 +239,29 @@ export default DoctorEditProfilePage;
 
                 <div className="max-w-4xl mx-auto bg-secondary-dark p-8 rounded-lg shadow-lg mt-8">
                 </div>
+
+    const handleDeactivate = async () => {
+        setIsDeactivating(true);
+        try {
+            const response = await fetch('http://localhost:5000/api/profile/me', {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                }
+            });
+            if (response.ok) {
+                toast.success('Account deactivated.');
+                localStorage.clear();
+                navigate('/login');
+            } else {
+                const errorData = await response.json();
+                toast.error(errorData.message || 'Failed to deactivate account');
+            }
+        } catch (error) {
+            toast.error('Failed to deactivate account');
+        } finally {
+            setIsDeactivating(false);
+            setShowDeactivateModal(false);
+        }
+    };
