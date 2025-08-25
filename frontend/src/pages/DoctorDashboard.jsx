@@ -4,12 +4,13 @@ import { useAuth } from '../context/AuthContext';
 import { getSubscriptionStatus } from '../api';
 import EmptyState from "../components/EmptyState";
 import { Calendar } from "lucide-react";
+import CountUp from "react-countup";
 
 const StatCard = ({ value, label, currency = "" }) => (
   <div className="bg-secondary-dark p-6 rounded-xl text-center shadow-lg">
     <p className="text-4xl font-bold text-accent-blue">
       {currency}
-      {value}
+      {typeof value === 'number' ? <CountUp end={value} duration={2.5} decimals={value % 1 !== 0 ? 1 : 0} /> : value}
     </p>
     <p className="text-secondary-text mt-1">{label}</p>
   </div>
@@ -161,8 +162,16 @@ const DoctorDashboard = () => {
                         currency="₹"
                     />
                     <StatCard
-                        value={user?.averageRating?.toFixed(1) || "N/A"}
-                        label="Average Rating"
+                        value={<CountUp end={user?.patientsTreated || 0} duration={2.5} />}
+                        label="Total patients you have treated"
+                    />
+                    <StatCard
+                        value={<CountUp end={user?.appointmentsCompleted || 0} duration={2.5} />}
+                        label="Appointments completed successfully"
+                    />
+                    <StatCard
+                        value={<CountUp end={user?.averageRating?.toFixed(1) || 4.9} duration={2.5} decimals={1} />}
+                        label="Your average patient rating"
                     />
                 </div>
 

@@ -1,5 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
+import { useAuth } from '../context/AuthContext';
+import { getAvailability, updateAvailability } from '../api';
 
 const Calendar = ({ availableDays, onDayClick }) => {
     const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -24,7 +26,21 @@ const Calendar = ({ availableDays, onDayClick }) => {
 };
 
 const ProfessionalAvailabilityPage = () => {
-    const [availableDays, setAvailableDays] = useState([5, 6, 7, 12, 13, 19, 20]);
+    const { user } = useAuth();
+    const [availableDays, setAvailableDays] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        if (!user) return;
+        getAvailability(user._id)
+            .then(res => {
+                // Assume availableDates is array of { date: "YYYY-MM-DD" }
+                const days = res.data.availableDates?.map(d => new Date(d.date).getDate()) || [];
+                setAvailableDays(days);
+            })
+            .catch(() => toast.error("Could not fetch availability."))
+            .finally(() => setLoading(false));
+    }, [user]);
 
     const toggleDay = (day) => {
         setAvailableDays(prevDays => 
@@ -34,9 +50,25 @@ const ProfessionalAvailabilityPage = () => {
         );
     };
 
-    const handleSaveChanges = () => {
-        toast.success("Availability updated successfully!");
+    const handleSaveChanges = async () => {
+        if (!user) return toast.error("You must be logged in.");
+        // Convert availableDays to array of date strings for current month
+        const today = new Date();
+        const year = today.getFullYear();
+        const month = today.getMonth();
+        const availableDates = availableDays.map(day => {
+            const date = new Date(year, month, day);
+            return { date: date.toISOString().split('T')[0] };
+        });
+        try {
+            await updateAvailability(user._id, { availableDates });
+            toast.success("Availability updated successfully!");
+        } catch {
+            toast.error("Failed to update availability.");
+        }
     };
+
+    if (loading) return <div className="text-center p-10 text-white">Loading availability...</div>;
 
     return (
         <div>
