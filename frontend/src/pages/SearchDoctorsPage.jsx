@@ -75,32 +75,45 @@ const SearchDoctorsPage = () => {
 
       const { data } = await searchDoctors(queryParams);
 
-            // Handle new response format with patient location
-            if (data.doctors) {
-                setDoctors(data.doctors);
-                
-                // Store patient location in localStorage if provided
-                if (data.patientLocation) {
-                    localStorage.setItem('patientLocation', JSON.stringify(data.patientLocation));
-                }
-            } else {
-                // Fallback for old response format
-                setDoctors(data);
-            }
-        } catch (error) {
-            toast.error('Failed to fetch doctors. Is the server running?');
-            console.error("API Error:", error);
-        } finally {
-            setIsLoading(false);
+      // Handle new response format with pagination
+      if (data.doctors && data.pagination) {
+        setDoctors(data.doctors);
+        setPagination(data.pagination);
+
+        // Store patient location in localStorage if provided
+        if (data.patientLocation) {
+          localStorage.setItem(
+            "patientLocation",
+            JSON.stringify(data.patientLocation)
+          );
         }
-    };
-    
-    
-    // This hook runs ONLY once when the page first loads
-    useEffect(() => {
-        // Fetch ALL doctors initially by passing an empty filter object
-        fetchDoctors({}); 
-    }, []);
+      } else {
+        // Fallback for old response format
+        setDoctors(data.doctors || data);
+        // Reset pagination if not provided
+        setPagination({
+          currentPage: 1,
+          totalPages: 1,
+          totalDoctors: data.doctors ? data.doctors.length : data.length,
+          limit: 10,
+          hasNextPage: false,
+          hasPrevPage: false,
+        });
+      }
+    } catch (error) {
+      toast.error("Failed to fetch doctors. Is the server running?");
+      console.error("API Error:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // This hook runs ONLY once when the page first loads
+  useEffect(() => {
+    // Fetch ALL doctors initially by passing an empty filter object
+    fetchDoctors({}, 1);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleFilterChange = (e) => {
     setFilters({ ...filters, [e.target.name]: e.target.value });
@@ -203,26 +216,28 @@ const SearchDoctorsPage = () => {
     setAIReasoning("");
   };
 
-    const handleAISubmit = async () => {
-        if (!symptomsInput.trim()) {
-            toast.error('Please enter your symptoms.');
-            return;
-        }
-        setAILoading(true);
-        try {
-            const { data } = await axios.post('/api/ai/suggest-specialty', { symptoms: symptomsInput });
-            setAISuggestion(data.specialty);
-            setAIReasoning(data.reasoning || '');
-            setFilters(f => ({ ...f, specialty: data.specialty }));
-        // eslint-disable-next-line no-unused-vars
-        } catch (err) {
-            toast.error('Could not get a suggestion. Try again.');
-            setAISuggestion('');
-            setAIReasoning('');
-        } finally {
-            setAILoading(false);
-        }
-    };
+  const handleAISubmit = async () => {
+    if (!symptomsInput.trim()) {
+      toast.error("Please enter your symptoms.");
+      return;
+    }
+    setAILoading(true);
+    try {
+      const { data } = await axios.post("/api/ai/suggest-specialty", {
+        symptoms: symptomsInput,
+      });
+      setAISuggestion(data.specialty);
+      setAIReasoning(data.reasoning || "");
+      setFilters((f) => ({ ...f, specialty: data.specialty }));
+      // eslint-disable-next-line no-unused-vars
+    } catch (err) {
+      toast.error("Could not get a suggestion. Try again.");
+      setAISuggestion("");
+      setAIReasoning("");
+    } finally {
+      setAILoading(false);
+    }
+  };
 
   return (
     <div>
