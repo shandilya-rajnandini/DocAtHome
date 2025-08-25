@@ -1,10 +1,10 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { register as registerApi, getMe } from "../api";
-import { useAuth } from "../context/AuthContext";
 import toast from "react-hot-toast";
+import useAuthStore from "../store/useAuthStore";
 
-// --- Predefined Options for Dropdowns ---
+// --- Predefined Options ---
 const doctorSpecialties = [
   "Cardiologist",
   "Dermatologist",
@@ -29,14 +29,14 @@ const cities = [
   "Kolkata",
   "Chennai",
 ];
-const experienceLevels = Array.from({ length: 30 }, (_, i) => i + 1); // Creates an array [1, 2, ..., 30]
+const experienceLevels = Array.from({ length: 30 }, (_, i) => i + 1);
 
 const RegisterPage = () => {
   const [formData, setFormData] = useState({
     name: "",
     email: "",
     password: "",
-    confirmPassword: "", // Added for password confirmation
+    confirmPassword: "",
     role: "patient",
     specialty: "",
     city: "",
@@ -47,7 +47,7 @@ const RegisterPage = () => {
   });
   const [errors, setErrors] = useState({});
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const { login } = useAuthStore();
 
   const { role, password, confirmPassword } = formData;
   const isProfessional = role === "doctor" || role === "nurse";
@@ -69,15 +69,13 @@ const RegisterPage = () => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
 
-    // Real-time validation
     const error = validateField(name, value);
     setErrors((prev) => ({ ...prev, [name]: error }));
 
-    // If the password is changed, re-validate confirmPassword
     if (name === "password") {
       const confirmPasswordError = validateField(
         "confirmPassword",
-        confirmPassword
+        confirmPassword,
       );
       setErrors((prev) => ({ ...prev, confirmPassword: confirmPasswordError }));
     }
@@ -86,7 +84,6 @@ const RegisterPage = () => {
   const onSubmit = async (e) => {
     e.preventDefault();
 
-    // Final validation check before submission
     if (password !== confirmPassword) {
       toast.error("Passwords do not match.");
       return;
@@ -97,7 +94,6 @@ const RegisterPage = () => {
     }
 
     try {
-      // Create a payload with only the necessary fields
       const payload = {
         name: formData.name,
         email: formData.email,
@@ -124,18 +120,15 @@ const RegisterPage = () => {
 
       toast.success("Registration successful!");
 
-      // Redirect based on role
       if (userData.role === "patient") {
-        navigate("/dashboard"); // <-- Redirect patients to the dashboard
+        navigate("/dashboard");
       } else {
-        // Professionals will see a "pending approval" message when they try to log in,
-        // so we can just redirect them to the homepage for now.
         toast.success("Your account is pending admin approval.");
         navigate("/");
       }
     } catch (err) {
       toast.error(
-        err.response?.data?.msg || "Registration failed. Please try again."
+        err.response?.data?.msg || "Registration failed. Please try again.",
       );
     }
   };
@@ -150,7 +143,7 @@ const RegisterPage = () => {
           Create Your Account
         </h2>
 
-        {/* --- Core Fields --- */}
+        {/* Role Selection */}
         <div className="mb-4">
           <label className="block text-slate-700 dark:text-secondary-text mb-2">
             I am a...
@@ -164,10 +157,11 @@ const RegisterPage = () => {
             <option value="patient">Patient</option>
             <option value="doctor">Doctor</option>
             <option value="nurse">Nurse</option>
-            <option value="technician">Lab Technician</option> {/* Added */}
+            <option value="technician">Lab Technician</option>
           </select>
         </div>
 
+        {/* Name & Email */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="mb-4">
             <label className="block text-slate-700 dark:text-secondary-text mb-2">
@@ -179,7 +173,7 @@ const RegisterPage = () => {
               value={formData.name}
               onChange={onChange}
               required
-              className="w-full p-3 bg-gray-200 dark:bg-primary-dark rounded border  border-gray-700 text-black dark:text-white"
+              className="w-full p-3 bg-gray-200 dark:bg-primary-dark rounded border border-gray-700 text-black dark:text-white"
             />
           </div>
           <div className="mb-4">
@@ -197,6 +191,7 @@ const RegisterPage = () => {
           </div>
         </div>
 
+        {/* Password & Confirm */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
           <div>
             <label className="block text-slate-700 dark:text-secondary-text mb-2">
@@ -209,7 +204,7 @@ const RegisterPage = () => {
               onChange={onChange}
               required
               minLength="6"
-              className={`w-full p-3 bg-gray-200 dark:bg-primary-dark rounded border text-black dark:text-white  ${
+              className={`w-full p-3 bg-gray-200 dark:bg-primary-dark rounded border text-black dark:text-white ${
                 errors.password ? "border-red-500" : "border-gray-700"
               }`}
             />
@@ -240,14 +235,13 @@ const RegisterPage = () => {
           </div>
         </div>
 
-        {/* --- Professional Fields (Conditional) --- */}
+        {/* Professional Fields */}
         {isProfessional && (
           <div className="border-t border-gray-700 pt-6 mt-6">
             <h3 className="text-xl font-semibold text-accent-blue mb-4">
               Professional Details
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* Specialty Dropdown */}
               <div className="mb-4">
                 <label className="block text-slate-700 dark:text-secondary-text mb-2">
                   {role === "doctor" ? "Specialty" : "Nurse Category"}
@@ -270,8 +264,6 @@ const RegisterPage = () => {
                   ))}
                 </select>
               </div>
-
-              {/* City Dropdown */}
               <div className="mb-4">
                 <label className="block text-slate-700 dark:text-secondary-text mb-2">
                   City
@@ -291,8 +283,6 @@ const RegisterPage = () => {
                   ))}
                 </select>
               </div>
-
-              {/* Experience Dropdown */}
               <div className="mb-4">
                 <label className="block text-slate-700 dark:text-secondary-text mb-2">
                   Experience (Years)
@@ -302,7 +292,7 @@ const RegisterPage = () => {
                   value={formData.experience}
                   onChange={onChange}
                   required
-                  className="w-full p-3 bg-gray-200 dark:bg-primary-dark text-black dark:text-white rounded border-gray-700 "
+                  className="w-full p-3 bg-gray-200 dark:bg-primary-dark text-black dark:text-white rounded border-gray-700"
                 >
                   <option value="">Select Years</option>
                   {experienceLevels.map((exp) => (
@@ -312,8 +302,6 @@ const RegisterPage = () => {
                   ))}
                 </select>
               </div>
-
-              {/* License Number Input */}
               <div className="mb-4">
                 <label className="block text-slate-700 dark:text-secondary-text mb-2">
                   Medical License Number
@@ -327,8 +315,6 @@ const RegisterPage = () => {
                   className="w-full p-3 bg-gray-200 dark:bg-primary-dark rounded border-gray-700 text-black dark:text-white"
                 />
               </div>
-
-              {/* Government ID Input */}
               <div className="mb-4 md:col-span-2">
                 <label className="block text-slate-700 dark:text-secondary-text mb-2">
                   Aadhaar / Voter ID / Government ID Number
@@ -345,6 +331,7 @@ const RegisterPage = () => {
             </div>
           </div>
         )}
+
         {role === "technician" && (
           <div className="mb-4">
             <label className="block text-slate-700 dark:text-secondary-text mb-2">
@@ -353,16 +340,17 @@ const RegisterPage = () => {
             <input
               type="text"
               name="certificationId"
-              value={formData.certificationId || ""}
+              value={formData.certificationId}
               onChange={onChange}
               required
               className="w-full p-3 bg-gray-200 dark:bg-primary-dark rounded border-gray-700 text-black dark:text-white"
             />
           </div>
         )}
+
         <button
           type="submit"
-          className="w-full bg-accent-blue text-white p-3 rounded font-bold hover:bg-accent-blue-hover mt-6 disabled:bg-gray-500 disabled:cursor-not-allowed "
+          className="w-full bg-accent-blue text-white p-3 rounded font-bold hover:bg-accent-blue-hover mt-6 disabled:bg-gray-500 disabled:cursor-not-allowed"
           disabled={
             Object.values(errors).some((e) => e !== "") ||
             password !== confirmPassword

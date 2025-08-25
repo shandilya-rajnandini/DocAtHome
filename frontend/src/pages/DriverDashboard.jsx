@@ -1,11 +1,12 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { io } from 'socket.io-client';
 import { updateDriverStatus, respondToAmbulanceRequest } from '../api';
-import { useAuth } from '../context/AuthContext';
+
 import RequestNotification from '../components/ambulance/RequestNotification';
+import useAuthStore from "../store/useAuthStore";
 
 const DriverDashboard = () => {
-  const { user } = useAuth();
+  const { user } = useAuthStore();
   const [isOnline, setIsOnline] = useState(false);
   const [incomingRequest, setIncomingRequest] = useState(null);
   const [activeRequests, setActiveRequests] = useState([]);

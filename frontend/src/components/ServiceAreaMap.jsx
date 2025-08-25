@@ -1,13 +1,16 @@
-import { useEffect, useRef, useState } from 'react';
-import L from 'leaflet';
-import 'leaflet/dist/leaflet.css';
+import { useEffect, useRef, useState } from "react";
+import L from "leaflet";
+import "leaflet/dist/leaflet.css";
 
 // Fix default marker icons
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
-  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon-2x.png',
-  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon.png',
-  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
+  iconRetinaUrl:
+    "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon-2x.png",
+  iconUrl:
+    "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon.png",
+  shadowUrl:
+    "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png",
 });
 
 export default function ServiceAreaMap({ value, onChange }) {
@@ -27,8 +30,8 @@ export default function ServiceAreaMap({ value, onChange }) {
     // Determine initial center and zoom based on existing polygon
     let initialCenter = [19.076, 72.8777];
     let initialZoom = 11;
-    
-    if (value && value.type === 'Polygon' && Array.isArray(value.coordinates)) {
+
+    if (value && value.type === "Polygon" && Array.isArray(value.coordinates)) {
       let latlngs = value.coordinates[0].map(([lng, lat]) => [lat, lng]);
       // Remove the last point if it's the same as the first (closed polygon)
       if (latlngs.length > 3) {
@@ -38,14 +41,14 @@ export default function ServiceAreaMap({ value, onChange }) {
           latlngs = latlngs.slice(0, -1); // Remove duplicate closing point
         }
       }
-      
+
       if (latlngs.length > 0) {
         // Calculate center of polygon
         const lats = latlngs.map(([lat]) => lat);
         const lngs = latlngs.map(([, lng]) => lng);
         initialCenter = [
           (Math.min(...lats) + Math.max(...lats)) / 2,
-          (Math.min(...lngs) + Math.max(...lngs)) / 2
+          (Math.min(...lngs) + Math.max(...lngs)) / 2,
         ];
         initialZoom = 13;
         setHasDrawnPolygon(true);
@@ -56,18 +59,18 @@ export default function ServiceAreaMap({ value, onChange }) {
     const map = L.map(containerRef.current, {
       center: initialCenter,
       zoom: initialZoom,
-      zoomControl: true
+      zoomControl: true,
     });
     mapRef.current = map;
 
     // Add tile layer
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '&copy; OpenStreetMap contributors',
-      maxZoom: 18
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      attribution: "&copy; OpenStreetMap contributors",
+      maxZoom: 18,
     }).addTo(map);
 
     // Load existing polygon if provided
-    if (value && value.type === 'Polygon' && Array.isArray(value.coordinates)) {
+    if (value && value.type === "Polygon" && Array.isArray(value.coordinates)) {
       const latlngs = value.coordinates[0].map(([lng, lat]) => [lat, lng]);
       // Remove the last point if it's the same as the first (closed polygon)
       if (latlngs.length > 3) {
@@ -77,12 +80,12 @@ export default function ServiceAreaMap({ value, onChange }) {
           latlngs.pop(); // Remove duplicate closing point for display
         }
       }
-      
+
       const polygon = L.polygon(latlngs, {
-        color: '#10b981',
-        fillColor: '#10b981',
+        color: "#10b981",
+        fillColor: "#10b981",
         fillOpacity: 0.2,
-        weight: 3
+        weight: 3,
       }).addTo(map);
       polygonRef.current = polygon;
       map.fitBounds(polygon.getBounds(), { padding: [20, 20] });
@@ -105,25 +108,25 @@ export default function ServiceAreaMap({ value, onChange }) {
     const handleMapClick = (e) => {
       if (!isDrawing) return;
       e.originalEvent.preventDefault();
-      
+
       const newPoint = [e.latlng.lat, e.latlng.lng];
-      
+
       // Add to undo stack before updating
-      setUndoStack(prev => [...prev, [...drawingPoints]]);
-      setDrawingPoints(prev => [...prev, newPoint]);
+      setUndoStack((prev) => [...prev, [...drawingPoints]]);
+      setDrawingPoints((prev) => [...prev, newPoint]);
     };
 
     if (isDrawing) {
-      map.getContainer().style.cursor = 'crosshair';
-      map.on('click', handleMapClick);
+      map.getContainer().style.cursor = "crosshair";
+      map.on("click", handleMapClick);
     } else {
-      map.getContainer().style.cursor = '';
-      map.off('click', handleMapClick);
+      map.getContainer().style.cursor = "";
+      map.off("click", handleMapClick);
     }
 
     return () => {
-      map.off('click', handleMapClick);
-      map.getContainer().style.cursor = '';
+      map.off("click", handleMapClick);
+      map.getContainer().style.cursor = "";
     };
   }, [isDrawing, drawingPoints]);
 
@@ -134,7 +137,7 @@ export default function ServiceAreaMap({ value, onChange }) {
     const map = mapRef.current;
 
     // Clear existing point markers
-    pointMarkersRef.current.forEach(marker => map.removeLayer(marker));
+    pointMarkersRef.current.forEach((marker) => map.removeLayer(marker));
     pointMarkersRef.current = [];
 
     // Clear temporary polygon
@@ -147,12 +150,12 @@ export default function ServiceAreaMap({ value, onChange }) {
     drawingPoints.forEach((point, index) => {
       const marker = L.circleMarker(point, {
         radius: 8,
-        color: '#3b82f6',
-        fillColor: '#ffffff',
+        color: "#3b82f6",
+        fillColor: "#ffffff",
         fillOpacity: 1,
-        weight: 3
+        weight: 3,
       }).addTo(map);
-      
+
       marker.bindTooltip(`Point ${index + 1}`, { permanent: false });
       pointMarkersRef.current.push(marker);
     });
@@ -160,11 +163,11 @@ export default function ServiceAreaMap({ value, onChange }) {
     // Create temporary polygon if enough points
     if (drawingPoints.length >= 3) {
       const polygon = L.polygon(drawingPoints, {
-        color: '#3b82f6',
-        fillColor: '#3b82f6',
+        color: "#3b82f6",
+        fillColor: "#3b82f6",
         fillOpacity: 0.3,
         weight: 2,
-        dashArray: '5, 5'
+        dashArray: "5, 5",
       }).addTo(map);
       polygonRef.current = polygon;
     }
@@ -172,88 +175,94 @@ export default function ServiceAreaMap({ value, onChange }) {
 
   const startDrawing = () => {
     if (!mapRef.current) return;
-    
+
     setIsDrawing(true);
     setDrawingPoints([]);
     setUndoStack([]);
     setHasDrawnPolygon(false);
-    
+
     // Clear existing polygon
     if (polygonRef.current) {
       mapRef.current.removeLayer(polygonRef.current);
       polygonRef.current = null;
     }
-    
+
     // Clear existing markers
-    pointMarkersRef.current.forEach(marker => mapRef.current.removeLayer(marker));
+    pointMarkersRef.current.forEach((marker) =>
+      mapRef.current.removeLayer(marker),
+    );
     pointMarkersRef.current = [];
   };
 
   const undoLastPoint = () => {
     if (undoStack.length === 0) return;
-    
+
     const previousPoints = undoStack[undoStack.length - 1];
     setDrawingPoints(previousPoints);
-    setUndoStack(prev => prev.slice(0, -1));
+    setUndoStack((prev) => prev.slice(0, -1));
   };
 
   const finishDrawing = () => {
     if (drawingPoints.length < 3) return;
-    
+
     // Convert to GeoJSON format with closed loop (first point = last point)
     const closedPoints = [...drawingPoints];
     // Check if the polygon is already closed
     const firstPoint = closedPoints[0];
     const lastPoint = closedPoints[closedPoints.length - 1];
-    
+
     if (firstPoint[0] !== lastPoint[0] || firstPoint[1] !== lastPoint[1]) {
       // Close the polygon by adding the first point at the end
       closedPoints.push(firstPoint);
     }
-    
+
     const coordinates = [closedPoints.map(([lat, lng]) => [lng, lat])];
-    const geoJson = { type: 'Polygon', coordinates };
+    const geoJson = { type: "Polygon", coordinates };
     onChange?.(geoJson);
-    
+
     setIsDrawing(false);
     setHasDrawnPolygon(true);
-    
+
     // Clear temporary markers
-    pointMarkersRef.current.forEach(marker => mapRef.current.removeLayer(marker));
+    pointMarkersRef.current.forEach((marker) =>
+      mapRef.current.removeLayer(marker),
+    );
     pointMarkersRef.current = [];
-    
+
     // Create final polygon
     if (mapRef.current) {
       if (polygonRef.current) {
         mapRef.current.removeLayer(polygonRef.current);
       }
-      
+
       const finalPolygon = L.polygon(drawingPoints, {
-        color: '#10b981',
-        fillColor: '#10b981',
+        color: "#10b981",
+        fillColor: "#10b981",
         fillOpacity: 0.2,
-        weight: 3
+        weight: 3,
       }).addTo(mapRef.current);
       polygonRef.current = finalPolygon;
     }
-    
+
     setDrawingPoints([]);
     setUndoStack([]);
   };
 
   const clearPolygon = () => {
     if (!mapRef.current) return;
-    
+
     // Clear polygon
     if (polygonRef.current) {
       mapRef.current.removeLayer(polygonRef.current);
       polygonRef.current = null;
     }
-    
+
     // Clear markers
-    pointMarkersRef.current.forEach(marker => mapRef.current.removeLayer(marker));
+    pointMarkersRef.current.forEach((marker) =>
+      mapRef.current.removeLayer(marker),
+    );
     pointMarkersRef.current = [];
-    
+
     setDrawingPoints([]);
     setUndoStack([]);
     setIsDrawing(false);
@@ -269,14 +278,18 @@ export default function ServiceAreaMap({ value, onChange }) {
           onClick={startDrawing}
           disabled={isDrawing}
           className={`px-4 py-2 rounded font-medium transition-colors ${
-            isDrawing 
-              ? 'bg-blue-800 text-blue-200 cursor-not-allowed' 
-              : 'bg-blue-600 text-white hover:bg-blue-700'
+            isDrawing
+              ? "bg-blue-800 text-blue-200 cursor-not-allowed"
+              : "bg-blue-600 text-white hover:bg-blue-700"
           }`}
         >
-          {isDrawing ? '🎯 Drawing Mode Active' : hasDrawnPolygon ? '✏️ Draw Again' : '📍 Draw Service Area'}
+          {isDrawing
+            ? "🎯 Drawing Mode Active"
+            : hasDrawnPolygon
+              ? "✏️ Draw Again"
+              : "📍 Draw Service Area"}
         </button>
-        
+
         {isDrawing && (
           <>
             <button
@@ -287,7 +300,7 @@ export default function ServiceAreaMap({ value, onChange }) {
             >
               ↩️ Undo Last Point
             </button>
-            
+
             <button
               type="button"
               onClick={finishDrawing}
@@ -298,7 +311,7 @@ export default function ServiceAreaMap({ value, onChange }) {
             </button>
           </>
         )}
-        
+
         {(hasDrawnPolygon || drawingPoints.length > 0) && (
           <button
             type="button"
@@ -309,7 +322,7 @@ export default function ServiceAreaMap({ value, onChange }) {
           </button>
         )}
       </div>
-      
+
       {isDrawing && (
         <div className="text-sm text-blue-600 bg-blue-50 dark:bg-blue-900/20 p-3 rounded border border-blue-200 dark:border-blue-800">
           <p className="font-medium mb-2">🎯 Drawing Mode Active</p>
@@ -321,16 +334,17 @@ export default function ServiceAreaMap({ value, onChange }) {
           </ul>
         </div>
       )}
-      
+
       {hasDrawnPolygon && !isDrawing && (
         <div className="text-sm text-green-600 bg-green-50 dark:bg-green-900/20 p-3 rounded border border-green-200 dark:border-green-800">
-          ✅ Service area defined! Patients within this area will see you in search results.
+          ✅ Service area defined! Patients within this area will see you in
+          search results.
         </div>
       )}
-      
+
       <div
         ref={containerRef}
-        style={{ height: '24rem', width: '100%' }}
+        style={{ height: "24rem", width: "100%" }}
         className="rounded-lg overflow-hidden border-2 border-gray-300 dark:border-gray-600 shadow-lg"
       />
     </div>

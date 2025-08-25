@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { getMyAppointments, updateAppointmentStatus } from "../api";
-import { useAuth } from "../context/AuthContext";
+
 import toast from "react-hot-toast";
 import IconCalendarCheck from "../components/icons/IconCalendarCheck";
 import IconHistory from "../components/icons/IconHistory";
 import IconStethoscope from "../components/icons/IconStethoscope";
 import EmptyState from "../components/EmptyState";
 import { Calendar, MessageCircle } from "lucide-react";
+import useAuthStore from "../store/useAuthStore";
 
 // Confirmation Modal Component
 const ConfirmationModal = ({ isOpen, onClose, onConfirm, title, message }) => {
@@ -264,7 +265,7 @@ const MyAppointmentsPage = () => {
   const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("Upcoming");
-  const { user } = useAuth();
+  const { user } = useAuthStore();
 
   const fetchAppointments = async () => {
     try {

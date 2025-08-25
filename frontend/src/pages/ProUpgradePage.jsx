@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '../context/AuthContext';
+
 import { createProSubscription, verifySubscription, getSubscriptionStatus } from '../api';
 import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
+import useAuthStore from "../store/useAuthStore";
 
 const ProUpgradePage = () => {
-    const { user, setUser } = useAuth();
+    const { user, setUser } = useAuthStore();
     const navigate = useNavigate();
     const [loading, setLoading] = useState(false);
     const [subscriptionStatus, setSubscriptionStatus] = useState(null);
