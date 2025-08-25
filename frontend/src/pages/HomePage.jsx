@@ -11,8 +11,8 @@ import Chatbot from '../components/Chatbot';
 
 const HomePage = () => {
   return (
-    <main role="main" className="home-page">
-      <h1 className="sr-only">DocAtHome - Your Healthcare Platform</h1>
+    <main role="main" className="home-page" tabIndex="-1">
+      <h1 className="sr-only" id="homepage-title">DocAtHome - Your Healthcare Platform</h1>
       <Hero />
       <section aria-labelledby="start-section" className="bg-primary-dark text-center py-16 px-4">
         <h2 id="start-section" className="text-3xl font-bold text-white mb-4">Not Sure Where to Start?</h2>
@@ -22,6 +22,7 @@ const HomePage = () => {
           className="bg-accent-blue hover:bg-accent-blue-hover text-white font-bold py-3 px-8 rounded-lg text-lg transition-transform transform hover:scale-105 inline-block focus:ring-2 focus:ring-offset-2 focus:ring-accent-blue focus:outline-none"
           role="button"
           aria-label="Get help choosing the right healthcare professional"
+          tabIndex="0"
         >
           Help Me Choose
         </Link>
