@@ -1,7 +1,8 @@
 // Make sure your api/index.js looks exactly like this at the top
 import axios from 'axios';
 
-const API_URL = 'http://localhost:5000/api' || 'https://docathome-backend.onrender.com/api'; 
+const API_URL = import.meta.env.VITE_API_URL ?? "https://docathome-backend.onrender.com/api";
+
 
 
 const API = axios.create({ baseURL: API_URL });
