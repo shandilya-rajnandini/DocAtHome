@@ -1,62 +1,11 @@
-import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
+import { BrowserRouter as Router } from "react-router-dom";
 
 // --- Core Layout and Auth Components ---
-import Navbar from './components/Navbar.jsx';
-import Footer from './components/Footer.jsx';
-import ProtectedRoute from './components/ProtectedRoute.jsx';
-import BackToTopButton from './components/BackToTopButton.jsx';
-import AnnouncementBanner from './components/AnnouncementBanner.jsx';
-
-// --- All Page Components ---
-// Public Pages
-import HomePage from "./pages/HomePage.jsx";
-import RegisterPage from "./pages/RegisterPage.jsx";
-import LoginPage from "./pages/LoginPage.jsx";
-import ForgotPasswordPage from "./pages/ForgotPasswordPage.jsx";
-import ResetPasswordPage from "./pages/ResetPasswordPage.jsx";
-import SearchDoctorsPage from "./pages/SearchDoctorsPage.jsx";
-import SearchNursesPage from "./pages/SearchNursesPage.jsx";
-import DoctorProfilePage from "./pages/DoctorProfilePage.jsx";
-import NurseProfilePage from "./pages/NurseProfilePage.jsx";
-import BookAmbulancePage from "./pages/BookAmbulancePage.jsx";
-import FollowUpRedirectPage from "./pages/FollowUpRedirectPage.jsx";
-
-// Imported About, Services, Testimonials, Contact Page
-import About from './components/About.jsx';
-import Services from './components/Services.jsx';
-import Testimonials from './components/Testimonials.jsx';
-import Contact from './components/Contact.jsx';
-
-// Protected Patient Pages
-import PatientDashboard from './pages/PatientDashboard.jsx';
-import CareCirclePage from './pages/CareCirclePage.jsx';
-import BookLabTestPage from './pages/BookLabTestPage.jsx';
-import VideoConsultPage from './pages/VideoConsultPage.jsx';
-import MyAppointmentsPage from './pages/MyAppointmentsPage.jsx';
-import MyPrescriptionsPage from './pages/MyPrescriptionsPage.jsx';
-import MyHealthRecordsPage from './pages/MyHealthRecordsPage.jsx';
-import HealthQuestsPage from './pages/HealthQuestsPage.jsx';
-import PaymentHistoryPage from './pages/PaymentHistoryPage.jsx';
-import CareNavigatorPage from './pages/CareNavigatorPage.jsx';
-import CareFundPage from './pages/CareFundPage.jsx';
-import PublicDonationPage from './pages/PublicDonationPage.jsx';
-
-// Protected Professional Pages
-import DoctorDashboard from './pages/DoctorDashboard.jsx';
-import NurseDashboard from './pages/NurseDashboard.jsx';
-import DriverDashboard from './pages/DriverDashboard.jsx';
-import DoctorEditProfilePage from './pages/DoctorEditProfilePage.jsx';
-import NurseEditProfilePage from './pages/NurseEditProfilePage.jsx';
-import AdminEditProfilePage from './pages/AdminEditProfilePage.jsx';
-import DoctorAppointmentsPage from './pages/DoctorAppointmentsPage.jsx';
-import ProfessionalAvailabilityPage from './pages/ProfessionalAvailabilityPage.jsx';
-import ProUpgradePage from './pages/ProUpgradePage.jsx';
-import DemandHotspotPage from './pages/DemandHotspotPage.jsx';
-
-// Protected Admin Page
-import AdminDashboard from './pages/AdminDashboard.jsx';
-import TwoFactorAuthPage from './pages/TwoFactorAuthPage.jsx';
-
+import Navbar from "./components/Navbar.jsx";
+import Footer from "./components/Footer.jsx";
+import BackToTopButton from "./components/BackToTopButton.jsx";
+import AnnouncementBanner from "./components/AnnouncementBanner.jsx";
+import AnimatedRoutes from "./components/AnimatedRoutes.jsx";
 
 function App() {
   return (
@@ -66,59 +15,7 @@ function App() {
         <AnnouncementBanner />
 
         <main className="flex-grow">
-          <Routes>
-            {/* --- Public Routes --- */}
-            <Route path="/" element={<HomePage />} />
-            <Route path="/register" element={<RegisterPage />} />
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-            <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
-            <Route path="/search" element={<SearchDoctorsPage />} />
-            <Route path="/search-nurses" element={<SearchNursesPage />} />
-            <Route path="/doctors/:id" element={<ProtectedRoute patientOnly={true}><DoctorProfilePage /></ProtectedRoute>} />
-            <Route path="/nurses/:id" element={<NurseProfilePage />} />
-            <Route path="/book-ambulance" element={<BookAmbulancePage />} />
-            <Route path="/follow-up/:id" element={<FollowUpRedirectPage />} />
-            <Route path="/care-navigator" element={<CareNavigatorPage />} />
-            <Route path="/care-circle" element={<CareCirclePage />} />
-            <Route path="/about" element={<About />} />
-            <Route path="/services" element={<Services />} />
-            <Route path="/testimonials" element={<Testimonials />} />
-            <Route path="/contact" element={<Contact />} />
-            <Route path="/care-fund/:patientId" element={<PublicDonationPage />} />
-
-            {/* --- Protected Patient Routes --- */}
-            <Route path="/dashboard" element={<ProtectedRoute><PatientDashboard /></ProtectedRoute>} />
-            <Route path="/care-circle" element={<ProtectedRoute><CareCirclePage /></ProtectedRoute>} />
-            <Route path="/book-lab-test" element={<ProtectedRoute><BookLabTestPage /></ProtectedRoute>} />
-            <Route path="/video-consult" element={<ProtectedRoute><VideoConsultPage /></ProtectedRoute>} />
-            <Route path="/my-appointments" element={<ProtectedRoute><MyAppointmentsPage /></ProtectedRoute>} />
-            <Route path="/my-prescriptions" element={<ProtectedRoute><MyPrescriptionsPage /></ProtectedRoute>} />
-            <Route path="/my-health-records" element={<ProtectedRoute><MyHealthRecordsPage /></ProtectedRoute>} />
-            <Route path="/payment-history" element={<ProtectedRoute><PaymentHistoryPage /></ProtectedRoute>} />
-            <Route path="/care-fund" element={<ProtectedRoute><CareFundPage /></ProtectedRoute>} />
-            {/* <Route path="/health-quests" element={<ProtectedRoute><HealthQuestsPage /></ProtectedRoute>} /> */}
-
-            {/* --- Protected Professional (Doctor/Nurse/Ambulance) Routes --- */}
-            <Route path="/doctor/dashboard" element={<ProtectedRoute><DoctorDashboard /></ProtectedRoute>} />
-            <Route path="/nurse/dashboard" element={<ProtectedRoute><NurseDashboard /></ProtectedRoute>} />
-            <Route path="/driver/dashboard" element={<ProtectedRoute><DriverDashboard /></ProtectedRoute>} />
-            <Route path="/doctor/edit-profile" element={<ProtectedRoute><DoctorEditProfilePage /></ProtectedRoute>} />
-            <Route path="/nurse/edit-profile" element={<ProtectedRoute><NurseEditProfilePage /></ProtectedRoute>} />
-            <Route path="/doctor/appointments" element={<ProtectedRoute><DoctorAppointmentsPage /></ProtectedRoute>} />
-            <Route path="/nurse/appointments" element={<ProtectedRoute><DoctorAppointmentsPage /></ProtectedRoute>} />
-            <Route path="/upgrade-pro" element={<ProtectedRoute><ProUpgradePage /></ProtectedRoute>} />
-            <Route path="/demand-hotspot" element={<ProtectedRoute><DemandHotspotPage /></ProtectedRoute>} />
-            <Route path="/doctor/availability" element={<ProtectedRoute><ProfessionalAvailabilityPage /></ProtectedRoute>} />
-            <Route path="/nurse/availability" element={<ProtectedRoute><ProfessionalAvailabilityPage /></ProtectedRoute>} />
-
-            {/* --- Admin-Only Routes --- */}
-            <Route path="/admin" element={<ProtectedRoute adminOnly={true}><AdminDashboard /></ProtectedRoute>} />
-            <Route path="/admin/edit-profile" element={<ProtectedRoute adminOnly={true}><AdminEditProfilePage /></ProtectedRoute>} />
-
-            {/* --- 2FA Route --- */}
-            <Route path="/2fa-setup" element={<ProtectedRoute><TwoFactorAuthPage /></ProtectedRoute>} />
-          </Routes>
+          <AnimatedRoutes />
         </main>
 
         {/* scroll-to-to (absolute) */}
