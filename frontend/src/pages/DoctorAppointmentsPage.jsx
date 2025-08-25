@@ -5,21 +5,24 @@ import {
   getAppointmentSummary,
   saveAppointmentVoiceNote,
 } from "../api";
-import { useAuth } from "../context/AuthContext";
 import toast from "react-hot-toast";
 import DoctorNotesModal from "../components/DoctorNotesModal";
 import Modal from "../components/Modal";
+import EmptyState from "../components/EmptyState";
+import { Calendar } from "lucide-react";
+import FollowUpModal from "../components/FollowUpModal";
 
 const DoctorAppointmentsPage = () => {
   const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
-  const { user } = useAuth();
+  // const { user } = useAuth(); // Removed unused import
   const [filter, setFilter] = useState("Pending"); // To filter by status
   const [isNotesModalOpen, setIsNotesModalOpen] = useState(false);
   const [selectedApptId, setSelectedApptId] = useState(null);
   const [isSummaryModalOpen, setIsSummaryModalOpen] = useState(false);
   const [summary, setSummary] = useState("");
   const [summaryLoading, setSummaryLoading] = useState(false);
+  const [isFollowUpModalOpen, setIsFollowUpModalOpen] = useState(false);
   const [recording, setRecording] = useState(false);
   const [audioURL, setAudioURL] = useState(null);
   const [mediaRecorder, setMediaRecorder] = useState(null);
@@ -110,6 +113,7 @@ const DoctorAppointmentsPage = () => {
       // The API returns an object like { success, count, data: [...] }
       // We need to set the inner 'data' array to the state.
       setAppointments(data.data || []);
+    // eslint-disable-next-line no-unused-vars
     } catch (error) {
       toast.error("Could not fetch appointments.");
       setAppointments([]); // Ensure state is an array even on error
@@ -134,6 +138,7 @@ const DoctorAppointmentsPage = () => {
     try {
       await updateAppointmentStatus(id, { status: newStatus, doctorNotes });
       toast.success(`Appointment successfully ${newStatus.toLowerCase()}!`);
+    // eslint-disable-next-line no-unused-vars
     } catch (error) {
       toast.error("Failed to update status. Please try again.");
       setAppointments(originalAppointments);
@@ -157,6 +162,7 @@ const DoctorAppointmentsPage = () => {
     try {
       const { data } = await getAppointmentSummary(id);
       setSummary(data.summary);
+    // eslint-disable-next-line no-unused-vars
     } catch (error) {
       toast.error("Could not fetch summary.");
       setSummary("Failed to load summary.");
@@ -273,6 +279,17 @@ const DoctorAppointmentsPage = () => {
                           Mark as Complete
                         </button>
                       )}
+                      {appt.status === "Completed" && (
+                        <button
+                          onClick={() => {
+                            setSelectedApptId(appt._id);
+                            setIsFollowUpModalOpen(true);
+                          }}
+                          className="bg-purple-600 hover:bg-purple-700 text-white text-sm font-bold py-2 px-3 rounded"
+                        >
+                          Follow-up
+                        </button>
+                      )}
                     </div>
                   </div>
                   {/* --- Display Doctor's Notes for Completed Appointments --- */}
@@ -350,11 +367,11 @@ const DoctorAppointmentsPage = () => {
                 </div>
               ))
             ) : (
-              <div className="text-center text-secondary-text py-16">
-                <p className="text-lg">
-                  No appointments with "{filter}" status.
-                </p>
-              </div>
+              <EmptyState
+                icon={Calendar}
+                title={`No ${filter} Appointments`}
+                message="When a patient books a visit, it will appear here."
+              />
             )}
           </div>
         )}
@@ -377,6 +394,13 @@ const DoctorAppointmentsPage = () => {
           <pre className="whitespace-pre-wrap font-sans">{summary}</pre>
         )}
       </Modal>
+
+      <FollowUpModal
+        isOpen={isFollowUpModalOpen}
+        onClose={() => setIsFollowUpModalOpen(false)}
+        appointmentId={selectedApptId}
+        onFollowUpScheduled={fetchAppointments}
+      />
     </div>
   );
 };

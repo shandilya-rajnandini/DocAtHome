@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import api, { login as loginApi, getMe } from '../api';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
+import API, { login as loginApi, getMe } from '../api';
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
 
@@ -10,6 +10,7 @@ const LoginPage = () => {
   const [userId, setUserId] = useState(null);
   const [token, setToken] = useState('');
   const navigate = useNavigate();
+  const location = useLocation();
   const { login } = useAuth();
   
   const { email, password } = formData;
@@ -30,11 +31,14 @@ const LoginPage = () => {
         
         toast.success('Login successful!');
 
+        const params = new URLSearchParams(location.search);
+        const redirect = params.get('redirect');
+        const from = redirect || '/dashboard';
         // Final redirect logic based on user's role
         if (userData.role === 'admin') {
           navigate('/admin');
         } else if (userData.role === 'patient') {
-          navigate('/dashboard');
+          navigate(from, { replace: true });
         } else if (userData.role === 'doctor' || userData.role === 'nurse') {
           // Redirect both doctors and nurses to the professional dashboard
           navigate('/doctor/dashboard');
@@ -51,7 +55,7 @@ const LoginPage = () => {
   const on2FASubmit = async (e) => {
     e.preventDefault();
     try {
-      const { data } = await api.post('/auth/2fa/login', { userId, token });
+      const { data } = await API.post('/auth/2fa/login', { userId, token });
       localStorage.setItem('token', data.token);
       
       const { data: userData } = await getMe();
@@ -126,7 +130,7 @@ const LoginPage = () => {
               value={password}
               onChange={onChange}
               required
-              className="w-full p-3 bg-gray-200 dark:bg-primary-dark rounded border border-gray-700 focus:outline-none focus:ring-2 focus:ring-accent-blue"
+              className="w-full p-3 bg-gray-200 dark:bg-primary-dark rounded border border-gray-700 focus:outline-none focus:ring-2 focus:ring-accent-blue text-black dark:text-white"
             />
           </div>
 

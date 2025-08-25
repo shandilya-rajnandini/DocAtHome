@@ -1,12 +1,33 @@
 const speakeasy = require('speakeasy');
 const qrcode = require('qrcode');
 const User = require('../models/User');
+const asyncHandler = require('../middleware/asyncHandler');
+
+// @desc    Disable 2FA for a user
+// @route   POST /api/profile/2fa/disable
+// @access  Private
+exports.disableTwoFactorAuth = asyncHandler(async (req, res) => {
+    const user = await User.findById(req.user.id);
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Clear 2FA data
+    user.twoFactorSecret = undefined;
+    user.isTwoFactorEnabled = false;
+    await user.save();
+
+    res.json({
+      message: '2FA has been disabled successfully',
+      isTwoFactorEnabled: false
+    });
+});
 
 // @desc    Set up 2FA for a user
 // @route   POST /api/profile/2fa/setup
 // @access  Private
-exports.setupTwoFactorAuth = async (req, res) => {
-  try {
+exports.setupTwoFactorAuth = asyncHandler(async (req, res) => {
     const user = await User.findById(req.user.id);
 
     if (!user) {
@@ -30,19 +51,13 @@ exports.setupTwoFactorAuth = async (req, res) => {
         qrCodeUrl: data_url,
       });
     });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Server error' });
-  }
-};
+});
 
 // @desc    Verify 2FA setup
 // @route   POST /api/profile/2fa/verify
 // @access  Private
-exports.verifyTwoFactorAuth = async (req, res) => {
+exports.verifyTwoFactorAuth = asyncHandler(async (req, res) => {
   const { token } = req.body;
-
-  try {
     const user = await User.findById(req.user.id);
 
     if (!user) {
@@ -62,8 +77,5 @@ exports.verifyTwoFactorAuth = async (req, res) => {
     } else {
       res.status(400).json({ message: 'Invalid 2FA token' });
     }
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Server error' });
-  }
-};
+
+});

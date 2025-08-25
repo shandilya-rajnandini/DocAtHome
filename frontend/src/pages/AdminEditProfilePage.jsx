@@ -4,8 +4,14 @@ import { getMyProfile, updateMyProfile } from '../api';
 import toast from 'react-hot-toast';
 
 const AdminEditProfilePage = () => {
-    const [profile, setProfile] = useState({ name: '', email: '', profilePictureUrl: null });
+    const [profile, setProfile] = useState({ 
+        name: '', 
+        email: '', 
+        profilePictureUrl: null,
+        isTwoFactorEnabled: false 
+    });
     const [loading, setLoading] = useState(true);
+    const [isDisabling2FA, setIsDisabling2FA] = useState(false);
 
     useEffect(() => {
         const fetchProfile = async () => {
@@ -15,7 +21,9 @@ const AdminEditProfilePage = () => {
                     name: data.name || '',
                     email: data.email || '',
                     profilePictureUrl: data.profilePictureUrl || '',
+                    isTwoFactorEnabled: data.isTwoFactorEnabled || false,
                 });
+            // eslint-disable-next-line no-unused-vars
             } catch (error) {
                 toast.error("Could not load your profile.");
             } finally {
@@ -26,6 +34,32 @@ const AdminEditProfilePage = () => {
     }, []);
 
     const onChange = (e) => setProfile({ ...profile, [e.target.name]: e.target.value });
+
+    const disable2FA = async () => {
+        setIsDisabling2FA(true);
+        try {
+            const response = await fetch('http://localhost:5000/api/twofactor/disable', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                }
+            });
+            
+            if (response.ok) {
+                setProfile({ ...profile, isTwoFactorEnabled: false });
+                toast.success('2FA has been disabled successfully');
+            } else {
+                const errorData = await response.json();
+                toast.error(errorData.message || 'Failed to disable 2FA');
+            }
+        } catch (error) {
+            toast.error('Failed to disable 2FA');
+            console.error('2FA disable error:', error);
+        } finally {
+            setIsDisabling2FA(false);
+        }
+    };
 
     const handleFileChange = async (e) => {
         const file = e.target.files[0];
@@ -50,6 +84,7 @@ const AdminEditProfilePage = () => {
             } else {
                 throw new Error("Upload failed");
             }
+        // eslint-disable-next-line no-unused-vars
         } catch (err) {
             toast.dismiss();
             toast.error("Image upload failed.");
@@ -66,6 +101,7 @@ const AdminEditProfilePage = () => {
 
             await updateMyProfile(profileData);
             toast.success("Profile updated successfully!");
+        // eslint-disable-next-line no-unused-vars
         } catch (error) {
             toast.error("Failed to update profile.");
         }
@@ -113,9 +149,25 @@ const AdminEditProfilePage = () => {
                         </div>
                     </div>
                     <div className="flex items-center justify-between mt-8"> 
-                        <Link to="/2fa-setup" className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded inline-block" > 
-                            Enable Two-Factor Authentication 
-                        </Link>
+                        <div className="space-x-4">
+                            {profile.isTwoFactorEnabled ? (
+                                <button
+                                    type="button"
+                                    onClick={disable2FA}
+                                    disabled={isDisabling2FA}
+                                    className="bg-red-600 hover:bg-red-700 disabled:bg-red-400 text-white font-bold py-2 px-4 rounded transition"
+                                >
+                                    {isDisabling2FA ? 'Disabling...' : 'Disable Two-Factor Authentication'}
+                                </button>
+                            ) : (
+                                <Link 
+                                    to="/2fa-setup" 
+                                    className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded inline-block"
+                                >
+                                    Enable Two-Factor Authentication
+                                </Link>
+                            )}
+                        </div>
                         <button
                             type="submit"
                             className="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg transition"
