@@ -1,12 +1,11 @@
 import React, { useState } from "react";
 import { bookAmbulance } from "../../api";
 
-import useAuthStore from "../../store/useAuthStore"
+import useAuthStore from "../../store/useAuthStore";
 // Phone number constant for consistency
 const EMERGENCY_PHONE = "+919700001298";
 const EMERGENCY_PHONE_DISPLAY = "+91 9700 001298";
 
-// Updated steps for API-based booking
 // Updated steps for API-based booking
 const steps = [
   {

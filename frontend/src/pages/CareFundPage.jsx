@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback } from "react";
 import API from "../api";
 import toast from "react-hot-toast";
-import useAthStore from "../store/useAuthStore";
+import useAuthStore from "../store/useAuthStore";
 
 const CareFundPage = () => {
   const { user } = useAthStore();
