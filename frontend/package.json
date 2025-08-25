@@ -13,6 +13,7 @@
     "@google/generative-ai": "^0.24.1",
     "axios": "^1.10.0",
     "jspdf": "^3.0.1",
+    "leaflet": "^1.9.4",
     "lucide-react": "^0.534.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
@@ -20,9 +21,7 @@
     "react-icons": "^5.5.0",
     "react-router-dom": "^7.6.3",
     "react-toastify": "^11.0.5",
-    "leaflet": "^1.9.4",
-    "socket.io-client": "^4.8.1",
-    "vite-plugin-static-copy": "^3.1.1"
+    "socket.io-client": "^4.8.1"
   },
   "devDependencies": {
     "@eslint/js": "^9.29.0",
