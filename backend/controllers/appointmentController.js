@@ -129,7 +129,8 @@ exports.getMyAppointments = asyncHandler(async (req, res) => {
 
         const appointments = await Appointment.find(query)
             .populate('doctor', 'name specialty')
-            .populate('patient', 'name allergies chronicConditions');
+            .populate('patient', 'name allergies chronicConditions')
+            .populate('labTests');
 
         res.status(200).json({
             success: true,

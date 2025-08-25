@@ -38,6 +38,9 @@ const ConfirmationModal = ({ isOpen, onClose, onConfirm, title, message }) => {
   );
 };
 
+
+
+
 const AppointmentCard = ({ appointment, onAppointmentUpdate }) => {
   // Helper to generate WhatsApp share text
   const getShareText = () => {
@@ -131,6 +134,133 @@ const AppointmentCard = ({ appointment, onAppointmentUpdate }) => {
   };
 
   return (
+    // <div className="bg-accent-cream dark:bg-primary-dark p-5 rounded-lg shadow-lg border border-gray-700 hover:border-accent transition-all duration-300">
+    //   <div className="flex flex-col sm:flex-row justify-between">
+    //     <div className="flex items-center mb-4 sm:mb-0">
+    //       <IconStethoscope className="w-8 h-8 text-accent mr-4" />
+    //       <div>
+    //         <h3 className="text-xl font-bold text-white">
+    //           {appointment.doctor?.name || "N/A"}
+    //         </h3>
+    //         <p className="text-secondary-text">
+    //           {appointment.doctor?.specialty || "N/A"}
+    //         </p>
+    //       </div>
+    //     </div>
+    //     <div className="flex flex-col items-end space-y-2">
+    //       <div
+    //         className={`text-sm font-semibold px-3 py-1 rounded-full h-fit ${
+    //           appointment.status === "Completed"
+    //             ? "bg-green-900 text-green-300"
+    //             : appointment.status === "Confirmed"
+    //             ? "bg-blue-900 text-blue-300"
+    //             : appointment.status === "Cancelled"
+    //             ? "bg-red-900 text-red-300"
+    //             : "bg-yellow-900 text-yellow-300"
+    //         }`}
+    //       >
+    //         {appointment.status}
+    //       </div>
+    //       {canCancel() && (
+    //         <button
+    //           onClick={() => setShowCancelModal(true)}
+    //           disabled={cancelling}
+    //           className="px-3 py-1 text-sm bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+    //         >
+    //           {cancelling ? "Cancelling..." : "Cancel Appointment"}
+    //         </button>
+    //       )}
+    //       {/* Share button for confirmed, upcoming appointments */}
+    //       {isUpcoming && (
+    //         <button
+    //           onClick={handleShareWhatsApp}
+    //           className="px-3 py-1 text-sm bg-green-600 text-white rounded-lg flex items-center space-x-2 hover:bg-green-700 transition-colors mt-2"
+    //           title="Share via WhatsApp"
+    //         >
+    //           <MessageCircle className="w-4 h-4 mr-1" />
+    //           <span>Share</span>
+    //         </button>
+    //       )}
+    //     </div>
+    //   </div>
+    //   {appointment.status === "Completed" && appointment.doctorNotes && (
+    //     <>
+    //       <div className="border-t border-gray-700 my-4"></div>
+    //       <div>
+    //         <h4 className="font-bold text-white mb-2">Doctor's Notes:</h4>
+    //         <p className="text-secondary-text bg-primary-dark rounded">
+    //           {appointment.doctorNotes}
+    //         </p>
+    //       </div>
+    //     </>
+    //   )}
+    //   {/* Show voice note if present */}
+    //   {appointment.voiceRecording && (
+    //     <div className="mt-4">
+    //       <h4 className="font-bold text-white mb-2">Voice Note:</h4>
+    //       <audio controls src={appointment.voiceRecording} className="w-full" />
+    //     </div>
+    //   )}
+    //   <div className="border-t border-gray-700 my-4"></div>
+    //   <div className="flex justify-between items-center text-secondary-text">
+    //     <div>
+    //       <p className="font-semibold text-white">
+    //         {appointmentDateStr.toLocaleDateString("en-GB", {
+    //           day: "numeric",
+    //           month: "long",
+    //           year: "numeric",
+    //         })}
+    //       </p>
+    //       <p>{appointment.appointmentTime}</p>
+    //     </div>
+    //     <div className="text-right">
+    //       <p className="font-semibold text-white">Booking Type</p>
+    //       <p>{appointment.bookingType}</p>
+    //       {appointment.fee && (
+    //         <>
+    //           <p className="font-semibold text-white mt-2">Fee</p>
+    //           <p>₹{appointment.fee}</p>
+    //         </>
+    //       )}
+    //       {appointment.paymentMethod && (
+    //         <>
+    //           <p className="font-semibold text-white mt-2">Payment</p>
+    //           <p
+    //             className={
+    //               appointment.paymentMethod === "careFund"
+    //                 ? "text-blue-400"
+    //                 : "text-green-400"
+    //             }
+    //           >
+    //             {appointment.paymentMethod === "careFund"
+    //               ? "Care Fund"
+    //               : "External Payment"}
+    //           </p>
+    //         </>
+    //       )}
+    //     </div>
+    //   </div>
+    //   {appointment.status === "Completed" && appointment.doctorNotes && (
+    //     <>
+    //       <div className="border-t border-gray-700 my-4"></div>
+    //       <div>
+    //         <h4 className="font-bold text-white mb-2">Doctor's Notes:</h4>
+    //         <p className="text-secondary-text bg-primary-dark rounded">
+    //           {appointment.doctorNotes}
+    //         </p>
+    //       </div>
+    //     </>
+    //   )}
+
+    //   <ConfirmationModal
+    //     isOpen={showCancelModal}
+    //     onClose={() => setShowCancelModal(false)}
+    //     onConfirm={handleCancelAppointment}
+    //     title="Cancel Appointment"
+    //     message="Are you sure you want to cancel this appointment? This action cannot be undone."
+    //   />
+    // </div>
+
     <div className="bg-accent-cream dark:bg-primary-dark p-5 rounded-lg shadow-lg border border-gray-700 hover:border-accent transition-all duration-300">
       <div className="flex flex-col sm:flex-row justify-between">
         <div className="flex items-center mb-4 sm:mb-0">
@@ -167,7 +297,6 @@ const AppointmentCard = ({ appointment, onAppointmentUpdate }) => {
               {cancelling ? "Cancelling..." : "Cancel Appointment"}
             </button>
           )}
-          {/* Share button for confirmed, upcoming appointments */}
           {isUpcoming && (
             <button
               onClick={handleShareWhatsApp}
@@ -180,6 +309,38 @@ const AppointmentCard = ({ appointment, onAppointmentUpdate }) => {
           )}
         </div>
       </div>
+
+      {/* ✅ NEW SECTION: Lab Tests */}
+      {appointment.labTests && appointment.labTests.length > 0 && (
+        <div className="mt-4">
+          <h4 className="font-bold text-white mb-2">Lab Tests</h4>
+          <ul className="space-y-2">
+            {appointment.labTests.map((test) => (
+              <li
+                key={test._id}
+                className="flex justify-between items-center bg-primary-dark p-3 rounded-lg"
+              >
+                <span>{test.testName}</span>
+                <span
+                  className={`px-3 py-1 text-sm rounded-full ${
+                    test.status === "Completed"
+                      ? "bg-green-900 text-green-300"
+                      : test.status === "Report Ready"
+                      ? "bg-blue-900 text-blue-300"
+                      : test.status === "Sample Collected"
+                      ? "bg-yellow-900 text-yellow-300"
+                      : "bg-gray-700 text-gray-300"
+                  }`}
+                >
+                  {test.status}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {/* Existing Completed Notes Section */}
       {appointment.status === "Completed" && appointment.doctorNotes && (
         <>
           <div className="border-t border-gray-700 my-4"></div>
@@ -191,13 +352,14 @@ const AppointmentCard = ({ appointment, onAppointmentUpdate }) => {
           </div>
         </>
       )}
-      {/* Show voice note if present */}
+
       {appointment.voiceRecording && (
         <div className="mt-4">
           <h4 className="font-bold text-white mb-2">Voice Note:</h4>
           <audio controls src={appointment.voiceRecording} className="w-full" />
         </div>
       )}
+
       <div className="border-t border-gray-700 my-4"></div>
       <div className="flex justify-between items-center text-secondary-text">
         <div>
@@ -237,17 +399,6 @@ const AppointmentCard = ({ appointment, onAppointmentUpdate }) => {
           )}
         </div>
       </div>
-      {appointment.status === "Completed" && appointment.doctorNotes && (
-        <>
-          <div className="border-t border-gray-700 my-4"></div>
-          <div>
-            <h4 className="font-bold text-white mb-2">Doctor's Notes:</h4>
-            <p className="text-secondary-text bg-primary-dark rounded">
-              {appointment.doctorNotes}
-            </p>
-          </div>
-        </>
-      )}
 
       <ConfirmationModal
         isOpen={showCancelModal}
