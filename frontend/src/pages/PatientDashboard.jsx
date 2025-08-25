@@ -124,5 +124,4 @@ const PatientDashboard = () => {
     </main>
   );
 };
-
 export default PatientDashboard;
