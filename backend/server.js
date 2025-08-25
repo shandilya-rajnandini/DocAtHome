@@ -11,7 +11,7 @@ const {
   handleUnhandledRejection, 
   handleUncaughtException, 
   handleGracefulShutdown,
-  logger 
+  logger
 } = require('./middleware/errorHandler');
 
 // --- Load env vars ---
@@ -66,6 +66,9 @@ app.use('/api/quests', require('./routes/questRoutes'));
 app.use('/api/reviews', require('./routes/reviewRoutes'));
 app.use('/api/prescriptions', require('./routes/PrescriptionRoutes'));
 app.use('/api/twofactor', require('./routes/twoFactorAuthRoutes'));
+app.use('/api/announcements', require('./routes/announcementRoutes'));
+app.use('/api/ambulance', require('./routes/ambulanceRoutes'));
+app.use('/api/ai', require('./routes/aiRoutes'));
 
 // --- Health check ---
 app.get('/health', (req, res) => res.status(200).send('OK'));
@@ -95,14 +98,72 @@ const PORT = process.env.PORT || 5000;
 const startServer = async () => {
   try {
     await connectDB();
-
+    
+    const socketManager = require('./utils/socketManager');
+    const jwt = require('jsonwebtoken');
+    
     const server = http.createServer(app);
     const io = new Server(server, {
       cors: { origin: allowedOrigins, methods: ['GET', 'POST'] }
     });
+    
+    // Initialize the socket manager with the io instance
+    socketManager.initialize(io);
+    
+    // Set up authentication middleware for sockets
+    io.use((socket, next) => {
+      try {
+        const token = socket.handshake.auth.token;
+        if (!token) {
+          return next(new Error('Authentication error'));
+        }
+        
+        // Verify JWT (reuse auth logic from middleware)
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        socket.user = decoded;
+        next();
+      } catch (error) {
+        logger.error('Socket authentication error', { error: error.message });
+        next(new Error('Authentication error'));
+      }
+    });
 
     io.on('connection', (socket) => {
       logger.info(`User Connected: ${socket.id}`);
+      
+      // Join room based on role and city
+      if (socket.user && socket.user.role === 'ambulance' && socket.user.city) {
+        const cityRoom = socketManager.getCityRoom(socket.user.city);
+        socket.join(cityRoom);
+        logger.info(`Driver joined room: ${cityRoom}`);
+      }
+      
+      // Join patient-specific room
+      if (socket.user) {
+        socket.join(`user:${socket.user.id}`);
+      }
+      
+      // Handle driver going online/offline
+      socket.on('update_status', async ({ isOnline }) => {
+        if (socket.user && socket.user.role === 'ambulance') {
+          try {
+            // Update in database
+            const User = require('./models/User');
+            await User.findByIdAndUpdate(socket.user.id, { isOnline });
+            
+            const cityRoom = socketManager.getCityRoom(socket.user.city);
+            if (isOnline) {
+              socket.join(cityRoom);
+              logger.info(`Driver ${socket.user.id} went online in ${cityRoom}`);
+            } else {
+              socket.leave(cityRoom);
+              logger.info(`Driver ${socket.user.id} went offline from ${cityRoom}`);
+            }
+          } catch (err) {
+            logger.error('Error updating driver status', { error: err.message });
+          }
+        }
+      });
 
       socket.on('disconnect', () => logger.info(`User Disconnected: ${socket.id}`));
     });

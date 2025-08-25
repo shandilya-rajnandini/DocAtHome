@@ -8,8 +8,9 @@ const {
   updateAppointmentStatus,
   getAppointmentSummary,
   saveVoiceNote,
-  updateRelayNote,
-} = require("../controllers/appointmentController");
+  scheduleFollowUp,
+  updateRelayNote
+} = require('../controllers/appointmentController');
 
 const { protect } = require("../middleware/authMiddleware");
 const {
@@ -63,5 +64,13 @@ router.post("/:id/voice-note", protect, saveVoiceNote);
 //PUT /:id/relay-note
 //Updates the relay note for the appointment
 router.put("/:id/relay-note", protect, updateRelayNote);
+
+// POST /api/appointments/:id/schedule-follow-up
+// Schedules a follow-up for a specific appointment
+router.route('/:id/schedule-follow-up')
+    .post(protect, 
+        validateObjectId('id'), 
+        validate(appointmentSchemas.scheduleFollowUp), 
+        scheduleFollowUp);
 
 module.exports = router;

@@ -12,6 +12,7 @@ import RelayNote from "../components/RelayNote";
 import Modal from "../components/Modal";
 import EmptyState from "../components/EmptyState";
 import { Calendar } from "lucide-react";
+import FollowUpModal from "../components/FollowUpModal";
 
 const DoctorAppointmentsPage = () => {
   const [appointments, setAppointments] = useState([]);
@@ -23,6 +24,7 @@ const DoctorAppointmentsPage = () => {
   const [isSummaryModalOpen, setIsSummaryModalOpen] = useState(false);
   const [summary, setSummary] = useState("");
   const [summaryLoading, setSummaryLoading] = useState(false);
+  const [isFollowUpModalOpen, setIsFollowUpModalOpen] = useState(false);
   const [recording, setRecording] = useState(false);
   const [audioURL, setAudioURL] = useState(null);
   const [mediaRecorder, setMediaRecorder] = useState(null);
@@ -299,6 +301,17 @@ const DoctorAppointmentsPage = () => {
                           Mark as Complete
                         </button>
                       )}
+                      {appt.status === "Completed" && (
+                        <button
+                          onClick={() => {
+                            setSelectedApptId(appt._id);
+                            setIsFollowUpModalOpen(true);
+                          }}
+                          className="bg-purple-600 hover:bg-purple-700 text-white text-sm font-bold py-2 px-3 rounded"
+                        >
+                          Follow-up
+                        </button>
+                      )}
                     </div>
                   </div>
                   {/* --- Display Doctor's Notes for Completed Appointments --- */}
@@ -445,6 +458,12 @@ const DoctorAppointmentsPage = () => {
           }
           setIsRelayNoteOpen(false);
         }}
+        />
+      <FollowUpModal
+        isOpen={isFollowUpModalOpen}
+        onClose={() => setIsFollowUpModalOpen(false)}
+        appointmentId={selectedApptId}
+        onFollowUpScheduled={fetchAppointments}
       />
     </div>
   );

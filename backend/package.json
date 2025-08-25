@@ -29,6 +29,7 @@
     "jsonwebtoken": "^9.0.2",
     "mongodb": "^6.18.0",
     "mongoose": "^8.16.1",
+    "node-cron": "^4.2.1",
     "nodemailer": "^7.0.5",
     "qrcode": "^1.5.4",
     "razorpay": "^2.9.6",
@@ -39,6 +40,7 @@
   "devDependencies": {
     "eslint": "^9.33.0",
     "jest": "^30.0.5",
+    "mongodb-memory-server": "^10.2.0",
     "nodemon": "^3.1.10",
     "supertest": "^7.1.4"
   }
