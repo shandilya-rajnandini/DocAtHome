@@ -3,53 +3,46 @@ const http = require('http');
 const { Server } = require('socket.io');
 const dotenv = require('dotenv');
 const cors = require('cors');
-const helmet = require('helmet');
+const helmet = require('helmet'); // Security best practice
 const connectDB = require('./config/db');
 
-// It's good practice to import your own modules after third-party ones
-const { generalLimiter } = require('./middleware/rateLimiter');
-const { 
-  globalErrorHandler, 
-  handleUnhandledRejection, 
-  handleUncaughtException, 
-  handleGracefulShutdown,
-  logger
-} = require('./middleware/errorHandler');
+// It's good practice to import all your own modules after third-party ones
+const { globalErrorHandler } = require('./middleware/errorHandler');
 
-// --- Load env vars ---
+// Load environment variables from .env file
 dotenv.config();
 
-// --- Create Express app ---
+// Initialize Express App
 const app = express();
 
-// --- Allowlist for CORS ---
+// --- Production-Ready CORS Configuration ---
 const allowedOrigins = [
-  'http://localhost:5173',
-  'http://localhost:5174', // Often used for previews
-  'https://docathome-rajnandini.netlify.app' // Your live frontend URL
+    "http://localhost:5173", // For your local development frontend
+    "https://docathome-rajnandini.netlify.app" // Your live frontend URL
 ];
 
 const corsOptions = {
-  origin: (origin, callback) => {
-    if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      const error = new Error('Not allowed by CORS');
-      error.statusCode = 403;
-      callback(error);
-    }
-  }
+    origin: function (origin, callback) {
+        // Allow requests with no origin (like mobile apps, Postman, or server-to-server requests)
+        // and requests from our allowlist.
+        if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+            callback(null, true);
+        } else {
+            console.error(`CORS ERROR: The origin '${origin}' was blocked.`);
+            callback(new Error('This origin is not allowed by CORS'));
+        }
+    },
+    credentials: true
 };
 
-// --- Security & Middleware Configuration ---
+// --- Core Middleware ---
 app.use(helmet()); // Sets various security-related HTTP headers
-app.use(cors(corsOptions));
-app.use(generalLimiter); // Applies basic rate limiting to all requests
+app.use(cors(corsOptions)); // Apply the CORS policy
+app.use(express.json()); // Middleware to parse incoming JSON request bodies
 
-// Middleware to parse JSON request bodies
-app.use(express.json());
 
 // --- API Route Definitions ---
+// Make sure all these route files exist in your `backend/routes` folder and are spelled correctly.
 app.use('/api/auth', require('./routes/authRoutes'));
 app.use('/api/admin', require('./routes/adminRoutes'));
 app.use('/api/doctors', require('./routes/doctorRoutes'));
@@ -57,55 +50,60 @@ app.use('/api/nurses', require('./routes/nurseRoutes'));
 app.use('/api/profile', require('./routes/profileRoutes'));
 app.use('/api/appointments', require('./routes/appointmentRoutes'));
 app.use('/api/lab-tests', require('./routes/labTestRoutes'));
-app.use('/api/payment', require('./routes/paymentRoutes'));
-// Assuming you have created all these route files:
-// app.use('/api/subscription', require('./routes/subscriptionRoutes'));
-// app.use('/api/care-circle', require('./routes/careCircleRoutes'));
-// app.use('/api/quests', require('./routes/questRoutes'));
-// app.use('/api/reviews', require('./routes/reviewRoutes'));
-// app.use('/api/prescriptions', require('./routes/prescriptionRoutes'));
-// app.use('/api/twofactor', require('./routes/twoFactorAuthRoutes'));
-// app.use('/api/announcements', require('./routes/announcementRoutes'));
-// app.use('/api/ambulance', require('./routes/ambulanceRoutes'));
-// app.use('/api/ai', require('./routes/aiRoutes'));
-// app.use('/api/availability', require('./routes/availabilityRoutes'));
+// The payment route is commented out to prevent crashes if keys are missing.
+// app.use('/api/payment', require('./routes/paymentRoutes')); 
 
-// --- Health Check Route ---
+
+// --- Health Check Route for Hosting Provider ---
 app.get('/health', (req, res) => res.status(200).send('OK'));
 
-// --- 404 Not Found Handler (must be after all other routes) ---
+
+// --- Error Handling Middleware ---
+// 404 Not Found handler (runs if no other route matches)
 app.use((req, res, next) => {
-  const err = new Error(`Can't find ${req.originalUrl} on this server!`);
+  const err = new Error(`API endpoint not found: ${req.method} ${req.originalUrl}`);
   err.statusCode = 404;
   next(err);
 });
 
-// --- Global Error Handler (must be the last app.use call) ---
+// Global error handler (catches all errors passed by `next(err)`)
 app.use(globalErrorHandler);
 
-const PORT = process.env.PORT || 5000;
+
+// --- Server and Socket.IO Startup ---
 const server = http.createServer(app);
+const io = new Server(server, {
+  cors: { 
+    origin: allowedOrigins, 
+    methods: ["GET", "POST"] 
+  }
+});
 
-// --- Socket.IO Integration ---
-// ... (Socket.IO setup and logic can go here, as in your original file)
+io.on('connection', (socket) => {
+  console.log(`User Connected via Socket: ${socket.id}`);
+  socket.on('disconnect', () => {
+    console.log(`User Disconnected via Socket: ${socket.id}`);
+  });
+});
 
-// --- Start Server ---
+const PORT = process.env.PORT || 5000;
+
 const startServer = async () => {
   try {
+    // 1. Attempt to connect to the database first
     await connectDB();
+    
+    // 2. Only if the DB connection is successful, start the HTTP server
     server.listen(PORT, () => {
-      console.log(`🚀 Server running on port ${PORT}`);
+      console.log(`🚀 Server is live and running on port ${PORT}`);
     });
-    // handleGracefulShutdown(server); // Optional: for graceful shutdowns
   } catch (error) {
-    console.error('FATAL ERROR: Could not start server', { error: error.message });
+    // 3. If the DB connection fails, log the fatal error and stop the application
+    console.error('FATAL ERROR: Could not connect to the database.');
+    console.error(error);
     process.exit(1);
   }
 };
 
-// Handle any promise rejections that weren't caught
-// handleUnhandledRejection();
-// Handle any exceptions that weren't caught
-// handleUncaughtException();
-
+// Execute the startup function
 startServer();
