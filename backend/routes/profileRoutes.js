@@ -7,7 +7,8 @@ const {
     updateMyProfile, 
     getMyCareCircle, 
     inviteToCareCircle,
-    getProfileById // <-- Import the new function
+    getProfileById, // <-- Import the new function
+    deactivateMyAccount
 } = require('../controllers/profileController');
 
 const { protect } = require('../middleware/authMiddleware');
@@ -16,7 +17,8 @@ const { protect } = require('../middleware/authMiddleware');
 // Route for fetching and updating the LOGGED-IN user's own profile
 router.route('/me')
     .get(protect, getMyProfile)
-    .put(protect, updateMyProfile);
+    .put(protect, updateMyProfile)
+    .delete(protect, deactivateMyAccount);
 
 // Route for the logged-in user's Care Circle
 router.route('/my-care-circle')
