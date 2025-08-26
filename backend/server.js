@@ -13,6 +13,14 @@ const {
   handleGracefulShutdown,
   logger
 } = require('./middleware/errorHandler');
+app.use('/api/availability', require('./routes/availabilityRoutes'));
+const { 
+  globalErrorHandler, 
+  handleUnhandledRejection, 
+  handleUncaughtException, 
+  handleGracefulShutdown,
+  logger
+} = require('./middleware/errorHandler');
 
 // --- Load env vars ---
 dotenv.config();

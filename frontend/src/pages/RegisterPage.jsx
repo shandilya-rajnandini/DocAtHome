@@ -220,8 +220,13 @@ const RegisterPage = () => {
             <option value="patient">Patient</option>
             <option value="doctor">Doctor</option>
             <option value="nurse">Nurse</option>
+
             <option value="technician">Lab Technician</option> {/* Added */}
             <option value="ambulance">Ambulance Driver</option> {/* Added */}
+
+            <option value="technician">Lab Technician</option>
+            <option value="ambulance">Ambulance Driver</option>
+
           </select>
         </div>
 

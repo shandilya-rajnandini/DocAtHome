@@ -80,6 +80,18 @@ exports.updateMyProfile = asyncHandler(async (req, res) => {
 const CareCircle = require('../models/CareCircle');
 const _Vital = require('../models/Vital');
 
+// @desc    Deactivate (soft delete) current user's account
+// @route   DELETE /api/profile/me
+exports.deactivateMyAccount = asyncHandler(async (req, res) => {
+    const user = await User.findById(req.user.id);
+    if (!user) {
+        return res.status(404).json({ msg: 'User not found' });
+    }
+    user.isActive = false;
+    await user.save();
+    res.status(200).json({ msg: 'Account deactivated successfully.' });
+});
+
 // @desc    Get the Care Circle for the logged-in patient
 // @route   GET /api/profile/my-care-circle
 exports.getMyCareCircle = asyncHandler(async (req, res) => {

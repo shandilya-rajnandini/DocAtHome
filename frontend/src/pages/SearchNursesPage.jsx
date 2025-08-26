@@ -10,7 +10,7 @@ const cities = ['Mumbai', 'Delhi', 'Bangalore', 'Pune', 'Patna', 'Kolkata', 'Che
 
 const SearchNursesPage = () => {
     // State to hold the selected filter values
-    const [filters, setFilters] = useState({ specialty: '', city: '', radius: '10' });
+    const [filters, setFilters] = useState({ specialty: '', city: '', radius: '10', skillKeyword: '' });
     // State for user location and geolocation status
     const [userLocation, setUserLocation] = useState(null);
     const [isGettingLocation, setIsGettingLocation] = useState(false);
@@ -180,6 +180,21 @@ const SearchNursesPage = () => {
                         </select>
                     </div>
 
+                    {/* Add this inside the filters sidebar, before the search button */}
+                    <div className="mb-6">
+                      <label htmlFor="skillKeyword" className="block text-secondary-text mb-2 font-semibold">
+                        Search by Verified Skills
+                      </label>
+                      <input
+                        type="text"
+                        id="skillKeyword"
+                        name="skillKeyword"
+                        value={filters.skillKeyword}
+                        onChange={handleFilterChange}
+                        placeholder="e.g., Pediatric Vaccinations"
+                        className="w-full p-3 bg-primary-dark rounded border-gray-700 text-white"
+                      />
+                    </div>
                     <div className="mb-6">
                         <label className="block text-secondary-text mb-2 font-semibold">Location</label>
                         <div className="mb-3">
