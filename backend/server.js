@@ -10,17 +10,17 @@ dotenv.config();
 const app = express();
 
 // --- THE DEFINITIVE CORS FIX ---
-// This setup is more explicit and handles the preflight request correctly.
 const allowedOrigins = [
     "http://localhost:5173",
     "https://docathome-rajnandini.netlify.app"
 ];
+
 app.use(cors({
     origin: function (origin, callback) {
         if (!origin || allowedOrigins.indexOf(origin) !== -1) {
             callback(null, true);
         } else {
-            callback(new Error('Not allowed by CORS'));
+            callback(new Error('This origin is not allowed by CORS'));
         }
     }
 }));
@@ -37,9 +37,9 @@ app.use('/api/nurses', require('./routes/nurseRoutes'));
 app.use('/api/profile', require('./routes/profileRoutes'));
 app.use('/api/appointments', require('./routes/appointmentRoutes'));
 app.use('/api/lab-tests', require('./routes/labTestRoutes'));
-// app.use('/api/payment', require('./routes/paymentRoutes'));
+// app.use('/api/payment', require('./routes/paymentRoutes')); // Kept commented out for now
 
-// Health Check
+// Health Check Route
 app.get('/health', (req, res) => res.status(200).send('OK'));
 
 // Error Handlers
