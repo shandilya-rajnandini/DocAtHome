@@ -212,7 +212,8 @@ const RegisterPage = () => {
             <option value="patient">Patient</option>
             <option value="doctor">Doctor</option>
             <option value="nurse">Nurse</option>
-            <option value="technician">Lab Technician</option> {/* Added */}
+            <option value="technician">Lab Technician</option>
+            <option value="ambulance">Ambulance Driver</option>
           </select>
         </div>
 
@@ -407,6 +408,37 @@ const RegisterPage = () => {
               className="w-full p-3 bg-gray-200 dark:bg-primary-dark rounded border-gray-700 text-black dark:text-white"
             />
           </div>
+        )}
+
+        {role === "ambulance" && (
+          <>
+            <div className="mb-4">
+              <label className="block text-slate-700 dark:text-secondary-text mb-2">
+                Driver's License No.
+              </label>
+              <input
+                type="text"
+                name="driverLicenseNumber"
+                value={formData.driverLicenseNumber || ""}
+                onChange={onChange}
+                required
+                className="w-full p-3 bg-gray-200 dark:bg-primary-dark rounded border-gray-700 text-black dark:text-white"
+              />
+            </div>
+            <div className="mb-4">
+              <label className="block text-slate-700 dark:text-secondary-text mb-2">
+                Vehicle Registration No.
+              </label>
+              <input
+                type="text"
+                name="vehicleRegistrationNumber"
+                value={formData.vehicleRegistrationNumber || ""}
+                onChange={onChange}
+                required
+                className="w-full p-3 bg-gray-200 dark:bg-primary-dark rounded border-gray-700 text-black dark:text-white"
+              />
+            </div>
+          </>
         )}
 
         <button
