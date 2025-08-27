@@ -51,7 +51,7 @@ const DoctorDashboard = () => {
                     setSubscriptionStatus(data.data);
                     
                 // ------------------------------
-                // ✅ Recently Viewed Logic Added
+                //  Recently Viewed Logic Added
                 if (data) {
                     const stored = JSON.parse(localStorage.getItem("recentlyViewedDoctors")) || [];
                     // Remove duplicate if doctor already exists
