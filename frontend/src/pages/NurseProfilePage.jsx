@@ -3,6 +3,8 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { getNurseById, bookAppointment } from '../api'; // Correctly imports getNurseById
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
+import VerifiedSkillsBadge from '../components/VerifiedSkillsBadge.jsx';
+import { getAvailability } from '../api';
 
 // --- Mock Data ---
 const timeSlots = ["09:00 AM", "12:00 PM", "03:00 PM", "06:00 PM"];
@@ -28,7 +30,7 @@ const NurseProfilePage = () => {
     const { user } = useAuth();
     const [nurse, setNurse] = useState(null);
     const [loading, setLoading] = useState(true);
-    
+    const [availableDates, setAvailableDates] = useState([]);
     const [selectedDate, setSelectedDate] = useState(availableDates[0].fullDate);
     const [selectedTime, setSelectedTime] = useState('');
     const [bookingDetails, setBookingDetails] = useState({ symptoms: '' });
@@ -48,6 +50,15 @@ const NurseProfilePage = () => {
             }
         };
         fetchNurse();
+        getAvailability(id)
+            .then(res => {
+                setAvailableDates(res.data.availableDates?.map(d => ({
+                    dayName: new Date(d.date).toLocaleDateString('en-US', { weekday: 'short' }).toUpperCase(),
+                    day: new Date(d.date).getDate(),
+                    fullDate: d.date
+                })) || []);
+            })
+            .catch(() => setAvailableDates([]));
     }, [id]);
 
     const handleBookAssignment = async () => {
@@ -101,6 +112,9 @@ const NurseProfilePage = () => {
                         </h1>
                         <p className="text-xl text-teal-400 mt-1">{nurse.specialty}</p>
                         <p className="text-md text-secondary-text">{nurse.experience} years experience in {nurse.city}</p>
+                        {nurse.verifiedSkills && nurse.verifiedSkills.length > 0 && (
+                            <VerifiedSkillsBadge skills={nurse.verifiedSkills} />
+                        )}
                     </div>
                 </div>
 

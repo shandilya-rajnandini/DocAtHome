@@ -3,6 +3,8 @@ import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { getDoctorById, bookAppointment } from '../api';
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
+import VerifiedSkillsBadge from '../components/VerifiedSkillsBadge.jsx';
+import { getAvailability } from '../api';
 
 // --- Mock Data ---
 const timeSlots = ["11:00 AM", "11:30 AM", "12:00 PM", "12:30 PM", "01:00 PM", "01:30 PM", "02:00 PM"];
@@ -29,7 +31,7 @@ const DoctorProfilePage = () => {
     const location = useLocation();
     const [doctor, setDoctor] = useState(null);
     const [loading, setLoading] = useState(true);
-
+    const [availableDates, setAvailableDates] = useState([]);
     const [careFundBalance, setCareFundBalance] = useState(0);
     
     const [selectedDate, setSelectedDate] = useState(availableDates[0].fullDate);
@@ -81,6 +83,15 @@ const DoctorProfilePage = () => {
         if (followUpDate) {
             setSelectedDate(new Date(followUpDate).toISOString().split('T')[0]);
         }
+        getAvailability(id)
+            .then(res => {
+                setAvailableDates(res.data.availableDates?.map(d => ({
+                    dayName: new Date(d.date).toLocaleDateString('en-US', { weekday: 'short' }).toUpperCase(),
+                    day: new Date(d.date).getDate(),
+                    fullDate: d.date
+                })) || []);
+            })
+            .catch(() => setAvailableDates([]));
     }, [id, user, location.search, navigate]);
 
     const handleBookingDetailChange = (e) => {
@@ -161,6 +172,9 @@ const DoctorProfilePage = () => {
                         </h1>
                         <p className="text-xl text-accent-blue mt-1">{doctor.specialty}</p>
                         <p className="text-md text-secondary-text">{doctor.experience} years experience in {doctor.city}</p>
+                        {doctor.verifiedSkills && doctor.verifiedSkills.length > 0 && (
+                            <VerifiedSkillsBadge skills={doctor.verifiedSkills} />
+                        )}
                         <p className="text-secondary-text mt-4 max-w-2xl">A highly dedicated professional focusing on comprehensive medical care.</p>
                     </div>
                 </div>

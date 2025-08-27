@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
 const AppointmentSchema = new mongoose.Schema(
   {
@@ -63,7 +63,23 @@ const AppointmentSchema = new mongoose.Schema(
     },
 
     voiceRecording: {
-      type: String, // This field is now optional
+      type: String,
+      default: '', // This field is now optional
+    },
+    relayNote: {
+      type: String,
+      default: '', // This field is now optional
+    },
+    sharedRelayNotes: [
+      {
+        note: String,
+        doctorName: String,
+        doctorDesignation: String,
+      },
+    ],
+    shareRelayNote: {
+      type: Boolean,
+      default: false,
     },
   },
   { timestamps: true }

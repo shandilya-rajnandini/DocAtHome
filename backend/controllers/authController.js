@@ -369,17 +369,17 @@ exports.register = catchAsync(async (req, res, next) => {
   }
 
   // Validate role if provided
-  const validRoles = ["patient", "doctor", "nurse", "admin"];
+  const validRoles = ["patient", "doctor", "nurse", "admin", "technician", "ambulance"];
   if (role && !validRoles.includes(role)) {
     return next(new ValidationError("Invalid role specified"));
   }
 
   // Create user object with basic fields
   const userData = {
-    name: name.trim(),
-    email: email.toLowerCase(),
-    password, // Will be hashed by the User model pre-save hook
-    role: role || "patient",
+  name: name.trim(),
+  email: email.toLowerCase(),
+  password, // Will be hashed by the User model pre-save hook
+  role: role || "patient",
   };
 
   // Add professional fields if role is doctor or nurse
@@ -404,6 +404,16 @@ exports.register = catchAsync(async (req, res, next) => {
     } catch (error) {
       return next(error);
     }
+  }
+
+  // Add ambulance driver fields if role is ambulance
+  if (role === "ambulance") {
+    const { driverLicenseNumber, vehicleRegistrationNumber } = req.body;
+    if (!driverLicenseNumber || !vehicleRegistrationNumber) {
+      return next(new ValidationError("Driver's License No. and Vehicle Registration No. are required for ambulance drivers"));
+    }
+    userData.driverLicenseNumber = driverLicenseNumber.trim();
+    userData.vehicleRegistrationNumber = vehicleRegistrationNumber.trim();
   }
 
   // Create new user

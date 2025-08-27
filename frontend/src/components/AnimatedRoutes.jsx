@@ -53,6 +53,9 @@ import DemandHotspotPage from "../pages/DemandHotspotPage.jsx";
 import AdminDashboard from "../pages/AdminDashboard.jsx";
 import TwoFactorAuthPage from "../pages/TwoFactorAuthPage.jsx";
 
+// 404 Not Found Page
+import NotFoundPage from "../pages/NotFoundPage.jsx";
+
 const AnimatedRoutes = () => {
   const location = useLocation();
 
@@ -442,6 +445,16 @@ const AnimatedRoutes = () => {
               <ProtectedRoute>
                 <TwoFactorAuthPage />
               </ProtectedRoute>
+            </AnimatedPage>
+          }
+        />
+
+        {/* --- 404 Not Found Catch-all Route --- */}
+        <Route
+          path="*"
+          element={
+            <AnimatedPage>
+              <NotFoundPage />
             </AnimatedPage>
           }
         />
