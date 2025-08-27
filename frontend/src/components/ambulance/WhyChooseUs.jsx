@@ -27,9 +27,9 @@ const reasons = [
 const WhyChooseUs = () => {
 
   return (
-    <section className="py-20 px-4 bg-gradient-to-br from-slate-900 to-slate-900 text-white">
+  <section className="py-20 px-4 bg-[#A6CFD5] text-black">
       <div className="container mx-auto text-center max-w-6xl">
-        <h2 className="text-4xl md:text-5xl font-bold mb-16">
+        <h2 className="text-4xl md:text-5xl font-bold mb-16 text-black">
           WHY <span className="text-red-500">CHOOSE US</span>?
         </h2>
 
@@ -68,7 +68,7 @@ const WhyChooseUs = () => {
 
                 {/* Title */}
                 <h3
-                  className="text-xl md:text-2xl font-bold mb-4 text-white group-hover:text-blue-300 
+                  className="text-xl md:text-2xl font-bold mb-4 text-black group-hover:text-blue-700 
                                transition-colors duration-300"
                 >
                   {reason.title}
@@ -76,8 +76,8 @@ const WhyChooseUs = () => {
 
                 {/* Description */}
                 <p
-                  className="text-gray-300 leading-relaxed text-sm md:text-base 
-                               group-hover:text-gray-200 transition-colors duration-300"
+                  className="text-black leading-relaxed text-sm md:text-base 
+                               group-hover:text-gray-700 transition-colors duration-300"
                 >
                   {reason.text}
                 </p>

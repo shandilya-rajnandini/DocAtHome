@@ -16,15 +16,15 @@ const Footer = () => {
   };
 
   return (
-    <footer className="bg-black text-white border-t border-gray-800">
+    <footer className="w-full bg-[#A6CFD5] dark:bg-secondary-dark text-black dark:text-primary-text py-4 px-2 shadow-lg transition-colors border-t border-gray-800">
       <div className="max-w-7xl mx-auto px-6 py-12">
         {/* Main Footer Content */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-8">
           
           {/* Brand & Socials */}
           <div className="lg:col-span-1">
-            <h3 className="text-2xl font-bold text-white mb-4">Doc@Home</h3>
-            <p className="text-gray-300 text-sm mb-4 leading-relaxed">
+            <h3 className="text-2xl font-bold text-black dark:text-primary-text mb-4">Doc@Home</h3>
+            <p className="text-black dark:text-primary-text text-sm mb-4 leading-relaxed">
               Bringing quality healthcare to your doorstep. Professional medical services with the comfort and convenience of home care.
             </p>
             <div className="flex space-x-4">
@@ -44,41 +44,41 @@ const Footer = () => {
 
           {/* Quick Links */}
           <div>
-            <h4 className="text-lg font-semibold text-white mb-4">Quick Links</h4>
+            <h4 className="text-lg font-semibold text-black dark:text-primary-text mb-4">Quick Links</h4>
             <div className="space-y-3">
-              <Link to="/" className="block text-sm text-gray-300 hover:text-white">Home</Link>
-              <Link to="/search" className="block text-sm text-gray-300 hover:text-white">Find a Doctor</Link>
-              <Link to="/search-nurses" className="block text-sm text-gray-300 hover:text-white">Find a Nurse</Link>
-              <Link to="/book-ambulance" className="block text-sm text-gray-300 hover:text-white">Book Ambulance</Link>
+              <Link to="/" className="block text-sm text-black dark:text-primary-text hover:text-black">Home</Link>
+              <Link to="/search" className="block text-sm text-black dark:text-primary-text hover:text-black">Find a Doctor</Link>
+              <Link to="/search-nurses" className="block text-sm text-black dark:text-primary-text hover:text-black">Find a Nurse</Link>
+              <Link to="/book-ambulance" className="block text-sm text-black dark:text-primary-text hover:text-black">Book Ambulance</Link>
             </div>
           </div>
 
           {/* Patient Portal */}
           <div>
-            <h4 className="text-lg font-semibold text-white mb-4">Patient Portal</h4>
+            <h4 className="text-lg font-semibold text-black dark:text-primary-text mb-4">Patient Portal</h4>
             <div className="space-y-3">
-              <Link to="/dashboard" className="block text-sm text-gray-300 hover:text-white">Dashboard</Link>
-              <Link to="/search" className="block text-sm text-gray-300 hover:text-white">Search Doctors</Link>
-              <Link to="/book-ambulance" className="block text-sm text-gray-300 hover:text-white">Ambulance</Link>
+              <Link to="/dashboard" className="block text-sm text-black dark:text-primary-text hover:text-black">Dashboard</Link>
+              <Link to="/search" className="block text-sm text-black dark:text-primary-text hover:text-black">Search Doctors</Link>
+              <Link to="/book-ambulance" className="block text-sm text-black dark:text-primary-text hover:text-black">Ambulance</Link>
             </div>
           </div>
 
           {/* Manage Account */}
           <div>
-            <h4 className="text-lg font-semibold text-white mb-4">Manage Account</h4>
+            <h4 className="text-lg font-semibold text-black dark:text-primary-text mb-4">Manage Account</h4>
             <div className="space-y-3">
-              <Link to="/login" className="block text-sm text-gray-300 hover:text-white">Login</Link>
-              <Link to="/register" className="block text-sm text-gray-300 hover:text-white">Register</Link>
+              <Link to="/login" className="block text-sm text-black dark:text-primary-text hover:text-black">Login</Link>
+              <Link to="/register" className="block text-sm text-black dark:text-primary-text hover:text-black">Register</Link>
 
-              <Link to="/my-appointments" className="block text-sm text-gray-300 hover:text-white">My Appointments</Link>
+              <Link to="/my-appointments" className="block text-sm text-black dark:text-primary-text hover:text-black">My Appointments</Link>
             </div>
           </div>
 
           {/* Newsletter */}
           <div>
-            <h4 className="text-lg font-semibold text-white mb-4">Stay Updated</h4>
+            <h4 className="text-lg font-semibold text-black dark:text-primary-text mb-4">Stay Updated</h4>
             <form onSubmit={handleNewsletterSubmit} className="space-y-3">
-              <p className="text-sm text-gray-400">Subscribe to our newsletter for the latest updates.</p>
+              <p className="text-sm text-black dark:text-primary-text">Subscribe to our newsletter for the latest updates.</p>
               <div className="flex">
                 <input
                   type="email"
@@ -86,7 +86,7 @@ const Footer = () => {
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="Enter your email"
                   required
-                  className="flex-1 px-3 py-2 text-sm text-gray-900 bg-white border border-gray-300 rounded-l-md"
+                  className="flex-1 px-3 py-2 text-sm text-black dark:text-primary-text bg-white border border-gray-300 rounded-l-md"
                 />
                 <button type="submit" className="px-4 py-2 bg-accent-blue text-white text-sm font-medium rounded-r-md hover:bg-accent-blue-hover">
                   Subscribe
@@ -99,12 +99,12 @@ const Footer = () => {
         {/* Bottom Bar */}
         <div className="pt-8 border-t border-gray-800">
           <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
-            <p className="text-sm text-gray-400">
+            <p className="text-sm text-black dark:text-primary-text">
               © {currentYear} Doc@Home. All rights reserved.
             </p>
             <div className="flex space-x-6">
-              <Link to="/privacy" className="text-sm text-gray-400 hover:text-white">Privacy Policy</Link>
-              <Link to="/terms" className="text-sm text-gray-400 hover:text-white">Terms of Service</Link>
+              <Link to="/privacy" className="text-sm text-black dark:text-primary-text hover:text-white">Privacy Policy</Link>
+              <Link to="/terms" className="text-sm text-black dark:text-primary-text hover:text-white">Terms of Service</Link>
             </div>
           </div>
         </div>

@@ -35,8 +35,8 @@ const Navbar = () => {
   };
 
   return (
-    <nav className="fixed top-0 left-0 w-full z-50 backdrop-blur-lg bg-[#0d172a]/70 dark:bg-secondary-dark/70 shadow-lg transition-colors mb-20">
-      <div className="container mx-auto px-6 py-3 flex items-center justify-between">
+  <nav className="fixed top-0 left-0 w-full z-50 backdrop-blur-lg bg-[#A6CFD5]/40 dark:bg-secondary-dark/70 shadow-lg transition-colors mb-20 text-black dark:text-primary-text">
+  <div className="container mx-auto px-6 py-3 flex items-center justify-between">
         {/* Logo */}
         <Link
           to={
@@ -46,13 +46,13 @@ const Navbar = () => {
               ? "/doctor/dashboard"
               : "/"
           }
-          className="text-2xl font-bold text-accent-blue tracking-wide hover:scale-105 transition-transform"
+          className="text-2xl font-bold tracking-wide hover:scale-105 transition-transform text-black dark:text-accent-blue"
         >
           Doc@Home
         </Link>
 
         {/* Desktop Menu */}
-        <div className="hidden md:flex items-center space-x-8 font-medium ml-auto">
+  <div className="hidden md:flex items-center space-x-8 font-medium ml-auto text-black dark:text-primary-text">
           <Link
             to="/search"
             className="hover:text-accent-blue relative group transition"
@@ -78,7 +78,7 @@ const Navbar = () => {
           )}
           {user ? (
             <>
-            <span className="text-white">Welcome, {user.name}</span>
+              <span className="text-black dark:text-white">Welcome, {user.name}</span>
               <button
                 onClick={handleLogout}
                 className="bg-red-600 px-4 py-2 rounded hover:bg-red-700 transition-colors text-white dark:text-black"
@@ -105,15 +105,14 @@ const Navbar = () => {
           )}
           <button
             onClick={toggleTheme}
-            aria-label={`Switch to ${
-              theme === "light" ? "dark" : "light"
-            } mode`}
-            className="ml-4 border border-black p-2 rounded-full bg-slate-800 dark:bg-amber-200 hover:bg-slate-600 dark:hover:bg-amber-400 transition-colors"
+            aria-label={`Switch to ${theme === "light" ? "dark" : "light"} mode`}
+            className={`ml-4 border border-black p-2 rounded-full transition-colors
+              ${theme === "light" ? "bg-white hover:bg-amber-100" : "bg-slate-800 hover:bg-slate-600"}`}
           >
             {theme === "light" ? (
-              <BsFillMoonStarsFill className="text-2xl text-cyan-200" />
+              <BsFillMoonStarsFill className="text-2xl text-cyan-600" />
             ) : (
-              <IoSunnySharp className="text-2xl text-black" />
+              <IoSunnySharp className="text-2xl text-yellow-300" />
             )}
           </button>
         </div>
@@ -146,7 +145,7 @@ const Navbar = () => {
 
       {/* Mobile Dropdown */}
       <div
-        className={`md:hidden overflow-hidden bg-[#0d172a]/95 dark:bg-secondary-dark/95 transition-all duration-500 ease-in-out ${
+        className={`md:hidden overflow-hidden bg-[#A6CFD5]/60 dark:bg-secondary-dark/95 transition-all duration-500 ease-in-out ${
           isOpen ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0"
         }`}
       >
@@ -216,15 +215,14 @@ const Navbar = () => {
           >
             <button
               onClick={toggleTheme}
-              aria-label={`Switch to ${
-                theme === "light" ? "dark" : "light"
-              } mode`}
-              className="border border-black p-2 rounded-full bg-slate-800 dark:bg-amber-200 hover:bg-slate-600 dark:hover:bg-amber-400 transition-colors"
+              aria-label={`Switch to ${theme === "light" ? "dark" : "light"} mode`}
+              className={`border border-black p-2 rounded-full transition-colors
+                ${theme === "light" ? "bg-white hover:bg-amber-100" : "bg-slate-800 hover:bg-slate-600"}`}
             >
               {theme === "light" ? (
-                <BsFillMoonStarsFill className="text-2xl text-cyan-200" />
+                <BsFillMoonStarsFill className="text-2xl text-cyan-600" />
               ) : (
-                <IoSunnySharp className="text-2xl text-black" />
+                <IoSunnySharp className="text-2xl text-yellow-300" />
               )}
             </button>
           </li>

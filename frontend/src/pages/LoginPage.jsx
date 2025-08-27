@@ -81,7 +81,7 @@ const LoginPage = () => {
   };
 
   return (
-    <div className="bg-amber-200 dark:!bg-primary-dark flex justify-center items-center mt-20 mb-20">
+  <div className="bg-[#857e7b] dark:!bg-primary-dark flex justify-center items-center mt-20 mb-20">
       {twoFactorRequired ? (
         <form onSubmit={on2FASubmit} className="bg-white dark:bg-secondary-dark p-8 rounded-lg shadow-lg w-full max-w-md">
           <h2 className="text-3xl font-bold mb-6 text-center text-black dark:text-white">

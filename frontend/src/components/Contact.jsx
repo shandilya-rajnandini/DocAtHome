@@ -2,7 +2,7 @@ import React from 'react';
 
 const Contact = () => {
   return (
-    <section id="contact" className="bg-amber-100 dark:bg-secondary-dark text-black dark:text-primary-text py-20 px-4">
+  <section id="contact" className="bg-[#D6EEF3] dark:bg-secondary-dark text-black dark:text-primary-text py-20 px-4">
       <div className="container mx-auto">
         
         {/* Section Header */}
@@ -36,31 +36,31 @@ const Contact = () => {
             </div>
 
             {/* Column 2: Contact Form */}
-            <form className="bg-white dark:bg-primary-dark p-8 rounded-lg shadow-lg">
+            <form className="bg-[#D6EEF3] dark:bg-primary-dark p-8 rounded-lg shadow-lg">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
                     <input 
                       type="text" 
                       placeholder="Name" 
-                      className="p-3 bg-gray-200 dark:bg-secondary-dark text-black dark:text-white rounded-md border border-gray-700 focus:outline-none focus:ring-2 focus:ring-accent-blue" 
+                      className="p-3 bg-[#D6EEF3] dark:bg-secondary-dark text-black dark:text-white rounded-md border border-gray-700 focus:outline-none focus:ring-2 focus:ring-accent-blue" 
                     />
                     <input 
                       type="text" 
                       placeholder="Phone" 
-                      className="p-3 bg-gray-200 dark:bg-secondary-dark text-black dark:text-white rounded-md border border-gray-700 focus:outline-none focus:ring-2 focus:ring-accent-blue" 
+                      className="p-3 bg-[#D6EEF3] dark:bg-secondary-dark text-black dark:text-white rounded-md border border-gray-700 focus:outline-none focus:ring-2 focus:ring-accent-blue" 
                     />
                 </div>
                 <div className="mb-4">
                     <input 
                       type="email" 
                       placeholder="Email address" 
-                      className="w-full p-3 bg-gray-200 dark:bg-secondary-dark text-black dark:text-white rounded-md border border-gray-700 focus:outline-none focus:ring-2 focus:ring-accent-blue" 
+                      className="w-full p-3 bg-[#D6EEF3] dark:bg-secondary-dark text-black dark:text-white rounded-md border border-gray-700 focus:outline-none focus:ring-2 focus:ring-accent-blue" 
                     />
                 </div>
                 <div className="mb-4">
                     <textarea 
                       placeholder="Message" 
                       rows="5" 
-                      className="w-full p-3 bg-gray-200 dark:bg-secondary-dark text-black dark:text-white rounded-md border border-gray-700 focus:outline-none focus:ring-2 focus:ring-accent-blue"
+                      className="w-full p-3 bg-[#D6EEF3] dark:bg-secondary-dark text-black dark:text-white rounded-md border border-gray-700 focus:outline-none focus:ring-2 focus:ring-accent-blue"
                     ></textarea>
                 </div>
                 <button 
