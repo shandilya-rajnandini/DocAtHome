@@ -1,8 +1,16 @@
 import axios from 'axios';
 
+
+//const API_URL = 'https://docathome-backend.onrender.com/api'; // Hardcode the live Render URL
+
+
+//const API_URL = 'http://localhost:5000/api'; // Local backend server
+
+
 // This hardcoded URL is the most reliable way to ensure the live frontend
 // talks to the live backend.
 const API_URL = 'https://docathome-backend.onrender.com/api';
+
 
 const API = axios.create({ baseURL: API_URL });
 
