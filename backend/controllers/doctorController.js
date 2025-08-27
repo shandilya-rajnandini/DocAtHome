@@ -134,7 +134,7 @@ const getDoctors = asyncHandler(async (req, res) => {
     radius = 10,
   } = req.query;
 
-  const baseQuery = { role: "doctor", isVerified: true };
+  const baseQuery = { role: "doctor", isVerified: true, isAvailable: true };
 
   // Apply filters
   if (specialty && specialty !== "") {
@@ -207,8 +207,9 @@ const getDoctors = asyncHandler(async (req, res) => {
 
       // Find all doctors with service areas (apply filters but no pagination yet)
       const geoQuery = {
-        ...baseQuery,
-        serviceArea: { $exists: true, $ne: null },
+  ...baseQuery,
+  isAvailable: true,
+  serviceArea: { $exists: true, $ne: null },
       };
 
       const allDoctorsWithServiceArea = await User.find(geoQuery).select(
@@ -253,8 +254,9 @@ const getDoctors = asyncHandler(async (req, res) => {
 
       // Also find doctors without service areas within radius (fallback to city)
       const nearbyQuery = {
-        ...baseQuery,
-        $or: [{ serviceArea: { $exists: false } }, { serviceArea: null }],
+  ...baseQuery,
+  isAvailable: true,
+  $or: [{ serviceArea: { $exists: false } }, { serviceArea: null }],
       };
 
       const allDoctorsNoServiceArea = await User.find(nearbyQuery).select(

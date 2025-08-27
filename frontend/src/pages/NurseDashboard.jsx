@@ -80,6 +80,11 @@ const NurseDashboard = () => {
 
     return (
         <div className="bg-primary-dark">
+            {!user?.isAvailable && (
+                <div className="mb-6 p-4 bg-red-600 text-white rounded-lg shadow-lg text-center font-bold text-lg">
+                    Vacation Mode is ACTIVE. You are currently unavailable for bookings.
+                </div>
+            )}
             {/* --- Nurse Dashboard Header --- */}
             <div className="relative bg-[url('/nurse-dashboard-header.jpg')] bg-cover bg-center h-60">
                 <div className="absolute inset-0 bg-black bg-opacity-60 flex flex-col justify-center items-start p-8 md:p-12">

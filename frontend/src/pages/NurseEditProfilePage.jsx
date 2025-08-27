@@ -16,7 +16,8 @@ const NurseEditProfilePage = () => {
         licenseNumber: '', 
         profilePictureUrl: null, 
         serviceArea: null,
-        isTwoFactorEnabled: false 
+        isTwoFactorEnabled: false,
+        isAvailable: true
     });
     const [loading, setLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
@@ -40,6 +41,7 @@ const NurseEditProfilePage = () => {
                     profilePictureUrl: data.profilePictureUrl || '',
                     serviceArea: data.serviceArea || null,
                     isTwoFactorEnabled: data.isTwoFactorEnabled || false,
+                    isAvailable: typeof data.isAvailable === 'boolean' ? data.isAvailable : true,
                 });
             // eslint-disable-next-line no-unused-vars
             } catch (error) {

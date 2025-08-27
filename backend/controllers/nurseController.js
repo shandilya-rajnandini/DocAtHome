@@ -58,7 +58,7 @@ const calculatePolygonCentroid = (coordinates) => {
 // @desc    Search for verified nurses
 // @route   GET /api/nurses
 exports.getNurses = asyncHandler(async (req, res) => {
-    const baseQuery = { role: 'nurse', isVerified: true };
+  const baseQuery = { role: 'nurse', isVerified: true, isAvailable: true };
 
     if (req.query.specialty && req.query.specialty !== '') {
       baseQuery.specialty = { $regex: req.query.specialty, $options: 'i' };
@@ -79,8 +79,9 @@ exports.getNurses = asyncHandler(async (req, res) => {
         
         // Find all nurses with service areas using distance calculation
         const geoQuery = {
-          ...baseQuery,
-          serviceArea: { $exists: true, $ne: null }
+    ...baseQuery,
+    isAvailable: true,
+    serviceArea: { $exists: true, $ne: null }
         };
         
         const allNursesWithServiceArea = await User.find(geoQuery).select('-password');
@@ -113,6 +114,7 @@ exports.getNurses = asyncHandler(async (req, res) => {
         // Also find nurses without service areas within radius (fallback to city)
         const nearbyQuery = {
           ...baseQuery,
+          isAvailable: true,
           $or: [
             { serviceArea: { $exists: false } },
             { serviceArea: null }
