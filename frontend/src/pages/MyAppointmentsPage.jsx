@@ -7,6 +7,7 @@ import IconHistory from "../components/icons/IconHistory";
 import IconStethoscope from "../components/icons/IconStethoscope";
 import EmptyState from '../components/EmptyState';
 import { Calendar } from 'lucide-react';
+import AppointmentCardSkeleton from "../components/AppointmentCardSkeleton";
 
 
 // Confirmation Modal Component
@@ -269,13 +270,13 @@ const MyAppointmentsPage = () => {
     }
   });
 
-  if (loading) {
-    return (
-      <div className="text-center p-10 text-white">
-        Loading your appointments...
-      </div>
-    );
-  }
+  // if (loading) {
+  //   return (
+  //     <div className="text-center p-10 text-white">
+  //       Loading your appointments...
+  //     </div>
+  //   );
+  // }
 
   return (
     <div className=" dark:bg-background-dark min-h-screen">
@@ -333,7 +334,8 @@ const MyAppointmentsPage = () => {
               Past
             </button>
           </div>
-
+        {!loading ? (
+          <div>
           {filteredAppointments.length > 0 ? (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {filteredAppointments.map((appt) => (
@@ -351,6 +353,14 @@ const MyAppointmentsPage = () => {
               message="It looks like you don't have any appointments here."
             />
           )}
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {[...Array(3)].map((_, idx) => (
+             <AppointmentCardSkeleton key={idx} />                
+            ))}
+          </div>)
+        }
         </div>
       </div>
     </div>

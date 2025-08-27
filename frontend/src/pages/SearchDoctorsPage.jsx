@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { searchDoctors } from '../api';
 import toast from 'react-hot-toast';
+import DoctorCardSkeleton from '../components/DoctorCardSkeleton';
 
 const doctorSpecialties = ['Cardiologist', 'Dermatologist', 'Gynecologist', 'Dentist', 'Pediatrician', 'General Physician', 'Neurologist'];
 const cities = ['Mumbai', 'Delhi', 'Bangalore', 'Pune', 'Patna', 'Kolkata', 'Chennai'];
@@ -211,8 +212,12 @@ const SearchDoctorsPage = () => {
 
                 {/* Results Section */}
                 <main className="lg:col-span-3">
-                    {isLoading ? (
-                        <p className="text-center text-white">Loading...</p>
+                     {isLoading ? (
+                        <div className="space-y-6">
+                            {[...Array(3)].map((_, idx) => (
+                                <DoctorCardSkeleton key={idx} />
+                            ))}
+                        </div>
                     ) : doctors.length > 0 ? (
                         <div className="space-y-6">
                             {doctors.map(doctor => <DoctorCard key={doctor._id} doctor={doctor} />)}

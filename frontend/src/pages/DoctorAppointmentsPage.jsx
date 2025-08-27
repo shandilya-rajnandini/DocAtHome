@@ -11,6 +11,7 @@ import Modal from "../components/Modal";
 import EmptyState from "../components/EmptyState";
 import { Calendar } from "lucide-react";
 import FollowUpModal from "../components/FollowUpModal";
+import AppointmentCardSkeleton from "../components/AppointmentCardSkeleton";
 
 const DoctorAppointmentsPage = () => {
   const [appointments, setAppointments] = useState([]);
@@ -110,6 +111,8 @@ const DoctorAppointmentsPage = () => {
     setLoading(true);
     try {
       const { data } = await getMyAppointments();
+      console.log(data);
+      console.log('anything');
       // The API returns an object like { success, count, data: [...] }
       // We need to set the inner 'data' array to the state.
       setAppointments(data.data || []);
@@ -201,7 +204,11 @@ const DoctorAppointmentsPage = () => {
 
         {/* --- Appointments List --- */}
         {loading ? (
-          <div className="text-center text-white">Loading...</div>
+           <div className="space-y-6">
+                  {[...Array(3)].map((_, idx) => (
+                        <AppointmentCardSkeleton key={idx} />
+                  ))}
+            </div>
         ) : (
           <div className="space-y-4">
             {filteredAppointments.length > 0 ? (
