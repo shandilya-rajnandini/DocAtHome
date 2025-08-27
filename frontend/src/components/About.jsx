@@ -2,7 +2,7 @@ import React from 'react';
 
 const About = () => {
   return (
-    <section className="bg-amber-200 dark:bg-primary-dark text-black dark:text-primary-text py-20 px-4">
+  <section className="bg-[#A6CFD5] dark:bg-primary-dark text-black dark:text-primary-text py-20 px-4">
       <div className="container mx-auto grid md:grid-cols-2 gap-12 items-center">
         {/* Replace with a relevant image */}
         <div className="w-full">

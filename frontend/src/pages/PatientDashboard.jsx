@@ -21,7 +21,10 @@ const PatientDashboard = () => {
   const { user } = useAuth();
 
   return (
-    <main className="bg-amber-200 dark:bg-primary-dark min-h-full pt-24 pb-12 px-4">
+
+    // The background is now a clean, dark slate color from our tailwind config
+    <div className="bg-[#857e7b] dark:bg-primary-dark min-h-full pt-24 pb-12 px-4">
+
       <div className="container mx-auto">
         <header className="mb-12">
           <h1 className="text-4xl md:text-5xl font-bold text-black dark:text-white">Hello, {user?.name}!</h1>

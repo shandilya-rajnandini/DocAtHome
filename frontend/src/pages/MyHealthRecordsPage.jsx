@@ -50,7 +50,7 @@ const MyHealthRecordsPage = () => {
   };
 
   return (
-    <div className="bg-amber-200 dark:bg-primary-dark min-h-full pt-24 pb-12 px-4">
+  <div className="bg-[#857e7b] dark:bg-primary-dark min-h-full pt-24 pb-12 px-4">
       <div className="container mx-auto max-w-6xl">
         {/* Header */}
         <div className="mb-8">

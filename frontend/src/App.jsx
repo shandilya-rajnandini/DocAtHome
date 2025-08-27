@@ -10,7 +10,7 @@ import AnimatedRoutes from "./components/AnimatedRoutes.jsx";
 function App() {
   return (
     <Router>
-      <div className="!bg-amber-200 dark:!bg-primary-dark min-h-screen text-primary-text flex flex-col">
+  <div className="!bg-[#A6CFD5] dark:!bg-primary-dark min-h-screen text-primary-text flex flex-col">
         <Navbar />
         <AnnouncementBanner />
 
