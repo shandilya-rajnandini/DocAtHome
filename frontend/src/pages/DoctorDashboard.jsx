@@ -49,6 +49,28 @@ const DoctorDashboard = () => {
                 if (user && ['doctor', 'nurse'].includes(user.role)) {
                     const { data } = await getSubscriptionStatus();
                     setSubscriptionStatus(data.data);
+                    
+                // ------------------------------
+                // ✅ Recently Viewed Logic Added
+                if (data) {
+                    const stored = JSON.parse(localStorage.getItem("recentlyViewedDoctors")) || [];
+                    // Remove duplicate if doctor already exists
+                    const filtered = stored.filter(doc => doc._id !== data._id);
+
+                    // Add new doctor at the start
+                    const updated = [{
+                        _id: data._id,
+                        name: data.name,
+                        specialty: data.specialty
+                    }, ...filtered];
+
+                    // Keep list max 5
+                    if (updated.length > 5) updated.pop();
+
+                    // Save to localStorage
+                    localStorage.setItem("recentlyViewedDoctors", JSON.stringify(updated));
+                }
+                // ------------------------------
                 }
             } catch (error) {
                 console.error('Error fetching subscription status:', error);
