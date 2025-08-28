@@ -5,7 +5,7 @@ import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 
 const ProUpgradePage = () => {
-    const { user, login } = useAuth();
+    const { user, setUser } = useAuth();
     const navigate = useNavigate();
     const [loading, setLoading] = useState(false);
     const [subscriptionStatus, setSubscriptionStatus] = useState(null);
@@ -46,15 +46,7 @@ const ProUpgradePage = () => {
         }
     };
 
-    const loadRazorpayScript = () => {
-        return new Promise((resolve) => {
-            const script = document.createElement('script');
-            script.src = 'https://checkout.razorpay.com/v1/checkout.js';
-            script.onload = () => resolve(true);
-            script.onerror = () => resolve(false);
-            document.body.appendChild(script);
-        });
-    };
+    // Removed unused loadRazorpayScript - script loading is handled inline in handleUpgrade
 
     const handleUpgrade = async () => {
         if (!user) {
@@ -72,7 +64,7 @@ const ProUpgradePage = () => {
             
             // Create subscription
             const { data } = await createProSubscription(testMode);
-            const { subscriptionId, shortUrl, testMode: isTestMode } = data.data;
+            const { subscriptionId, testMode: isTestMode } = data.data;
 
             // If in test mode, skip Razorpay and directly verify
             if (isTestMode) {

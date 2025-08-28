@@ -28,8 +28,13 @@ const UserSchema = new mongoose.Schema({
   },
   role: {
     type: String,
-    enum: ['patient', 'doctor', 'nurse', 'admin', 'technician'],
+  enum: ['patient', 'doctor', 'nurse', 'admin', 'technician', 'ambulance'],
     default: 'patient',
+  },
+  
+  isOnline: {
+    type: Boolean,
+    default: false,
   },
 
   // --- Professional Details ---
@@ -74,6 +79,20 @@ const UserSchema = new mongoose.Schema({
     required: function () {
       return this.role === 'technician';
     },
+
+  // --- Ambulance Driver Specific Fields ---
+  driverLicenseNumber: {
+    type: String,
+    required: function () {
+      return this.role === 'ambulance';
+    },
+  },
+  vehicleRegistrationNumber: {
+    type: String,
+    required: function () {
+      return this.role === 'ambulance';
+    },
+  },
   },
 
   // --- Patient-Specific Medical Info ---
@@ -114,6 +133,10 @@ const UserSchema = new mongoose.Schema({
   profilePictureUrl: {
     type: String,
     default: '',
+  },
+  verifiedSkills: {
+    type: [String],
+    default: [],
   },
   createdAt: {
     type: Date,
