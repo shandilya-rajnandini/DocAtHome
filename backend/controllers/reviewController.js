@@ -1,13 +1,13 @@
 const Review = require('../models/Review');
 const User = require('../models/User');
+const asyncHandler = require('../middleware/asyncHandler');
 
 // @desc    Create a new review
 // @route   POST /api/doctors/:doctorId/reviews
-exports.createReview = async (req, res) => {
+exports.createReview = asyncHandler(async (req, res) => {
   req.body.doctor = req.params.doctorId;
   req.body.patient = req.user.id; // from protect middleware
 
-  try {
     const doctor = await User.findById(req.params.doctorId);
     if (!doctor || doctor.role !== 'doctor') {
       return res.status(404).json({ msg: 'Doctor not found' });
@@ -40,27 +40,17 @@ exports.createReview = async (req, res) => {
     }
 
     res.status(201).json({ success: true, data: review });
-  } catch (err) {
-    // Handle the unique index error (user already reviewed)
-    if (err.code === 11000) {
-        return res.status(400).json({ msg: 'You have already reviewed this doctor' });
-    }
-    console.error(err);
-    res.status(500).json({ msg: 'Server Error' });
-  }
-};
+});
 
 // @desc    Get all reviews for a specific doctor
 // @route   GET /api/doctors/:doctorId/reviews
-exports.getReviewsForDoctor = async (req, res) => {
-    try {
+exports.getReviewsForDoctor = asyncHandler(async (req, res) => {
         const reviews = await Review.find({ doctor: req.params.doctorId }).populate({
             path: 'patient',
             select: 'name' // Only show the patient's name
         });
         res.status(200).json({ success: true, count: reviews.length, data: reviews });
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ msg: 'Server Error' });
-    }
-}
+
+
+});
+

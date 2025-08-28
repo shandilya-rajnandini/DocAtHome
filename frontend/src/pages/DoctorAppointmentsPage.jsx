@@ -4,34 +4,38 @@ import {
   updateAppointmentStatus,
   getAppointmentSummary,
   saveAppointmentVoiceNote,
+  updateRelayNote,
 } from "../api";
-import { useAuth } from "../context/AuthContext";
 import toast from "react-hot-toast";
 import DoctorNotesModal from "../components/DoctorNotesModal";
+import RelayNote from "../components/RelayNote";
 import Modal from "../components/Modal";
+import EmptyState from "../components/EmptyState";
+import { Calendar } from "lucide-react";
+import FollowUpModal from "../components/FollowUpModal";
 
 const DoctorAppointmentsPage = () => {
   const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
-  const { user } = useAuth();
+  // const { user } = useAuth(); // Removed unused import
   const [filter, setFilter] = useState("Pending"); // To filter by status
   const [isNotesModalOpen, setIsNotesModalOpen] = useState(false);
   const [selectedApptId, setSelectedApptId] = useState(null);
   const [isSummaryModalOpen, setIsSummaryModalOpen] = useState(false);
   const [summary, setSummary] = useState("");
   const [summaryLoading, setSummaryLoading] = useState(false);
+  const [isFollowUpModalOpen, setIsFollowUpModalOpen] = useState(false);
   const [recording, setRecording] = useState(false);
   const [audioURL, setAudioURL] = useState(null);
   const [mediaRecorder, setMediaRecorder] = useState(null);
   const [uploading, setUploading] = useState(false);
   const streamRef = useRef(null);
   const chunks = useRef([]);
+  const [isRelayNoteOpen, setIsRelayNoteOpen] = useState(false);
+  const [selectedAppt, setSelectedAppt] = useState(null);
   const CLOUDINARY_URL = import.meta.env.VITE_CLOUDINARY_URL;
   const UPLOAD_PRESET = import.meta.env.VITE_CLOUDINARY_PRESET;
 
-  useEffect(() => {
-    toast.success("Toast test!");
-  }, []);
   const startRecording = async () => {
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
     streamRef.current = stream;
@@ -88,7 +92,10 @@ const DoctorAppointmentsPage = () => {
               if (data.secure_url) {
                 toast.success("Upload successful!");
                 saveAppointmentVoiceNote(id, data.secure_url)
-                  .then(() => toast.success("Voice note saved to appointment!"))
+                  .then(() => {
+                    toast.success("Voice note saved to appointment!");
+                    fetchAppointments();
+                  })
                   .catch(() =>
                     toast.error("Failed to save voice note to appointment.")
                   );
@@ -110,6 +117,7 @@ const DoctorAppointmentsPage = () => {
       // The API returns an object like { success, count, data: [...] }
       // We need to set the inner 'data' array to the state.
       setAppointments(data.data || []);
+    // eslint-disable-next-line no-unused-vars
     } catch (error) {
       toast.error("Could not fetch appointments.");
       setAppointments([]); // Ensure state is an array even on error
@@ -134,6 +142,7 @@ const DoctorAppointmentsPage = () => {
     try {
       await updateAppointmentStatus(id, { status: newStatus, doctorNotes });
       toast.success(`Appointment successfully ${newStatus.toLowerCase()}!`);
+    // eslint-disable-next-line no-unused-vars
     } catch (error) {
       toast.error("Failed to update status. Please try again.");
       setAppointments(originalAppointments);
@@ -157,6 +166,7 @@ const DoctorAppointmentsPage = () => {
     try {
       const { data } = await getAppointmentSummary(id);
       setSummary(data.summary);
+    // eslint-disable-next-line no-unused-vars
     } catch (error) {
       toast.error("Could not fetch summary.");
       setSummary("Failed to load summary.");
@@ -235,6 +245,24 @@ const DoctorAppointmentsPage = () => {
                         {appt.bookingType}
                       </span>
                     </div>
+                    {appt.sharedRelayNotes &&
+                      appt.sharedRelayNotes.length > 0 && (
+                        <div className="bg-yellow-100 text-black p-3 rounded mb-2 border border-yellow-400">
+                          <strong>Relay Notes from previous visits:</strong>
+                          <ul>
+                            {appt.sharedRelayNotes.map((relay, idx) => (
+                              <li key={idx} className="mb-2">
+                                <span className="font-semibold">
+                                  {relay.doctorName} ({relay.doctorDesignation}
+                                  ):
+                                </span>
+                                <br />
+                                {relay.note}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
                     {/* Actions */}
                     <div className="flex flex-col md:flex-row gap-2 justify-end">
                       {appt.status !== "Cancelled" && (
@@ -271,6 +299,17 @@ const DoctorAppointmentsPage = () => {
                           className="bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold py-2 px-3 rounded"
                         >
                           Mark as Complete
+                        </button>
+                      )}
+                      {appt.status === "Completed" && (
+                        <button
+                          onClick={() => {
+                            setSelectedApptId(appt._id);
+                            setIsFollowUpModalOpen(true);
+                          }}
+                          className="bg-purple-600 hover:bg-purple-700 text-white text-sm font-bold py-2 px-3 rounded"
+                        >
+                          Follow-up
                         </button>
                       )}
                     </div>
@@ -347,14 +386,40 @@ const DoctorAppointmentsPage = () => {
                       </div>
                     </div>
                   )}
+                  {/* --- Relay Note Section --- */}
+                  {appt.status === "Completed" && (appt.relayNote ? (
+                    <div className="bg-secondary-dark p-4 rounded-lg shadow-lg">
+                      <strong>Relay Note:</strong>
+                      <p>{appt.relayNote}</p>
+                      <button
+                        onClick={() => {
+                          setSelectedAppt(appt);
+                          setIsRelayNoteOpen(true);
+                        }}
+                        className="bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-2 rounded mt-2"
+                      >
+                        Edit Relay Note
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => {
+                        setSelectedAppt(appt);
+                        setIsRelayNoteOpen(true);
+                      }}
+                      className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded mt-2"
+                    >
+                      Add Relay Note
+                    </button>
+                  ))}
                 </div>
               ))
             ) : (
-              <div className="text-center text-secondary-text py-16">
-                <p className="text-lg">
-                  No appointments with "{filter}" status.
-                </p>
-              </div>
+              <EmptyState
+                icon={Calendar}
+                title={`No ${filter} Appointments`}
+                message="When a patient books a visit, it will appear here."
+              />
             )}
           </div>
         )}
@@ -377,6 +442,29 @@ const DoctorAppointmentsPage = () => {
           <pre className="whitespace-pre-wrap font-sans">{summary}</pre>
         )}
       </Modal>
+      <RelayNote
+        isOpen={isRelayNoteOpen}
+        onClose={() => setIsRelayNoteOpen(false)}
+        appointmentId={selectedAppt?._id}
+        initialValue={selectedAppt?.relayNote || ""}
+        onSubmit={(relayNote) => {
+          if (selectedAppt) {
+            updateRelayNote(selectedAppt._id, relayNote)
+              .then(() => {
+                toast.success("Relay note saved successfully!");
+                fetchAppointments();
+              })
+              .catch(() => toast.error("Failed to save relay note."));
+          }
+          setIsRelayNoteOpen(false);
+        }}
+        />
+      <FollowUpModal
+        isOpen={isFollowUpModalOpen}
+        onClose={() => setIsFollowUpModalOpen(false)}
+        appointmentId={selectedApptId}
+        onFollowUpScheduled={fetchAppointments}
+      />
     </div>
   );
 };

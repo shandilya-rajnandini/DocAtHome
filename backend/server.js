@@ -3,23 +3,22 @@ const http = require('http');
 const { Server } = require('socket.io');
 const dotenv = require('dotenv');
 const cors = require('cors');
+const helmet = require('helmet');
 const connectDB = require('./config/db');
 
-// Load environment variables
 dotenv.config();
 console.log("Loaded MONGO_URI:", process.env.MONGO_URI); // ✅ Debugging line
 
 // Initialize Express App
 const app = express();
 
-// --- Production-Ready CORS Configuration ---
+// --- THE DEFINITIVE CORS FIX ---
+// This setup is more explicit and handles the preflight request correctly.
 const allowedOrigins = [
-    "http://localhost:5173", //local testing
-    "http://localhost:5174", //local testing
+    "http://localhost:5173",
     "https://docathome-rajnandini.netlify.app"
 ];
-
-const corsOptions = {
+app.use(cors({
     origin: function (origin, callback) {
         if (!origin || allowedOrigins.indexOf(origin) !== -1) {
             callback(null, true);
@@ -27,12 +26,11 @@ const corsOptions = {
             callback(new Error('Not allowed by CORS'));
         }
     }
-};
+}));
+// --- END OF FIX ---
 
-app.use(cors(corsOptions));
-
-// Middleware to parse JSON
 app.use(express.json());
+app.use(helmet());
 
 // --- API Route Definitions ---
 app.use('/api/auth', require('./routes/authRoutes'));
@@ -66,13 +64,7 @@ const server = http.createServer(app);
 const io = new Server(server, {
   cors: { origin: allowedOrigins, methods: ["GET", "POST"] }
 });
-
-io.on('connection', (socket) => {
-  console.log(`User Connected: ${socket.id}`);
-  socket.on('disconnect', () => {
-    console.log(`User Disconnected: ${socket.id}`);
-  });
-});
+io.on('connection', (socket) => { console.log(`Socket Connected: ${socket.id}`); });
 
 const PORT = process.env.PORT || 5000;
 
@@ -80,11 +72,10 @@ const startServer = async () => {
   try {
     await connectDB();
     server.listen(PORT, () => {
-      console.log(`Server running on port ${PORT}`);
+      console.log(`Server is live on port ${PORT}`);
     });
   } catch (error) {
-    console.error('FATAL ERROR: Could not connect to the database.');
-    console.error(error);
+    console.error('FATAL ERROR:', error);
     process.exit(1);
   }
 };

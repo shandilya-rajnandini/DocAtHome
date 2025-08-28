@@ -16,6 +16,7 @@ const CareCirclePage = () => {
         try {
             const { data } = await getMyCareCircle();
             setCircle(data);
+        // eslint-disable-next-line no-unused-vars
         } catch (error) {
             toast.error("Could not load your Care Circle.");
         } finally {
@@ -36,6 +37,7 @@ const CareCirclePage = () => {
             toast.success(`${inviteEmail} has been invited!`);
             setInviteEmail('');
             fetchCircle();
+        // eslint-disable-next-line no-unused-vars
         } catch (error) {
             toast.error("Failed to send invite. Ensure the user has a Doc@Home account.");
         }

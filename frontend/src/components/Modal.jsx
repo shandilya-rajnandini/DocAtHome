@@ -1,6 +1,6 @@
 import React from 'react';
 
-const Modal = ({ isOpen, onClose, title, children }) => {
+const Modal = ({ isOpen, onClose, title, children, showDefaultClose = true }) => {
   // Handle escape key press
   React.useEffect(() => {
     const handleEscape = (e) => {
@@ -27,13 +27,15 @@ const Modal = ({ isOpen, onClose, title, children }) => {
         aria-labelledby="modal-title">
         <div className="flex justify-between items-center mb-4">
           <h3 id="modal-title" className="text-2xl font-bold text-white">{title}</h3>
-          <button
-            onClick={onClose}
-            className="text-gray-400 hover:text-white text-2xl"
-            aria-label="Close modal"
-          >
-            &times;
-          </button>
+          {showDefaultClose && (
+            <button
+              onClick={onClose}
+              className="text-gray-400 hover:text-white text-2xl"
+              aria-label="Close modal"
+            >
+              &times;
+            </button>
+          )}
         </div>
         <div className="text-secondary-text">
           {children}

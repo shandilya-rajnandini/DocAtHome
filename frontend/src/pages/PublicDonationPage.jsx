@@ -3,6 +3,9 @@ import { useParams } from 'react-router-dom';
 import API from '../api';
 import toast from 'react-hot-toast';
 
+// Public Donation Page - Allows anonymous donations to patient care funds
+// Sends donation metadata (isDonation: true, patientId, donorName) to backend
+// Backend creates orders with proper context for verification
 const PublicDonationPage = () => {
     const { patientId } = useParams();
     const [patient, setPatient] = useState(null);
@@ -15,6 +18,7 @@ const PublicDonationPage = () => {
             try {
                 const { data } = await API.get(`/profile/${patientId}`);
                 setPatient(data);
+            // eslint-disable-next-line no-unused-vars
             } catch (error) {
                 toast.error('Could not fetch patient details.');
             } finally {
@@ -43,6 +47,17 @@ const PublicDonationPage = () => {
             return toast.error('Please enter your name and an amount.');
         }
 
+        if (!patientId) {
+            return toast.error('Patient ID is missing. Please refresh the page and try again.');
+        }
+
+        const numericAmount = parseFloat(amount);
+        if (!Number.isFinite(numericAmount) || numericAmount <= 0) {
+            return toast.error('Please enter a valid amount greater than zero.');
+        }
+        // Convert to paise for Razorpay and storage; avoids floating point issues
+        const amountPaise = Math.round(numericAmount * 100);
+
         const toastId = toast.loading('Processing your donation...');
 
         const res = await loadRazorpayScript();
@@ -52,11 +67,17 @@ const PublicDonationPage = () => {
         }
 
         try {
-            const { data: { id: order_id } } = await API.post('/payment/create-order', { amount });
+            // Create order with donation metadata so backend can set proper context
+            const { data: { id: order_id } } = await API.post('/payment/create-order', { 
+                amount, 
+                isDonation: true, 
+                patientId, 
+                donorName 
+            });
 
             const options = {
                 key: import.meta.env.VITE_RAZORPAY_KEY_ID,
-                amount: amount * 100,
+                amount: amountPaise,
                 currency: 'INR',
                 name: 'Doc@Home Care Fund',
                 description: `Donation for ${patient.name}`,
@@ -67,7 +88,7 @@ const PublicDonationPage = () => {
                         isDonation: true,
                         donorName,
                         patientId,
-                        amount: Number(amount),
+                        amount: numericAmount,
                     });
                     toast.success('Donation successful!', { id: toastId });
                     setAmount('');
@@ -109,8 +130,12 @@ const PublicDonationPage = () => {
                     type="number"
                     value={amount}
                     onChange={(e) => setAmount(e.target.value)}
+                    min="1"
+                    step="0.01"
+                    placeholder="Enter amount in rupees"
                     className="w-full p-2 border rounded text-gray-700"
                 />
+                <p className="text-sm text-gray-500 mt-1">Minimum: ₹1, Maximum: ₹1,00,00,000</p>
             </div>
             <button
                 onClick={handleDonate}

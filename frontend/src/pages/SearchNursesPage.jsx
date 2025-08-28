@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { searchNurses } from '../api';
 import { toast } from 'react-hot-toast';
@@ -10,7 +10,7 @@ const cities = ['Mumbai', 'Delhi', 'Bangalore', 'Pune', 'Patna', 'Kolkata', 'Che
 
 const SearchNursesPage = () => {
     // State to hold the selected filter values
-    const [filters, setFilters] = useState({ specialty: '', city: '', radius: '10' });
+    const [filters, setFilters] = useState({ specialty: '', city: '', radius: '10', skillKeyword: '' });
     // State for user location and geolocation status
     const [userLocation, setUserLocation] = useState(null);
     const [isGettingLocation, setIsGettingLocation] = useState(false);
@@ -42,7 +42,7 @@ const SearchNursesPage = () => {
     };
 
     // This function calls the backend API to get nurses based on the current filters
-    const handleSearch = async (searchFilters = filters) => {
+    const handleSearch = useCallback(async (searchFilters = filters) => {
         setIsLoading(true);
         setError('');
         try {
@@ -66,7 +66,7 @@ const SearchNursesPage = () => {
         } finally {
             setIsLoading(false);
         }
-    };
+    }, [filters]);
 
     const clearLocationFilter = () => {
         setUserLocation(null);
@@ -75,7 +75,6 @@ const SearchNursesPage = () => {
         delete clearedFilters.lat;
         delete clearedFilters.lng;
         setFilters(clearedFilters);
-        handleSearch(clearedFilters);
         toast.success('Location filter cleared');
     };
 
@@ -98,7 +97,7 @@ const SearchNursesPage = () => {
                     lng: longitude,
                     radius: filters.radius || '10'
                 };
-                handleSearch(geoFilters);
+                setFilters(geoFilters);
                 setIsGettingLocation(false);
                 toast.success(`Found nurses within ${filters.radius || '10'}km of your location!`);
             },
@@ -132,7 +131,17 @@ const SearchNursesPage = () => {
     // This hook runs once when the component first loads to get the initial list of all nurses
     useEffect(() => {
         handleSearch();
-    }, []);
+    }, [handleSearch]);
+
+    // Handle programmatic filter updates (geolocation, clear location)
+    useEffect(() => {
+        // Only trigger search if filters have lat/lng (geolocation updates)
+        // This prevents infinite loops while handling filter state changes
+        if (filters.lat && filters.lng) {
+            handleSearch();
+        }
+    }, [filters.lat, filters.lng, handleSearch]);
+
 // ... inside the SearchNursesPage component's return statement
 
     return (
@@ -171,6 +180,21 @@ const SearchNursesPage = () => {
                         </select>
                     </div>
 
+                    {/* Add this inside the filters sidebar, before the search button */}
+                    <div className="mb-6">
+                      <label htmlFor="skillKeyword" className="block text-secondary-text mb-2 font-semibold">
+                        Search by Verified Skills
+                      </label>
+                      <input
+                        type="text"
+                        id="skillKeyword"
+                        name="skillKeyword"
+                        value={filters.skillKeyword}
+                        onChange={handleFilterChange}
+                        placeholder="e.g., Pediatric Vaccinations"
+                        className="w-full p-3 bg-primary-dark rounded border-gray-700 text-white"
+                      />
+                    </div>
                     <div className="mb-6">
                         <label className="block text-secondary-text mb-2 font-semibold">Location</label>
                         <div className="mb-3">
@@ -281,7 +305,14 @@ const NurseCard = ({ nurse }) => (
         <div className="flex-grow">
             <div className="flex items-start justify-between">
                 <div>
-                    <h3 className="text-2xl font-bold text-white">{nurse.name}</h3>
+                    <div className="flex items-center gap-3 mb-2">
+                        <h3 className="text-2xl font-bold text-white">{nurse.name}</h3>
+                        {nurse.subscriptionTier === 'pro' && (
+                            <span className="bg-gradient-to-r from-yellow-400 to-yellow-600 text-black px-3 py-1 rounded-full text-sm font-bold flex items-center gap-1">
+                                ⭐ PRO
+                            </span>
+                        )}
+                    </div>
                     <p className="text-teal-400 font-semibold">{nurse.specialty}</p>
                     <p className="text-secondary-text mt-1">{nurse.city}</p>
                 </div>

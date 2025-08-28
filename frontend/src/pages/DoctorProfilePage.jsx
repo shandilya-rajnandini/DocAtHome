@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { getDoctorById, bookAppointment } from '../api';
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
+import VerifiedSkillsBadge from '../components/VerifiedSkillsBadge.jsx';
+import { getAvailability } from '../api';
 
 // --- Mock Data ---
 const timeSlots = ["11:00 AM", "11:30 AM", "12:00 PM", "12:30 PM", "01:00 PM", "01:30 PM", "02:00 PM"];
@@ -26,9 +28,10 @@ const DoctorProfilePage = () => {
     const { id } = useParams();
     const navigate = useNavigate();
     const { user } = useAuth();
+    const location = useLocation();
     const [doctor, setDoctor] = useState(null);
     const [loading, setLoading] = useState(true);
-
+    const [availableDates, setAvailableDates] = useState([]);
     const [careFundBalance, setCareFundBalance] = useState(0);
     
     const [selectedDate, setSelectedDate] = useState(availableDates[0].fullDate);
@@ -61,7 +64,35 @@ const DoctorProfilePage = () => {
                 .then(res => res.json())
                 .then(data => setCareFundBalance(data.careFundBalance || 0));
         }
-    }, [id, user]);
+
+        const params = new URLSearchParams(location.search);
+        const previousMeds = params.get('previousMeds');
+        const symptoms = params.get('symptoms');
+        const lastVisitTime = params.get('lastVisitTime');
+        const followUpDate = params.get('followUpDate');
+
+        if (previousMeds) {
+            setBookingDetails(prev => ({ ...prev, previousMeds }));
+        }
+        if (symptoms) {
+            setBookingDetails(prev => ({ ...prev, symptoms }));
+        }
+        if (lastVisitTime) {
+            setSelectedTime(lastVisitTime);
+        }
+        if (followUpDate) {
+            setSelectedDate(new Date(followUpDate).toISOString().split('T')[0]);
+        }
+        getAvailability(id)
+            .then(res => {
+                setAvailableDates(res.data.availableDates?.map(d => ({
+                    dayName: new Date(d.date).toLocaleDateString('en-US', { weekday: 'short' }).toUpperCase(),
+                    day: new Date(d.date).getDate(),
+                    fullDate: d.date
+                })) || []);
+            })
+            .catch(() => setAvailableDates([]));
+    }, [id, user, location.search, navigate]);
 
     const handleBookingDetailChange = (e) => {
         if (e.target.name === 'reportImage') {
@@ -90,12 +121,22 @@ const DoctorProfilePage = () => {
             symptoms: bookingDetails.symptoms,
             previousMeds: bookingDetails.previousMeds,
             fee: bookingType === 'In-Home Visit' ? 2000 : 400,
-            payFromCareFund: useCareFund,
+            paymentMethod: useCareFund ? 'careFund' : 'external',
         };
 
         try {
-            await bookAppointment(appointmentData);
-            toast.success(`Appointment successfully booked!`, { id: toastId });
+            // eslint-disable-next-line no-unused-vars
+            const response = await bookAppointment(appointmentData);
+            const successMessage = useCareFund 
+                ? `Appointment successfully booked! ₹${appointmentData.fee} deducted from your care fund.`
+                : 'Appointment successfully booked!';
+            toast.success(successMessage, { id: toastId });
+            
+            // Update care fund balance if payment was made from care fund
+            if (useCareFund) {
+                setCareFundBalance(prev => prev - appointmentData.fee);
+            }
+            
             navigate('/my-appointments');
         } catch (error) {
             toast.error(error.response?.data?.msg || "Failed to book appointment.", { id: toastId });
@@ -117,6 +158,11 @@ const DoctorProfilePage = () => {
                     <div className="flex-grow text-center md:text-left">
                         <h1 className="text-4xl font-bold text-white flex items-center justify-center md:justify-start gap-3">
                             {doctor.name}
+                            {doctor.subscriptionTier === 'pro' && (
+                                <span className="bg-gradient-to-r from-yellow-400 to-yellow-600 text-black px-3 py-1 rounded-full text-sm font-bold flex items-center gap-1">
+                                    ⭐ PRO
+                                </span>
+                            )}
                             {doctor.isVerified && (
                                 <span className="flex items-center gap-1 bg-green-700 bg-opacity-80 text-green-200 text-base font-semibold px-2 py-1 rounded ml-2">
                                     <svg className="w-5 h-5 text-green-300" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 6.293a1 1 0 00-1.414 0L9 12.586l-2.293-2.293a1 1 0 00-1.414 1.414l3 3a1 1 0 001.414 0l7-7a1 1 0 000-1.414z" clipRule="evenodd" /></svg>
@@ -126,6 +172,9 @@ const DoctorProfilePage = () => {
                         </h1>
                         <p className="text-xl text-accent-blue mt-1">{doctor.specialty}</p>
                         <p className="text-md text-secondary-text">{doctor.experience} years experience in {doctor.city}</p>
+                        {doctor.verifiedSkills && doctor.verifiedSkills.length > 0 && (
+                            <VerifiedSkillsBadge skills={doctor.verifiedSkills} />
+                        )}
                         <p className="text-secondary-text mt-4 max-w-2xl">A highly dedicated professional focusing on comprehensive medical care.</p>
                     </div>
                 </div>
@@ -152,8 +201,8 @@ const DoctorProfilePage = () => {
                         <div className="mt-8 border-t border-gray-700 pt-6">
                             <h3 className="text-xl font-bold text-white mb-4">Tell us about your condition</h3>
                             <div className="space-y-4">
-                                <textarea name="symptoms" onChange={handleBookingDetailChange} placeholder="Describe your symptoms or reason for visit..." rows="4" className="w-full p-3 bg-primary-dark rounded-md border-gray-700 text-white"></textarea>
-                                <input type="text" name="previousMeds" onChange={handleBookingDetailChange} placeholder="List any previous medications (optional)" className="w-full p-3 bg-primary-dark rounded-md border-gray-700 text-white"/>
+<textarea name="symptoms" value={bookingDetails.symptoms} onChange={handleBookingDetailChange} placeholder="Describe your symptoms or reason for visit..." rows="4" className="w-full p-3 bg-primary-dark rounded-md border-gray-700 text-white"></textarea>
+<input type="text" name="previousMeds" value={bookingDetails.previousMeds} onChange={handleBookingDetailChange} placeholder="List any previous medications (optional)" className="w-full p-3 bg-primary-dark rounded-md border-gray-700 text-white"/>
                                 <div>
                                     <label className="block text-secondary-text mb-2">Upload previous report/photo (optional)</label>
                                     <input type="file" name="reportImage" onChange={handleBookingDetailChange} className="w-full text-secondary-text file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-accent-blue file:text-white hover:file:bg-accent-blue-hover"/>

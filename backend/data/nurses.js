@@ -1,10 +1,11 @@
 // This file contains sample nurse data to populate our database.
+const { getUniquePasswordForUser } = require('../utils/passwordUtils');
 
 const nurses = [
   {
     name: 'Nurse Anjali Kumari',
     email: 'anjali.kumari@docathome.com',
-    password: 'password123',
+    password: getUniquePasswordForUser('anjali.kumari@docathome.com'),
     role: 'nurse',
     specialty: 'Elder Care',
     city: 'Pune',
@@ -16,7 +17,7 @@ const nurses = [
   {
     name: 'Nurse Vikram Singh',
     email: 'vikram.singh@docathome.com',
-    password: 'password123',
+    password: getUniquePasswordForUser('vikram.singh@docathome.com'),
     role: 'nurse',
     specialty: 'Post-Operative Care',
     city: 'Mumbai',
@@ -28,7 +29,7 @@ const nurses = [
   {
     name: 'Nurse Sunita Patel',
     email: 'sunita.patel@docathome.com',
-    password: 'password123',
+    password: getUniquePasswordForUser('sunita.patel@docathome.com'),
     role: 'nurse',
     specialty: 'Child Care',
     city: 'Bangalore',
@@ -40,7 +41,7 @@ const nurses = [
   {
     name: 'Nurse Rajeev Kumar',
     email: 'rajeev.kumar@docathome.com',
-    password: 'password123',
+    password: getUniquePasswordForUser('rajeev.kumar@docathome.com'),
     role: 'nurse',
     specialty: 'General Nursing (GNM)',
     city: 'Patna',

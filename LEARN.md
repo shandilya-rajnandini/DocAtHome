@@ -104,4 +104,19 @@ This is a capstone project, but collaboration and feedback are always welcome. P
 4.  Push to the branch: `git push origin feature/NewAwesomeFeature`
 5.  Open a **Pull Request**.
 
+## Database Indexes
+
+A **database index** is a data structure that speeds up queries, like a table of contents in a book.  
+Indexes allow the database to jump directly to relevant documents instead of scanning the entire collection.  
+
+**Why indexes matter:**  
+- Queries on indexed fields run much faster.  
+- Compound indexes optimize searches on multiple fields.  
+- Geospatial indexes allow fast location-based queries.  
+
+**Examples in this project:**  
+- `User`: Compound index on `role + city + specialty` for professional searches.  
+- `Appointment`: Indexes on `patient` and `doctor` for quick lookups.  
+- `serviceArea`: Geospatial index for location-based queries.
+
 Thank you for taking the time to learn about Doc@Home!

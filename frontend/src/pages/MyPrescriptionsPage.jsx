@@ -259,7 +259,7 @@ const MyPrescriptionsPage = () => {
         }
       });
     });
-  }, []);
+  }, [prescriptions]);
 
   const handleTakeDose = (prescriptionId, medIndex) => {
     setPrescriptions((prev) =>
