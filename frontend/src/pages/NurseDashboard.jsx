@@ -1,21 +1,18 @@
-import useAuthStore from "../store/useAuthStore";
-
-import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
-import { getSubscriptionStatus } from "../api";
+import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+import { getSubscriptionStatus } from '../api';
+import CountUp from "react-countup";
 
 // A new, vertical Stat Card component for this design
-const VerticalStatCard = ({ value, label, currency = "", icon }) => (
-  <div className="bg-secondary-dark p-6 rounded-lg text-center flex items-center gap-4">
-    <div className="text-4xl text-teal-400">{icon}</div>
-    <div>
-      <p className="text-2xl font-bold text-white text-left">
-        {currency}
-        {value}
-      </p>
-      <p className="text-secondary-text text-left">{label}</p>
+const VerticalStatCard = ({ value, label, currency = '', icon }) => (
+    <div className="bg-secondary-dark p-6 rounded-lg text-center flex items-center gap-4">
+        <div className="text-4xl text-teal-400">{icon}</div>
+        <div>
+            <p className="text-2xl font-bold text-white text-left">{currency}{typeof value === 'number' ? <CountUp end={value} duration={2.5} decimals={value % 1 !== 0 ? 1 : 0} /> : value}</p>
+            <p className="text-secondary-text text-left">{label}</p>
+        </div>
     </div>
-  </div>
 );
 
 const ProBenefitCard = ({ icon, title, description, isActive }) => (
@@ -175,38 +172,22 @@ const NurseDashboard = () => {
           </div>
         )}
 
-        {/* --- Main Content Grid --- */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* --- Left Column: Stats & Quick Links --- */}
-          <div className="lg:col-span-1 flex flex-col gap-8">
-            {/* Stats Section */}
-            <div className="bg-secondary-dark p-6 rounded-lg shadow-lg">
-              <h2 className="text-2xl font-bold text-white mb-4">Your Stats</h2>
-              <div className="space-y-4">
-                {/* Using placeholders for icons, replace with real icons if you have them */}
-                <VerticalStatCard
-                  value="0"
-                  label="Pending Requests"
-                  icon="🔔"
-                />
-                <VerticalStatCard
-                  value="0"
-                  label="Upcoming Assignments"
-                  icon="🗓️"
-                />
-                <VerticalStatCard
-                  value="3200"
-                  label="Earnings This Month"
-                  currency="₹"
-                  icon="💵"
-                />
-                <VerticalStatCard
-                  value={user?.averageRating?.toFixed(1) || "4.9"}
-                  label="Average Rating"
-                  icon="⭐"
-                />
-              </div>
-            </div>
+                {/* --- Main Content Grid --- */}
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    
+                    {/* --- Left Column: Stats & Quick Links --- */}
+                    <div className="lg:col-span-1 flex flex-col gap-8">
+                        {/* Stats Section */}
+                        <div className="bg-secondary-dark p-6 rounded-lg shadow-lg">
+                            <h2 className="text-2xl font-bold text-white mb-4">Your Stats</h2>
+                            <div className="space-y-4">
+                                {/* Using placeholders for icons, replace with real icons if you have them */}
+                                <VerticalStatCard value={<CountUp end={0} duration={2.5} />} label="Pending Requests" icon="🔔" />
+                                <VerticalStatCard value={<CountUp end={0} duration={2.5} />} label="Upcoming Assignments" icon="🗓️" />
+                                <VerticalStatCard value={<CountUp end={3200} duration={2.5} />} label="Earnings This Month" currency="₹" icon="💵" />
+                                <VerticalStatCard value={<CountUp end={user?.averageRating?.toFixed(1) || 4.9} duration={2.5} decimals={1} />} label="Average Rating" icon="⭐" />
+                            </div>
+                        </div>
 
             {/* Quick Links Section */}
             <div className="bg-secondary-dark p-6 rounded-lg shadow-lg">

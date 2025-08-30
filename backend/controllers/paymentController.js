@@ -329,15 +329,26 @@ exports.verifyPayment = asyncHandler(async (req, res) => {
     // Use the canonical amount from Razorpay (already in paise)
     const canonicalAmount = payment.amount;
     
+    // const savedTransaction = await Transaction.create({
+    //   userId: req.user.id,
+    //   razorpayOrderId: razorpay_order_id,
+    //   razorpayPaymentId: razorpay_payment_id,
+    //   amount: canonicalAmount, // Use Razorpay amount in paise
+    //   currency: 'INR',
+    //   description: description || 'No description provided',
+    //   status: 'paid',
+    // });
     const savedTransaction = await Transaction.create({
-      userId: req.user.id,
+      patientId: req.user.id, // whoever is paying (the patient)
+      professionalId: req.body.professionalId, // should come from request or session context
       razorpayOrderId: razorpay_order_id,
       razorpayPaymentId: razorpay_payment_id,
-      amount: canonicalAmount, // Use Razorpay amount in paise
-      currency: 'INR',
-      description: description || 'No description provided',
-      status: 'paid',
+      amount: canonicalAmount,
+      currency: "INR",
+      description: description || "No description provided",
+      status: "success",
     });
+    
 
     return res.status(200).json({
       success: true,
@@ -374,14 +385,26 @@ exports.verifyPayment = asyncHandler(async (req, res) => {
 // @desc    Get logged-in user's payment history
 // @route   GET /api/payment/my-history
 // @access  Private
-exports.getMyPaymentHistory = asyncHandler(async (req, res) => {
-    const transactions = await Transaction.find({ userId: req.user.id }).sort({ createdAt: -1 });
+// exports.getMyPaymentHistory = asyncHandler(async (req, res) => {
+//     const transactions = await Transaction.find({ userId: req.user.id }).sort({ createdAt: -1 });
 
-    return res.status(200).json({
-      success: true,
-      data: transactions,
-    });
+//     return res.status(200).json({
+//       success: true,
+//       data: transactions,
+//     });
+// });
+
+// @desc    Get logged-in user's payment history
+exports.getMyPaymentHistory = asyncHandler(async (req, res) => {
+  const transactions = await Transaction.find({ patientId: req.user.id }) 
+    .sort({ createdAt: -1 });
+
+  return res.status(200).json({
+    success: true,
+    data: transactions,
+  });
 });
+
 
 // @desc    Get all donations for a patient
 // @route   GET /api/payment/donations

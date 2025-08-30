@@ -1,9 +1,10 @@
-import { useState, useEffect } from "react";
-import { useParams, useNavigate, useLocation } from "react-router-dom";
-import { getDoctorById, bookAppointment } from "../api";
-
-import toast from "react-hot-toast";
-import useAuthStore from "../store/useAuthStore";
+import { useState, useEffect } from 'react';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
+import { getDoctorById, bookAppointment } from '../api';
+import { useAuth } from '../context/AuthContext';
+import toast from 'react-hot-toast';
+import VerifiedSkillsBadge from '../components/VerifiedSkillsBadge.jsx';
+import { getAvailability } from '../api';
 
 // --- Mock Data ---
 const timeSlots = [
@@ -34,26 +35,23 @@ const generateDates = () => {
 const availableDates = generateDates();
 
 const DoctorProfilePage = () => {
-  const { id } = useParams();
-  const navigate = useNavigate();
-
-  const { user } = useAuthStore();
-
-  const location = useLocation();
-
-  const [doctor, setDoctor] = useState(null);
-  const [loading, setLoading] = useState(true);
-
-  const [careFundBalance, setCareFundBalance] = useState(0);
-
-  const [selectedDate, setSelectedDate] = useState(availableDates[0].fullDate);
-  const [selectedTime, setSelectedTime] = useState("");
-  const [bookingType, setBookingType] = useState("In-Home Visit");
-  const [bookingDetails, setBookingDetails] = useState({
-    symptoms: "",
-    previousMeds: "",
-    reportImage: null,
-  });
+    const { id } = useParams();
+    const navigate = useNavigate();
+    const { user } = useAuth();
+    const location = useLocation();
+    const [doctor, setDoctor] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [availableDates, setAvailableDates] = useState([]);
+    const [careFundBalance, setCareFundBalance] = useState(0);
+    
+    const [selectedDate, setSelectedDate] = useState(availableDates[0].fullDate);
+    const [selectedTime, setSelectedTime] = useState('');
+    const [bookingType, setBookingType] = useState('In-Home Visit');
+    const [bookingDetails, setBookingDetails] = useState({
+        symptoms: '',
+        previousMeds: '',
+        reportImage: null,
+    });
 
   useEffect(() => {
     const fetchDoctor = async () => {
@@ -83,19 +81,28 @@ const DoctorProfilePage = () => {
     const lastVisitTime = params.get("lastVisitTime");
     const followUpDate = params.get("followUpDate");
 
-    if (previousMeds) {
-      setBookingDetails((prev) => ({ ...prev, previousMeds }));
-    }
-    if (symptoms) {
-      setBookingDetails((prev) => ({ ...prev, symptoms }));
-    }
-    if (lastVisitTime) {
-      setSelectedTime(lastVisitTime);
-    }
-    if (followUpDate) {
-      setSelectedDate(new Date(followUpDate).toISOString().split("T")[0]);
-    }
-  }, [id, user, location.search, navigate]);
+        if (previousMeds) {
+            setBookingDetails(prev => ({ ...prev, previousMeds }));
+        }
+        if (symptoms) {
+            setBookingDetails(prev => ({ ...prev, symptoms }));
+        }
+        if (lastVisitTime) {
+            setSelectedTime(lastVisitTime);
+        }
+        if (followUpDate) {
+            setSelectedDate(new Date(followUpDate).toISOString().split('T')[0]);
+        }
+        getAvailability(id)
+            .then(res => {
+                setAvailableDates(res.data.availableDates?.map(d => ({
+                    dayName: new Date(d.date).toLocaleDateString('en-US', { weekday: 'short' }).toUpperCase(),
+                    day: new Date(d.date).getDate(),
+                    fullDate: d.date
+                })) || []);
+            })
+            .catch(() => setAvailableDates([]));
+    }, [id, user, location.search, navigate]);
 
   const handleBookingDetailChange = (e) => {
     if (e.target.name === "reportImage") {
@@ -165,51 +172,35 @@ const DoctorProfilePage = () => {
 
   const fee = bookingType === "In-Home Visit" ? 2000 : 400;
 
-  return (
-    <div className="bg-primary-dark min-h-screen">
-      <div className="container mx-auto p-4 md:p-8">
-        {/* Doctor Header Card */}
-        <div className="bg-secondary-dark p-6 md:p-8 rounded-lg shadow-lg flex flex-col md:flex-row gap-8">
-          <img
-            src="/doctor-avatar.jpg"
-            alt={doctor.name}
-            className="w-40 h-40 rounded-full object-cover mx-auto md:mx-0 border-4 border-accent-blue"
-          />
-          <div className="flex-grow text-center md:text-left">
-            <h1 className="text-4xl font-bold text-white flex items-center justify-center md:justify-start gap-3">
-              {doctor.name}
-              {doctor.subscriptionTier === "pro" && (
-                <span className="bg-gradient-to-r from-yellow-400 to-yellow-600 text-black px-3 py-1 rounded-full text-sm font-bold flex items-center gap-1">
-                  ⭐ PRO
-                </span>
-              )}
-              {doctor.isVerified && (
-                <span className="flex items-center gap-1 bg-green-700 bg-opacity-80 text-green-200 text-base font-semibold px-2 py-1 rounded ml-2">
-                  <svg
-                    className="w-5 h-5 text-green-300"
-                    fill="currentColor"
-                    viewBox="0 0 20 20"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      d="M16.707 6.293a1 1 0 00-1.414 0L9 12.586l-2.293-2.293a1 1 0 00-1.414 1.414l3 3a1 1 0 001.414 0l7-7a1 1 0 000-1.414z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                  Verified Professional
-                </span>
-              )}
-            </h1>
-            <p className="text-xl text-accent-blue mt-1">{doctor.specialty}</p>
-            <p className="text-md text-secondary-text">
-              {doctor.experience} years experience in {doctor.city}
-            </p>
-            <p className="text-secondary-text mt-4 max-w-2xl">
-              A highly dedicated professional focusing on comprehensive medical
-              care.
-            </p>
-          </div>
-        </div>
+    return (
+        <div className="bg-primary-dark min-h-screen">
+            <div className="container mx-auto p-4 md:p-8">
+                {/* Doctor Header Card */}
+                <div className="bg-secondary-dark p-6 md:p-8 rounded-lg shadow-lg flex flex-col md:flex-row gap-8">
+                    <img src="/doctor-avatar.jpg" alt={doctor.name} className="w-40 h-40 rounded-full object-cover mx-auto md:mx-0 border-4 border-accent-blue" />
+                    <div className="flex-grow text-center md:text-left">
+                        <h1 className="text-4xl font-bold text-white flex items-center justify-center md:justify-start gap-3">
+                            {doctor.name}
+                            {doctor.subscriptionTier === 'pro' && (
+                                <span className="bg-gradient-to-r from-yellow-400 to-yellow-600 text-black px-3 py-1 rounded-full text-sm font-bold flex items-center gap-1">
+                                    ⭐ PRO
+                                </span>
+                            )}
+                            {doctor.isVerified && (
+                                <span className="flex items-center gap-1 bg-green-700 bg-opacity-80 text-green-200 text-base font-semibold px-2 py-1 rounded ml-2">
+                                    <svg className="w-5 h-5 text-green-300" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 6.293a1 1 0 00-1.414 0L9 12.586l-2.293-2.293a1 1 0 00-1.414 1.414l3 3a1 1 0 001.414 0l7-7a1 1 0 000-1.414z" clipRule="evenodd" /></svg>
+                                    Verified Professional
+                                </span>
+                            )}
+                        </h1>
+                        <p className="text-xl text-accent-blue mt-1">{doctor.specialty}</p>
+                        <p className="text-md text-secondary-text">{doctor.experience} years experience in {doctor.city}</p>
+                        {doctor.verifiedSkills && doctor.verifiedSkills.length > 0 && (
+                            <VerifiedSkillsBadge skills={doctor.verifiedSkills} />
+                        )}
+                        <p className="text-secondary-text mt-4 max-w-2xl">A highly dedicated professional focusing on comprehensive medical care.</p>
+                    </div>
+                </div>
 
         {/* Booking Section */}
         <div className="mt-8 grid grid-cols-1 lg:grid-cols-3 gap-8">

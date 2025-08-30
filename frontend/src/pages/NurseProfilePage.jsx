@@ -1,8 +1,10 @@
-import { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
-import { getNurseById, bookAppointment } from "../api"; // Correctly imports getNurseById
-import toast from "react-hot-toast";
-import useAuthStore from "../store/useAuthStore";
+import { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { getNurseById, bookAppointment } from '../api'; // Correctly imports getNurseById
+import { useAuth } from '../context/AuthContext';
+import toast from 'react-hot-toast';
+import VerifiedSkillsBadge from '../components/VerifiedSkillsBadge.jsx';
+import { getAvailability } from '../api';
 
 // --- Mock Data ---
 const timeSlots = ["09:00 AM", "12:00 PM", "03:00 PM", "06:00 PM"];
@@ -25,32 +27,41 @@ const generateDates = () => {
 const availableDates = generateDates();
 
 const NurseProfilePage = () => {
-  const { id } = useParams();
-  const navigate = useNavigate();
-  const { user } = useAuthStore();
-  const [nurse, setNurse] = useState(null);
-  const [loading, setLoading] = useState(true);
+    const { id } = useParams();
+    const navigate = useNavigate();
+    const { user } = useAuth();
+    const [nurse, setNurse] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [availableDates, setAvailableDates] = useState([]);
+    const [selectedDate, setSelectedDate] = useState(availableDates[0].fullDate);
+    const [selectedTime, setSelectedTime] = useState('');
+    const [bookingDetails, setBookingDetails] = useState({ symptoms: '' });
 
-  const [selectedDate, setSelectedDate] = useState(availableDates[0].fullDate);
-  const [selectedTime, setSelectedTime] = useState("");
-  const [bookingDetails, setBookingDetails] = useState({ symptoms: "" });
-
-  useEffect(() => {
-    const fetchNurse = async () => {
-      setLoading(true);
-      try {
-        // This now correctly calls the generic API endpoint via getNurseById
-        const { data } = await getNurseById(id);
-        setNurse(data);
-      } catch (error) {
-        toast.error("Could not load nurse details.");
-        console.error(error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchNurse();
-  }, [id]);
+    useEffect(() => {
+        const fetchNurse = async () => {
+            setLoading(true);
+            try {
+                // This now correctly calls the generic API endpoint via getNurseById
+                const { data } = await getNurseById(id);
+                setNurse(data);
+            } catch (error) {
+                toast.error("Could not load nurse details.");
+                console.error(error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchNurse();
+        getAvailability(id)
+            .then(res => {
+                setAvailableDates(res.data.availableDates?.map(d => ({
+                    dayName: new Date(d.date).toLocaleDateString('en-US', { weekday: 'short' }).toUpperCase(),
+                    day: new Date(d.date).getDate(),
+                    fullDate: d.date
+                })) || []);
+            })
+            .catch(() => setAvailableDates([]));
+    }, [id]);
 
   const handleBookAssignment = async () => {
     if (!user) {
@@ -96,42 +107,29 @@ const NurseProfilePage = () => {
 
   const fee = 600;
 
-  return (
-    <div className="bg-primary-dark min-h-screen">
-      <div className="container mx-auto p-4 md:p-8">
-        {/* Nurse Header */}
-        <div className="bg-secondary-dark p-6 md:p-8 rounded-lg shadow-lg flex flex-col md:flex-row gap-8 items-center">
-          <img
-            src="/nurse-avatar.jpg"
-            alt={nurse.name}
-            className="w-40 h-40 rounded-full object-cover border-4 border-teal-400"
-          />
-          <div className="flex-grow text-center md:text-left">
-            <h1 className="text-4xl font-bold text-white flex items-center justify-center md:justify-start gap-3">
-              {nurse.name}
-              {nurse.isVerified && (
-                <span className="flex items-center gap-1 bg-green-700 bg-opacity-80 text-green-200 text-base font-semibold px-2 py-1 rounded ml-2">
-                  <svg
-                    className="w-5 h-5 text-green-300"
-                    fill="currentColor"
-                    viewBox="0 0 20 20"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      d="M16.707 6.293a1 1 0 00-1.414 0L9 12.586l-2.293-2.293a1 1 0 00-1.414 1.414l3 3a1 1 0 001.414 0l7-7a1 1 0 000-1.414z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                  Verified Professional
-                </span>
-              )}
-            </h1>
-            <p className="text-xl text-teal-400 mt-1">{nurse.specialty}</p>
-            <p className="text-md text-secondary-text">
-              {nurse.experience} years experience in {nurse.city}
-            </p>
-          </div>
-        </div>
+    return (
+        <div className="bg-primary-dark min-h-screen">
+            <div className="container mx-auto p-4 md:p-8">
+                {/* Nurse Header */}
+                <div className="bg-secondary-dark p-6 md:p-8 rounded-lg shadow-lg flex flex-col md:flex-row gap-8 items-center">
+                    <img src="/nurse-avatar.jpg" alt={nurse.name} className="w-40 h-40 rounded-full object-cover border-4 border-teal-400" />
+                    <div className="flex-grow text-center md:text-left">
+                        <h1 className="text-4xl font-bold text-white flex items-center justify-center md:justify-start gap-3">
+                            {nurse.name}
+                            {nurse.isVerified && (
+                                <span className="flex items-center gap-1 bg-green-700 bg-opacity-80 text-green-200 text-base font-semibold px-2 py-1 rounded ml-2">
+                                    <svg className="w-5 h-5 text-green-300" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 6.293a1 1 0 00-1.414 0L9 12.586l-2.293-2.293a1 1 0 00-1.414 1.414l3 3a1 1 0 001.414 0l7-7a1 1 0 000-1.414z" clipRule="evenodd" /></svg>
+                                    Verified Professional
+                                </span>
+                            )}
+                        </h1>
+                        <p className="text-xl text-teal-400 mt-1">{nurse.specialty}</p>
+                        <p className="text-md text-secondary-text">{nurse.experience} years experience in {nurse.city}</p>
+                        {nurse.verifiedSkills && nurse.verifiedSkills.length > 0 && (
+                            <VerifiedSkillsBadge skills={nurse.verifiedSkills} />
+                        )}
+                    </div>
+                </div>
 
         {/* Booking Section */}
         <div className="mt-8 grid grid-cols-1 lg:grid-cols-3 gap-8">

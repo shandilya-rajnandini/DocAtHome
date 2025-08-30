@@ -3,13 +3,13 @@ import { Link } from "react-router-dom";
 import { getSubscriptionStatus } from "../api";
 import EmptyState from "../components/EmptyState";
 import { Calendar } from "lucide-react";
-import useAuthStore from "../store/useAuthStore";
+import CountUp from "react-countup";
 
 const StatCard = ({ value, label, currency = "" }) => (
   <div className="bg-secondary-dark p-6 rounded-xl text-center shadow-lg">
     <p className="text-4xl font-bold text-accent-blue">
       {currency}
-      {value}
+      {typeof value === 'number' ? <CountUp end={value} duration={2.5} decimals={value % 1 !== 0 ? 1 : 0} /> : value}
     </p>
     <p className="text-secondary-text mt-1">{label}</p>
   </div>
@@ -161,25 +161,33 @@ const DoctorDashboard = () => {
           </div>
         )}
 
-        {/* --- Stats Section --- */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
-          <StatCard
-            value="0"
-            label={
-              role === "doctor" ? "Pending Requests" : "Pending Assignments"
-            }
-          />
-          <StatCard value="0" label="Upcoming Appointments" />
-          <StatCard
-            value={role === "doctor" ? "24,500" : "15,800"}
-            label="Earnings This Month"
-            currency="₹"
-          />
-          <StatCard
-            value={user?.averageRating?.toFixed(1) || "N/A"}
-            label="Average Rating"
-          />
-        </div>
+                {/* --- Stats Section --- */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+                    <StatCard
+                        value="0"
+                        label={
+                            role === "doctor" ? "Pending Requests" : "Pending Assignments"
+                        }
+                    />
+                    <StatCard value="0" label="Upcoming Appointments" />
+                    <StatCard
+                        value={role === "doctor" ? "24,500" : "15,800"}
+                        label="Earnings This Month"
+                        currency="₹"
+                    />
+                    <StatCard
+                        value={<CountUp end={user?.patientsTreated || 0} duration={2.5} />}
+                        label="Total patients you have treated"
+                    />
+                    <StatCard
+                        value={<CountUp end={user?.appointmentsCompleted || 0} duration={2.5} />}
+                        label="Appointments completed successfully"
+                    />
+                    <StatCard
+                        value={<CountUp end={user?.averageRating?.toFixed(1) || 4.9} duration={2.5} decimals={1} />}
+                        label="Your average patient rating"
+                    />
+                </div>
 
         {/* --- Actions & Schedule --- */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">

@@ -23,26 +23,19 @@ const cities = [
 ];
 
 const SearchNursesPage = () => {
-  // State to hold the selected filter values
-  const [filters, setFilters] = useState({
-    specialty: "",
-    city: "",
-    radius: "10",
-  });
-  // State for user location and geolocation status
-  const [userLocation, setUserLocation] = useState(null);
-  const [isGettingLocation, setIsGettingLocation] = useState(false);
-  // State to store patient location for distance calculations
-  const [patientLocation, setPatientLocation] = useState({
-    lat: null,
-    lng: null,
-  });
-  // State to store the list of nurses fetched from the API
-  const [nurses, setNurses] = useState([]);
-  // State to show a loading message while data is being fetched
-  const [isLoading, setIsLoading] = useState(false);
-  // State to store any errors that occur during fetching
-  const [error, setError] = useState("");
+    // State to hold the selected filter values
+    const [filters, setFilters] = useState({ specialty: '', city: '', radius: '10', skillKeyword: '' });
+    // State for user location and geolocation status
+    const [userLocation, setUserLocation] = useState(null);
+    const [isGettingLocation, setIsGettingLocation] = useState(false);
+    // State to store patient location for distance calculations
+    const [patientLocation, setPatientLocation] = useState({ lat: null, lng: null });
+    // State to store the list of nurses fetched from the API
+    const [nurses, setNurses] = useState([]);
+    // State to show a loading message while data is being fetched
+    const [isLoading, setIsLoading] = useState(false);
+    // State to store any errors that occur during fetching
+    const [error, setError] = useState('');
 
   // Load patient location from localStorage on component mount
   useEffect(() => {
@@ -240,78 +233,78 @@ const SearchNursesPage = () => {
             </select>
           </div>
 
-          <div className="mb-6">
-            <label className="block text-secondary-text mb-2 font-semibold">
-              Location
-            </label>
-            <div className="mb-3">
-              <label className="block text-sm text-slate-600 dark:text-secondary-text mb-1">
-                Search Radius
-              </label>
-              <select
-                name="radius"
-                value={filters.radius}
-                onChange={handleFilterChange}
-                className="w-full p-2 bg-primary-dark text-white rounded border-gray-700 text-sm"
-              >
-                <option value="5">5 km radius</option>
-                <option value="8">8 km radius</option>
-                <option value="10">10 km radius</option>
-                <option value="15">15 km radius</option>
-                <option value="20">20 km radius</option>
-              </select>
-            </div>
-            <button
-              type="button"
-              onClick={findNearbyNurses}
-              disabled={isGettingLocation}
-              className="w-full bg-green-600 text-white py-3 px-6 rounded-lg hover:bg-green-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center justify-center gap-2 mb-3"
-            >
-              {isGettingLocation ? (
-                <>
-                  <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
-                    <circle
-                      className="opacity-25"
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      stroke="currentColor"
-                      strokeWidth="4"
-                      fill="none"
-                    />
-                    <path
-                      className="opacity-75"
-                      fill="currentColor"
-                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
-                    />
-                  </svg>
-                  Finding Your Location...
-                </>
-              ) : (
-                <>📍 Find Nurses Near Me ({filters.radius}km)</>
-              )}
-            </button>
-
-            {userLocation && (
-              <>
-                <div className="text-sm text-green-600 bg-green-50 dark:bg-green-900 dark:text-green-200 p-3 rounded mb-3">
-                  📍 Searching within {filters.radius}km of your location
-                  <br />
-                  <span className="text-xs opacity-75">
-                    ({userLocation.lat.toFixed(4)},{" "}
-                    {userLocation.lng.toFixed(4)})
-                  </span>
-                </div>
-                <button
-                  type="button"
-                  onClick={clearLocationFilter}
-                  className="w-full bg-gray-500 text-white py-2 px-4 rounded-lg hover:bg-gray-600 transition-colors text-sm"
-                >
-                  🗑️ Clear Location Filter
-                </button>
-              </>
-            )}
-          </div>
+                    {/* Add this inside the filters sidebar, before the search button */}
+                    <div className="mb-6">
+                      <label htmlFor="skillKeyword" className="block text-secondary-text mb-2 font-semibold">
+                        Search by Verified Skills
+                      </label>
+                      <input
+                        type="text"
+                        id="skillKeyword"
+                        name="skillKeyword"
+                        value={filters.skillKeyword}
+                        onChange={handleFilterChange}
+                        placeholder="e.g., Pediatric Vaccinations"
+                        className="w-full p-3 bg-primary-dark rounded border-gray-700 text-white"
+                      />
+                    </div>
+                    <div className="mb-6">
+                        <label className="block text-secondary-text mb-2 font-semibold">Location</label>
+                        <div className="mb-3">
+                            <label className="block text-sm text-slate-600 dark:text-secondary-text mb-1">Search Radius</label>
+                            <select 
+                                name="radius" 
+                                value={filters.radius} 
+                                onChange={handleFilterChange} 
+                                className="w-full p-2 bg-primary-dark text-white rounded border-gray-700 text-sm"
+                            >
+                                <option value="5">5 km radius</option>
+                                <option value="8">8 km radius</option>
+                                <option value="10">10 km radius</option>
+                                <option value="15">15 km radius</option>
+                                <option value="20">20 km radius</option>
+                            </select>
+                        </div>
+                        <button
+                            type="button"
+                            onClick={findNearbyNurses}
+                            disabled={isGettingLocation}
+                            className="w-full bg-green-600 text-white py-3 px-6 rounded-lg hover:bg-green-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center justify-center gap-2 mb-3"
+                        >
+                            {isGettingLocation ? (
+                                <>
+                                    <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
+                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"/>
+                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                                    </svg>
+                                    Finding Your Location...
+                                </>
+                            ) : (
+                                <>
+                                    📍 Find Nurses Near Me ({filters.radius}km)
+                                </>
+                            )}
+                        </button>
+                        
+                        {userLocation && (
+                            <>
+                                <div className="text-sm text-green-600 bg-green-50 dark:bg-green-900 dark:text-green-200 p-3 rounded mb-3">
+                                    📍 Searching within {filters.radius}km of your location
+                                    <br />
+                                    <span className="text-xs opacity-75">
+                                        ({userLocation.lat.toFixed(4)}, {userLocation.lng.toFixed(4)})
+                                    </span>
+                                </div>
+                                <button
+                                    type="button"
+                                    onClick={clearLocationFilter}
+                                    className="w-full bg-gray-500 text-white py-2 px-4 rounded-lg hover:bg-gray-600 transition-colors text-sm"
+                                >
+                                    🗑️ Clear Location Filter
+                                </button>
+                            </>
+                        )}
+                    </div>
 
           <button
             onClick={handleSearch}
