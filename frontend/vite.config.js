@@ -1,6 +1,6 @@
-import { defineConfig } from 'vite';
-import react from '@vitejs/plugin-react';
-import { viteStaticCopy } from 'vite-plugin-static-copy'; // Import the plugin
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
+import { viteStaticCopy } from "vite-plugin-static-copy"; // Import the plugin
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -10,20 +10,20 @@ export default defineConfig({
     viteStaticCopy({
       targets: [
         {
-          src: 'public/_redirects',
-          dest: ''
-        }
-      ]
-    })
+          src: "public/_redirects",
+          dest: "",
+        },
+      ],
+    }),
   ],
   optimizeDeps: {
-    include: ['react-icons/fa'],
+    include: ["react-icons/fa"],
   },
   server: {
     open: true,
     proxy: {
-      '/api': {
-        target: 'http://localhost:5000',
+      "/api": {
+        target: "http://localhost:5000",
         changeOrigin: true,
       },
     },

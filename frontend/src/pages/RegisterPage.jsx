@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { register as registerApi, getMe } from '../api';
-import { useAuth } from '../context/AuthContext';
+
 import toast from 'react-hot-toast';
+import useAuthStore from "../store/useAuthStore";
 
 // --- Predefined Options ---
 const doctorSpecialties = ['Cardiologist', 'Dermatologist', 'Gynecologist', 'Dentist', 'Pediatrician', 'General Physician'];
@@ -16,7 +17,7 @@ const RegisterPage = () => {
         specialty: '', city: '', experience: '', licenseNumber: '', govId: '', vehicleRegistrationNumber: ''
     });
     const navigate = useNavigate();
-    const { login } = useAuth();
+    const { login } = useAuthStore();
 
     const { role } = formData;
     const isProfessional = role === 'doctor' || role === 'nurse' || role === 'technician' || role === 'ambulance';

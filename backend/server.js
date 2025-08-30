@@ -12,8 +12,8 @@ const app = express();
 // --- THE DEFINITIVE CORS FIX ---
 // This setup is more explicit and handles the preflight request correctly.
 const allowedOrigins = [
-    "http://localhost:5173",
-    "https://docathome-rajnandini.netlify.app"
+    'http://localhost:5173',
+    'https://docathome-rajnandini.netlify.app'
 ];
 app.use(cors({
     origin: function (origin, callback) {
@@ -43,17 +43,17 @@ app.use('/api/lab-tests', require('./routes/labTestRoutes'));
 app.get('/health', (req, res) => res.status(200).send('OK'));
 
 // Error Handlers
-app.use((req, res, next) => {
+app.use((req, res, _next) => {
   res.status(404).json({ message: 'API endpoint not found' });
 });
-app.use((err, req, res, next) => {
+app.use((err, req, res, _next) => {
   console.error(err.stack);
   res.status(500).json({ message: 'Internal Server Error' });
 });
 
 const server = http.createServer(app);
 const io = new Server(server, {
-  cors: { origin: allowedOrigins, methods: ["GET", "POST"] }
+  cors: { origin: allowedOrigins, methods: ['GET', 'POST'] }
 });
 io.on('connection', (socket) => { console.log(`Socket Connected: ${socket.id}`); });
 

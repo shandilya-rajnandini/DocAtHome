@@ -97,7 +97,7 @@ const DoctorAppointmentsPage = () => {
                     fetchAppointments();
                   })
                   .catch(() =>
-                    toast.error("Failed to save voice note to appointment.")
+                    toast.error("Failed to save voice note to appointment."),
                   );
               } else {
                 toast.error("Upload failed. Please try again.");
@@ -117,7 +117,7 @@ const DoctorAppointmentsPage = () => {
       // The API returns an object like { success, count, data: [...] }
       // We need to set the inner 'data' array to the state.
       setAppointments(data.data || []);
-    // eslint-disable-next-line no-unused-vars
+      // eslint-disable-next-line no-unused-vars
     } catch (error) {
       toast.error("Could not fetch appointments.");
       setAppointments([]); // Ensure state is an array even on error
@@ -135,14 +135,14 @@ const DoctorAppointmentsPage = () => {
 
     // Optimistically update the UI
     const updatedAppointments = appointments.map((appt) =>
-      appt._id === id ? { ...appt, status: newStatus, doctorNotes } : appt
+      appt._id === id ? { ...appt, status: newStatus, doctorNotes } : appt,
     );
     setAppointments(updatedAppointments);
 
     try {
       await updateAppointmentStatus(id, { status: newStatus, doctorNotes });
       toast.success(`Appointment successfully ${newStatus.toLowerCase()}!`);
-    // eslint-disable-next-line no-unused-vars
+      // eslint-disable-next-line no-unused-vars
     } catch (error) {
       toast.error("Failed to update status. Please try again.");
       setAppointments(originalAppointments);
@@ -166,7 +166,7 @@ const DoctorAppointmentsPage = () => {
     try {
       const { data } = await getAppointmentSummary(id);
       setSummary(data.summary);
-    // eslint-disable-next-line no-unused-vars
+      // eslint-disable-next-line no-unused-vars
     } catch (error) {
       toast.error("Could not fetch summary.");
       setSummary("Failed to load summary.");
@@ -176,7 +176,7 @@ const DoctorAppointmentsPage = () => {
   };
 
   const filteredAppointments = appointments.filter(
-    (appt) => appt.status === filter
+    (appt) => appt.status === filter,
   );
 
   return (

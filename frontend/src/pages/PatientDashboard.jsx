@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
+
+import useAuthStore from "../store/useAuthStore";
 
 // --- New Reusable Feature Card Component ---
 // This new card has a gradient background and a cleaner look.
@@ -18,7 +19,7 @@ const NewFeatureCard = ({ icon, title, description, link, color }) => (
 );
 
 const PatientDashboard = () => {
-  const { user } = useAuth();
+  const { user } = useAuthStore();
 
   return (
     <main className="bg-amber-200 dark:bg-primary-dark min-h-full pt-24 pb-12 px-4">

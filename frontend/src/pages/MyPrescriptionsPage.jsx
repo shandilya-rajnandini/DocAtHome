@@ -77,7 +77,7 @@ const PrescriptionCard = ({ prescription, onTakeDose, onToggleSmartStock }) => {
     doc.text(
       `Prescribing Doctor: ${doctor.name} (${doctor.specialty})`,
       20,
-      50
+      50,
     );
     doc.text(`Diagnosis: ${diagnosis}`, 20, 60);
 
@@ -103,14 +103,14 @@ const PrescriptionCard = ({ prescription, onTakeDose, onToggleSmartStock }) => {
       "This is a digitally generated prescription and does not require a signature.",
       105,
       y + 15,
-      { align: "center" }
+      { align: "center" },
     );
     doc.text("Get well soon!", 105, y + 20, { align: "center" });
 
     doc.save(`Prescription-${doctor.name.replace(/\s/g, "")}-${date}.pdf`);
   };
 
-return (
+  return (
     <div className="bg-amber-50 dark:bg-gray-800 p-6 rounded-lg shadow-lg mb-8 transition-colors duration-300 border border-gray-300 dark:border-gray-700">
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start gap-2 border-b border-gray-400 dark:border-gray-700 pb-4 mb-4">
@@ -118,14 +118,18 @@ return (
           <h3 className="text-xl font-bold text-black dark:text-white">
             {prescription.doctor.name}
           </h3>
-          <p className="text-blue-600 dark:text-blue-400">{prescription.doctor.specialty}</p>
+          <p className="text-blue-600 dark:text-blue-400">
+            {prescription.doctor.specialty}
+          </p>
           <p className="text-sm text-gray-700 dark:text-gray-400 mt-1">
             Prescribed on: {new Date(prescription.date).toDateString()}
           </p>
         </div>
         <div className="text-left sm:text-right mt-2 sm:mt-0">
           <p className="text-gray-700 dark:text-gray-400">Diagnosis</p>
-          <p className="text-black dark:text-white font-semibold">{prescription.diagnosis}</p>
+          <p className="text-black dark:text-white font-semibold">
+            {prescription.diagnosis}
+          </p>
         </div>
       </div>
 
@@ -144,19 +148,35 @@ return (
           <tbody>
             {prescription.medicines.map((med, index) => (
               <tr key={index} className="text-black dark:text-white">
-                <td className="p-2 border-t border-gray-300 dark:border-gray-700">{med.name}</td>
-                <td className="p-2 border-t border-gray-300 dark:border-gray-700">{med.dosage}</td>
-                <td className="p-2 border-t border-gray-300 dark:border-gray-700">{med.duration}</td>
+                <td className="p-2 border-t border-gray-300 dark:border-gray-700">
+                  {med.name}
+                </td>
+                <td className="p-2 border-t border-gray-300 dark:border-gray-700">
+                  {med.dosage}
+                </td>
+                <td className="p-2 border-t border-gray-300 dark:border-gray-700">
+                  {med.duration}
+                </td>
                 <td className="p-2 border-t border-gray-300 dark:border-gray-700">
                   <button
-                    onClick={() => onToggleSmartStock(prescription._id, index, !med.isSmartStockEnabled)}
+                    onClick={() =>
+                      onToggleSmartStock(
+                        prescription._id,
+                        index,
+                        !med.isSmartStockEnabled,
+                      )
+                    }
                     className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                      med.isSmartStockEnabled ? "bg-green-600" : "bg-gray-300 dark:bg-gray-600"
+                      med.isSmartStockEnabled
+                        ? "bg-green-600"
+                        : "bg-gray-300 dark:bg-gray-600"
                     }`}
                   >
                     <span
                       className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                        med.isSmartStockEnabled ? "translate-x-6" : "translate-x-1"
+                        med.isSmartStockEnabled
+                          ? "translate-x-6"
+                          : "translate-x-1"
                       }`}
                     />
                   </button>
@@ -275,7 +295,7 @@ const MyPrescriptionsPage = () => {
           return { ...p, medicines: updatedMeds };
         }
         return p;
-      })
+      }),
     );
   };
 
@@ -317,7 +337,7 @@ const MyPrescriptionsPage = () => {
         className:
           "!bg-gray-800 !text-white !rounded-lg !border !border-gray-700 !shadow-lg",
         position: "bottom-center",
-      }
+      },
     );
   };
 

@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
+
 import { getSubscriptionStatus } from '../api';
 import CountUp from "react-countup";
+import useAuthStore from "../store/useAuthStore";
 
 // A new, vertical Stat Card component for this design
 const VerticalStatCard = ({ value, label, currency = '', icon }) => (
@@ -37,7 +38,7 @@ const ProBenefitCard = ({ icon, title, description, isActive }) => (
 );
 
 const NurseDashboard = () => {
-    const { user } = useAuth();
+    const { user } = useAuthStore();
     const [subscriptionStatus, setSubscriptionStatus] = useState(null);
     const [loading, setLoading] = useState(true);
 

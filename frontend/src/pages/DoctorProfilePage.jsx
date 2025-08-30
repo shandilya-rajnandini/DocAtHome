@@ -1,33 +1,34 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { getDoctorById, bookAppointment } from '../api';
-import { useAuth } from '../context/AuthContext';
+
 import toast from 'react-hot-toast';
 import VerifiedSkillsBadge from '../components/VerifiedSkillsBadge.jsx';
 import { getAvailability } from '../api';
+import useAuthStore from "../store/useAuthStore";
 
 // --- Mock Data ---
 const timeSlots = ["11:00 AM", "11:30 AM", "12:00 PM", "12:30 PM", "01:00 PM", "01:30 PM", "02:00 PM"];
-const generateDates = () => {
-    const dates = [];
-    const today = new Date();
-    for (let i = 0; i < 7; i++) {
-        const futureDate = new Date(today);
-        futureDate.setDate(today.getDate() + i);
-        dates.push({
-            dayName: futureDate.toLocaleDateString('en-US', { weekday: 'short' }).toUpperCase(),
-            day: futureDate.getDate(),
-            fullDate: futureDate.toISOString().split('T')[0],
-        });
-    }
-    return dates;
-};
-const availableDates = generateDates();
+// const generateDates = () => {
+//     const dates = [];
+//     const today = new Date();
+//     for (let i = 0; i < 7; i++) {
+//         const futureDate = new Date(today);
+//         futureDate.setDate(today.getDate() + i);
+//         dates.push({
+//             dayName: futureDate.toLocaleDateString('en-US', { weekday: 'short' }).toUpperCase(),
+//             day: futureDate.getDate(),
+//             fullDate: futureDate.toISOString().split('T')[0],
+//         });
+//     }
+//     return dates;
+// };
+// const availableDates = generateDates();
 
 const DoctorProfilePage = () => {
     const { id } = useParams();
     const navigate = useNavigate();
-    const { user } = useAuth();
+    const { user } = useAuthStore();
     const location = useLocation();
     const [doctor, setDoctor] = useState(null);
     const [loading, setLoading] = useState(true);

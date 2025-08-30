@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 
 const DoctorNotesModal = ({ isOpen, onClose, onSubmit }) => {
-  const [notes, setNotes] = useState('');
+  const [notes, setNotes] = useState("");
 
   useEffect(() => {
     if (!isOpen) {
-      setNotes('');
+      setNotes("");
     }
   }, [isOpen]);
 
@@ -30,8 +30,16 @@ const DoctorNotesModal = ({ isOpen, onClose, onSubmit }) => {
           placeholder="Enter your observations, diagnosis, and prescription..."
         ></textarea>
         <div className="flex justify-end mt-4">
-          <button onClick={onClose} className="text-gray-400 hover:text-white mr-4">Cancel</button>
-          <button onClick={handleSubmit} className="bg-accent-blue hover:bg-accent-blue-hover text-white font-bold py-2 px-4 rounded">
+          <button
+            onClick={onClose}
+            className="text-gray-400 hover:text-white mr-4"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={handleSubmit}
+            className="bg-accent-blue hover:bg-accent-blue-hover text-white font-bold py-2 px-4 rounded"
+          >
             Submit & Mark Complete
           </button>
         </div>

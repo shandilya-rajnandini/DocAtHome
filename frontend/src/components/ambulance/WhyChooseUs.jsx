@@ -1,6 +1,5 @@
-
 import React from "react";
-// We'll use text placeholders for icons 
+// We'll use text placeholders for icons
 const reasons = [
   {
     icon: "💼",
@@ -25,7 +24,6 @@ const reasons = [
 ];
 
 const WhyChooseUs = () => {
-
   return (
     <section className="py-20 px-4 bg-gradient-to-br from-slate-900 to-slate-900 text-white">
       <div className="container mx-auto text-center max-w-6xl">

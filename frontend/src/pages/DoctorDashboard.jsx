@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
+
 import { getSubscriptionStatus } from '../api';
 import EmptyState from "../components/EmptyState";
 import { Calendar } from "lucide-react";
 import CountUp from "react-countup";
+import useAuthStore from "../store/useAuthStore";
 
 const StatCard = ({ value, label, currency = "" }) => (
   <div className="bg-secondary-dark p-6 rounded-xl text-center shadow-lg">
@@ -38,7 +39,7 @@ const ProBenefitCard = ({ icon, title, description, isActive }) => (
 );
 
 const DoctorDashboard = () => {
-    const { user } = useAuth();
+    const { user } = useAuthStore();
     const [subscriptionStatus, setSubscriptionStatus] = useState(null);
     const [loading, setLoading] = useState(true);
     const role = user?.role || 'professional'; // 'doctor' or 'nurse'
