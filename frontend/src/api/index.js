@@ -20,3 +20,6 @@ export const register = (formData) => API.post('/auth/register', formData);
 export const getMyAppointments = () => API.get('/appointments/my-appointments');
 export const updateAppointmentStatus = (id, statusData) => API.put(`/appointments/${id}`, statusData);
 // ... etc.
+
+// Fetch logged-in user's profile
+export const getMe = () => API.get('/profile/me');
