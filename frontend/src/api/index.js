@@ -23,3 +23,5 @@ export const updateAppointmentStatus = (id, statusData) => API.put(`/appointment
 
 // Fetch logged-in user's profile
 export const getMe = () => API.get('/profile/me');
+
+export default API;
