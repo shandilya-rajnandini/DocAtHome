@@ -344,9 +344,9 @@ exports.verifyPayment = asyncHandler(async (req, res) => {
       razorpayOrderId: razorpay_order_id,
       razorpayPaymentId: razorpay_payment_id,
       amount: canonicalAmount,
-      currency: "INR",
-      description: description || "No description provided",
-      status: "success",
+      currency: 'INR',
+      description: description || 'No description provided',
+      status: 'success',
     });
     
 

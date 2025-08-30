@@ -23,129 +23,147 @@ const DoctorEditProfilePage = () => {
     const [showDeactivateModal, setShowDeactivateModal] = useState(false);
     const [isDeactivating, setIsDeactivating] = useState(false);
 
-  useEffect(() => {
-    const fetchProfile = async () => {
-      try {
-        const { data } = await getMyProfile();
-        setProfile({
-          name: data.name || "",
-          city: data.city || "",
-          experience: data.experience || "",
-          qualifications: data.qualifications || [],
-          bio: data.bio || "",
-          profilePictureUrl: data.profilePictureUrl || "",
-          serviceArea: data.serviceArea || null,
-          isTwoFactorEnabled: data.isTwoFactorEnabled || false,
-        });
-        // eslint-disable-next-line no-unused-vars
-      } catch (error) {
-        toast.error("Could not load your profile.");
-      } finally {
-        setLoading(false);
-      }
+    useEffect(() => {
+        const fetchProfile = async () => {
+            try {
+                const { data } = await getMyProfile();
+                setProfile({
+                    name: data.name || '',
+                    city: data.city || '',
+                    experience: data.experience || '',
+                    qualifications: data.qualifications || [],
+                    bio: data.bio || '',
+                    profilePictureUrl: data.profilePictureUrl || '',
+                    serviceArea: data.serviceArea || null,
+                    isTwoFactorEnabled: data.isTwoFactorEnabled || false,
+                });
+            // eslint-disable-next-line no-unused-vars
+            } catch (error) {
+                toast.error("Could not load your profile.");
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchProfile();
+    }, []);
+
+    const onChange = (e) => setProfile({ ...profile, [e.target.name]: e.target.value });
+
+    const disable2FA = async () => {
+        setIsDisabling2FA(true);
+        try {
+            const response = await fetch('http://localhost:5000/api/twofactor/disable', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                }
+            });
+            
+            if (response.ok) {
+                setProfile({ ...profile, isTwoFactorEnabled: false });
+                toast.success('2FA has been disabled successfully');
+            } else {
+                const errorData = await response.json();
+                toast.error(errorData.message || 'Failed to disable 2FA');
+            }
+        } catch (error) {
+            toast.error('Failed to disable 2FA');
+            console.error('2FA disable error:', error);
+        } finally {
+            setIsDisabling2FA(false);
+        }
     };
-    fetchProfile();
-  }, []);
-
-  const onChange = (e) =>
-    setProfile({ ...profile, [e.target.name]: e.target.value });
-
-  const disable2FA = async () => {
-    setIsDisabling2FA(true);
-    try {
-      const response = await fetch(
-        "http://localhost:5000/api/twofactor/disable",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        },
-      );
-
-      if (response.ok) {
-        setProfile({ ...profile, isTwoFactorEnabled: false });
-        toast.success("2FA has been disabled successfully");
-      } else {
-        const errorData = await response.json();
-        toast.error(errorData.message || "Failed to disable 2FA");
-      }
-    } catch (error) {
-      toast.error("Failed to disable 2FA");
-      console.error("2FA disable error:", error);
-    } finally {
-      setIsDisabling2FA(false);
-    }
-  };
 
   const handleFileChange = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
 
     const formData = new FormData();
-    formData.append("file", file);
-    formData.append("upload_preset", "your_upload_preset"); // replace with your actual preset
+    formData.append('file', file);
+    formData.append('upload_preset', 'your_upload_preset'); // replace with your actual preset
 
     toast.loading("Uploading image...");
     try {
-      const res = await fetch(
-        `https://api.cloudinary.com/v1_1/your_cloud_name/image/upload`,
-        {
-          method: "POST",
-          body: formData,
-        },
-      );
+        const res = await fetch(`https://api.cloudinary.com/v1_1/your_cloud_name/image/upload`, {
+            method: 'POST',
+            body: formData
+        });
 
-      const data = await res.json();
-      if (data.secure_url) {
-        setProfile({ ...profile, profilePictureUrl: data.secure_url });
-        toast.dismiss(); // remove loading
-        toast.success("Image uploaded successfully!");
-      } else {
-        throw new Error("Upload failed");
-      }
-      // eslint-disable-next-line no-unused-vars
+        const data = await res.json();
+        if (data.secure_url) {
+            setProfile({ ...profile, profilePictureUrl: data.secure_url });
+            toast.dismiss(); // remove loading
+            toast.success("Image uploaded successfully!");
+        } else {
+            throw new Error("Upload failed");
+        }
+    // eslint-disable-next-line no-unused-vars
     } catch (err) {
-      toast.dismiss();
-      toast.error("Image upload failed.");
+        toast.dismiss();
+        toast.error("Image upload failed.");
     }
-  };
+};
 
-  const onSubmit = async (e) => {
+ const onSubmit = async (e) => {
     e.preventDefault();
     setIsSaving(true);
-
+    
     try {
-      const profileData = {
-        ...profile,
-        qualifications: profile.qualifications.join(", "),
-        profilePictureUrl: profile.profilePictureUrl || "",
-        // Send serviceArea as-is (object); API supports JSON or string
-        serviceArea: profile.serviceArea || null,
-      };
+        const profileData = {
+            ...profile,
+            qualifications: profile.qualifications.join(', '),
+            profilePictureUrl: profile.profilePictureUrl || '',
+            // Send serviceArea as-is (object); API supports JSON or string
+            serviceArea: profile.serviceArea || null,
+        };
 
-      const { data } = await updateMyProfile(profileData);
-
-      // Update the profile state with the returned data to ensure consistency
-      setProfile((prev) => ({
-        ...prev,
-        serviceArea: data.serviceArea || null,
-      }));
-
-      toast.success("Profile updated successfully!");
-      // eslint-disable-next-line no-unused-vars
+        const { data } = await updateMyProfile(profileData);
+        
+        // Update the profile state with the returned data to ensure consistency
+        setProfile(prev => ({
+            ...prev,
+            serviceArea: data.serviceArea || null,
+        }));
+        
+        toast.success("Profile updated successfully!");
+    // eslint-disable-next-line no-unused-vars
     } catch (error) {
-      toast.error("Failed to update profile.");
+        toast.error("Failed to update profile.");
     } finally {
-      setIsSaving(false);
+        setIsSaving(false);
     }
-  };
+};
 
-  if (loading)
-    return (
-      <div className="text-center p-10 text-white">Loading your profile...</div>
-    );
+
+    if (loading) return <div className="text-center p-10 text-white">Loading your profile...</div>;
+
+    const handleDeactivate = async () => {
+        setIsDeactivating(true);
+        try {
+            const response = await fetch('http://localhost:5000/api/profile/me', {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                }
+            });
+            if (response.ok) {
+                toast.success('Account deactivated.');
+                localStorage.clear();
+                navigate('/login');
+            } else {
+                const errorData = await response.json();
+                toast.error(errorData.message || 'Failed to deactivate account');
+            }
+        } catch (error) {
+            console.log(error)
+            toast.error('Failed to deactivate account');
+        } finally {
+            setIsDeactivating(false);
+            setShowDeactivateModal(false);
+        }
+    };
 
     return (
         <div>
@@ -245,33 +263,6 @@ const DoctorEditProfilePage = () => {
 };
 export default DoctorEditProfilePage;
 
-<div className="max-w-4xl mx-auto bg-secondary-dark p-8 rounded-lg shadow-lg mt-8"></div>;
 
                 <div className="max-w-4xl mx-auto bg-secondary-dark p-8 rounded-lg shadow-lg mt-8">
                 </div>
-
-    const handleDeactivate = async () => {
-        setIsDeactivating(true);
-        try {
-            const response = await fetch('http://localhost:5000/api/profile/me', {
-                method: 'DELETE',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
-                }
-            });
-            if (response.ok) {
-                toast.success('Account deactivated.');
-                localStorage.clear();
-                navigate('/login');
-            } else {
-                const errorData = await response.json();
-                toast.error(errorData.message || 'Failed to deactivate account');
-            }
-        } catch (error) {
-            toast.error('Failed to deactivate account');
-        } finally {
-            setIsDeactivating(false);
-            setShowDeactivateModal(false);
-        }
-    };

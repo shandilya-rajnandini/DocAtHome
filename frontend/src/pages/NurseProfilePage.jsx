@@ -1,35 +1,36 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getNurseById, bookAppointment } from '../api'; // Correctly imports getNurseById
-import { useAuth } from '../context/AuthContext';
+
 import toast from 'react-hot-toast';
 import VerifiedSkillsBadge from '../components/VerifiedSkillsBadge.jsx';
 import { getAvailability } from '../api';
+import useAuthStore from "../store/useAuthStore";
 
 // --- Mock Data ---
 const timeSlots = ["09:00 AM", "12:00 PM", "03:00 PM", "06:00 PM"];
-const generateDates = () => {
-  const dates = [];
-  const today = new Date();
-  for (let i = 0; i < 7; i++) {
-    const futureDate = new Date(today);
-    futureDate.setDate(today.getDate() + i);
-    dates.push({
-      dayName: futureDate
-        .toLocaleDateString("en-US", { weekday: "short" })
-        .toUpperCase(),
-      day: futureDate.getDate(),
-      fullDate: futureDate.toISOString().split("T")[0],
-    });
-  }
-  return dates;
-};
-const availableDates = generateDates();
+// const generateDates = () => {
+//   const dates = [];
+//   const today = new Date();
+//   for (let i = 0; i < 7; i++) {
+//     const futureDate = new Date(today);
+//     futureDate.setDate(today.getDate() + i);
+//     dates.push({
+//       dayName: futureDate
+//         .toLocaleDateString("en-US", { weekday: "short" })
+//         .toUpperCase(),
+//       day: futureDate.getDate(),
+//       fullDate: futureDate.toISOString().split("T")[0],
+//     });
+//   }
+//   return dates;
+// };
+// const availableDates = generateDates();
 
 const NurseProfilePage = () => {
     const { id } = useParams();
     const navigate = useNavigate();
-    const { user } = useAuth();
+    const { user } = useAuthStore();
     const [nurse, setNurse] = useState(null);
     const [loading, setLoading] = useState(true);
     const [availableDates, setAvailableDates] = useState([]);

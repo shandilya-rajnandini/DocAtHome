@@ -29,6 +29,7 @@ const AdminEditProfilePage = () => {
                     role: data.role || ''
                 });
             } catch (error) {
+                console.log(error);
                 toast.error("Could not load the profile.");
             } finally {
                 setLoading(false);
@@ -37,8 +38,7 @@ const AdminEditProfilePage = () => {
         fetchProfile();
     }, [userId]);
 
-  const onChange = (e) =>
-    setProfile({ ...profile, [e.target.name]: e.target.value });
+    const onChange = (e) => setProfile({ ...profile, [e.target.name]: e.target.value });
 
     const handleAddSkill = () => {
         if (newSkill.trim()) {
@@ -57,23 +57,20 @@ const AdminEditProfilePage = () => {
         });
     };
 
-  const handleFileChange = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
+    const handleFileChange = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
 
         const formData = new FormData();
         formData.append('file', file);
         formData.append('upload_preset', 'your_upload_preset');
 
-    toast.loading("Uploading image...");
-    try {
-      const res = await fetch(
-        `https://api.cloudinary.com/v1_1/your_cloud_name/image/upload`,
-        {
-          method: "POST",
-          body: formData,
-        },
-      );
+        toast.loading("Uploading image...");
+        try {
+            const res = await fetch(`https://api.cloudinary.com/v1_1/your_cloud_name/image/upload`, {
+                method: 'POST',
+                body: formData
+            });
 
             const data = await res.json();
             if (data.secure_url) {
@@ -84,22 +81,24 @@ const AdminEditProfilePage = () => {
                 throw new Error("Upload failed");
             }
         } catch (err) {
+            console.log(err);
             toast.dismiss();
             toast.error("Image upload failed.");
         }
     };
 
-  const onSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      const profileData = {
-        ...profile,
-        profilePictureUrl: profile.profilePictureUrl || "",
-      };
+    const onSubmit = async (e) => {
+        e.preventDefault();
+        try {
+            const profileData = {
+                ...profile,
+                profilePictureUrl: profile.profilePictureUrl || '',
+            };
 
             await updateProfile(userId, profileData);
             toast.success("Profile updated successfully!");
         } catch (error) {
+            console.log(error);
             toast.error("Failed to update profile.");
         }
     };

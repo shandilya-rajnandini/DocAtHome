@@ -1,25 +1,21 @@
-import { useState } from "react";
+import { useState } from 'react';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
+import API, { login as loginApi, getMe } from '../api';
 
-import { useNavigate, Link, useLocation } from "react-router-dom";
-
-import API, { login as loginApi, getMe } from "../api";
-
-import toast from "react-hot-toast";
+import toast from 'react-hot-toast';
 import useAuthStore from "../store/useAuthStore";
 
 const LoginPage = () => {
-  const [formData, setFormData] = useState({ email: "", password: "" });
+  const [formData, setFormData] = useState({ email: '', password: '' });
   const [twoFactorRequired, setTwoFactorRequired] = useState(false);
   const [userId, setUserId] = useState(null);
-  const [token, setToken] = useState("");
+  const [token, setToken] = useState('');
   const navigate = useNavigate();
-
-  const { login } = useAuthStore();
   const location = useLocation();
-
+  const { login } = useAuthStore();
+  
   const { email, password } = formData;
-  const onChange = (e) =>
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+  const onChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
 
   const onSubmit = async (e) => {
     e.preventDefault();
@@ -29,62 +25,59 @@ const LoginPage = () => {
         setTwoFactorRequired(true);
         setUserId(data.userId);
       } else {
-        localStorage.setItem("token", data.token);
-
+        localStorage.setItem('token', data.token);
+        
         const { data: userData } = await getMe();
         login(userData);
-
-        toast.success("Login successful!");
+        
+        toast.success('Login successful!');
 
         const params = new URLSearchParams(location.search);
-        const redirect = params.get("redirect");
-        const from = redirect || "/dashboard";
+        const redirect = params.get('redirect');
+        const from = redirect || '/dashboard';
         // Final redirect logic based on user's role
-        if (userData.role === "admin") {
-          navigate("/admin");
-        } else if (userData.role === "patient") {
+        if (userData.role === 'admin') {
+          navigate('/admin');
+        } else if (userData.role === 'patient') {
           navigate(from, { replace: true });
-        } else if (userData.role === "doctor" || userData.role === "nurse") {
+        } else if (userData.role === 'doctor' || userData.role === 'nurse') {
           // Redirect both doctors and nurses to the professional dashboard
-          navigate("/doctor/dashboard");
+          navigate('/doctor/dashboard');
         } else {
           // Default fallback to the homepage
-          navigate("/");
+          navigate('/');
         }
       }
     } catch (err) {
-      toast.error(
-        err.response?.data?.msg ||
-          "Login failed. Please check your credentials.",
-      );
+      toast.error(err.response?.data?.msg || 'Login failed. Please check your credentials.');
     }
   };
 
   const on2FASubmit = async (e) => {
     e.preventDefault();
     try {
-      const { data } = await API.post("/auth/2fa/login", { userId, token });
-      localStorage.setItem("token", data.token);
-
+      const { data } = await API.post('/auth/2fa/login', { userId, token });
+      localStorage.setItem('token', data.token);
+      
       const { data: userData } = await getMe();
       login(userData);
-
-      toast.success("Login successful!");
+      
+      toast.success('Login successful!');
 
       // Final redirect logic based on user's role
-      if (userData.role === "admin") {
-        navigate("/admin");
-      } else if (userData.role === "patient") {
-        navigate("/dashboard");
-      } else if (userData.role === "doctor" || userData.role === "nurse") {
+      if (userData.role === 'admin') {
+        navigate('/admin');
+      } else if (userData.role === 'patient') {
+        navigate('/dashboard');
+      } else if (userData.role === 'doctor' || userData.role === 'nurse') {
         // Redirect both doctors and nurses to the professional dashboard
-        navigate("/doctor/dashboard");
+        navigate('/doctor/dashboard');
       } else {
         // Default fallback to the homepage
-        navigate("/");
+        navigate('/');
       }
     } catch (err) {
-      toast.error(err.response?.data?.message || "Invalid 2FA token.");
+      toast.error(err.response?.data?.message || 'Invalid 2FA token.');
     }
   };
 

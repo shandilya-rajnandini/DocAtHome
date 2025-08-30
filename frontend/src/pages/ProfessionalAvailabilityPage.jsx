@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
-import { useAuth } from '../context/AuthContext';
+
 import { getAvailability, updateAvailability } from '../api';
+import useAuthStore from "../store/useAuthStore";
 
 const Calendar = ({ availableDays, onDayClick }) => {
   const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -30,7 +31,7 @@ const Calendar = ({ availableDays, onDayClick }) => {
 };
 
 const ProfessionalAvailabilityPage = () => {
-    const { user } = useAuth();
+    const { user } = useAuthStore();
     const [availableDays, setAvailableDays] = useState([]);
     const [loading, setLoading] = useState(true);
 
