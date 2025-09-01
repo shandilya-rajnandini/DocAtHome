@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { getProfileById, updateProfile } from '../api';
+import { getProfileById, updateMyProfile } from '../api';
 import toast from 'react-hot-toast';
 
 const AdminEditProfilePage = () => {
@@ -29,7 +29,7 @@ const AdminEditProfilePage = () => {
                     role: data.role || ''
                 });
             } catch (error) {
-                toast.error("Could not load the profile.");
+                toast.error(`Could not load the profile.  ${error.message || ""}`);
             } finally {
                 setLoading(false);
             }
@@ -79,9 +79,9 @@ const AdminEditProfilePage = () => {
             } else {
                 throw new Error("Upload failed");
             }
-        } catch (err) {
+        } catch (error) {
             toast.dismiss();
-            toast.error("Image upload failed.");
+            toast.error(`Image upload failed.  ,${error.message || ""}`);
         }
     };
 
@@ -93,10 +93,10 @@ const AdminEditProfilePage = () => {
                 profilePictureUrl: profile.profilePictureUrl || '',
             };
 
-            await updateProfile(userId, profileData);
+            await updateMyProfile(userId, profileData);
             toast.success("Profile updated successfully!");
         } catch (error) {
-            toast.error("Failed to update profile.");
+            toast.error(`Failed to update profile. ${error.message || ""}`);
         }
     };
 

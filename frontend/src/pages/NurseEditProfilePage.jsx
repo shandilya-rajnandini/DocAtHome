@@ -44,6 +44,7 @@ const NurseEditProfilePage = () => {
             // eslint-disable-next-line no-unused-vars
             } catch (error) {
                 toast.error("Could not load your profile.");
+                console.error("Profile fetch error:", error);
             } finally {
                 setLoading(false);
             }
@@ -106,6 +107,7 @@ const NurseEditProfilePage = () => {
         } catch (err) {
             toast.dismiss();
             toast.error("Image upload failed.");
+            console.error("Image upload error:", err);
         }
     };
 
@@ -133,6 +135,7 @@ const NurseEditProfilePage = () => {
         // eslint-disable-next-line no-unused-vars
         } catch (error) {
             toast.error("Failed to update profile.");
+            console.error("Profile update error:", error);
         } finally {
             setIsSaving(false);
         }
@@ -158,6 +161,7 @@ const NurseEditProfilePage = () => {
             }
         } catch (error) {
             toast.error('Failed to deactivate account');
+            console.error('Account deactivation error:', error);
         } finally {
             setIsDeactivating(false);
             setShowDeactivateModal(false);

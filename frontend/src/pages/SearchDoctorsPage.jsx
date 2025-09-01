@@ -859,18 +859,18 @@ const DoctorCard = ({ doctor }) => (
 
 export default SearchDoctorsPage;
 
-{/* Add this inside the filters form, before the Apply Filters button */}
-<div className="mb-4">
-  <label htmlFor="skillKeyword" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-    Search by Verified Skills
-  </label>
-  <input
-    type="text"
-    id="skillKeyword"
-    name="skillKeyword"
-    value={filters.skillKeyword}
-    onChange={handleFilterChange}
-    placeholder="e.g., Diabetes Management"
-    className="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-  />
-</div>
+// {/* Add this inside the filters form, before the Apply Filters button */}
+// <div className="mb-4">
+//   <label htmlFor="skillKeyword" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+//     Search by Verified Skills
+//   </label>
+//   <input
+//     type="text"
+//     id="skillKeyword"
+//     name="skillKeyword"
+//     value={filters.skillKeyword}
+//     onChange={handleFilterChange}
+//     placeholder="e.g., Diabetes Management"
+//     className="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+//   />
+// </div>
