@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { getProfileById, updateProfile } from '../api';
+import { getProfileById, updateMyProfile } from '../api';
 import toast from 'react-hot-toast';
 
 const AdminEditProfilePage = () => {
@@ -93,7 +93,7 @@ const AdminEditProfilePage = () => {
                 profilePictureUrl: profile.profilePictureUrl || '',
             };
 
-            await updateProfile(userId, profileData);
+            await updateMyProfile(userId, profileData);
             toast.success("Profile updated successfully!");
         } catch (error) {
             toast.error("Failed to update profile.");

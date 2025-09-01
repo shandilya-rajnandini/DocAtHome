@@ -115,8 +115,6 @@ const DoctorAppointmentsPage = () => {
     setLoading(true);
     try {
       const { data } = await getMyAppointments();
-      console.log(data);
-      console.log('anything');
       // The API returns an object like { success, count, data: [...] }
       // We need to set the inner 'data' array to the state.
       setAppointments(data.data || []);
