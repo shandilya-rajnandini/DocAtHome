@@ -22,7 +22,7 @@ const generateDates = () => {
     }
     return dates;
 };
-const availableDates = generateDates();
+const available_Dates = generateDates();
 
 const DoctorProfilePage = () => {
     const { id } = useParams();
@@ -31,10 +31,10 @@ const DoctorProfilePage = () => {
     const location = useLocation();
     const [doctor, setDoctor] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [selectedDate, setSelectedDate] = useState(available_Dates[0].fullDate);
     const [availableDates, setAvailableDates] = useState([]);
     const [careFundBalance, setCareFundBalance] = useState(0);
     
-    const [selectedDate, setSelectedDate] = useState(availableDates[0].fullDate);
     const [selectedTime, setSelectedTime] = useState('');
     const [bookingType, setBookingType] = useState('In-Home Visit');
     const [bookingDetails, setBookingDetails] = useState({

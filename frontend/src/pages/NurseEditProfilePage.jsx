@@ -44,6 +44,7 @@ const NurseEditProfilePage = () => {
             // eslint-disable-next-line no-unused-vars
             } catch (error) {
                 toast.error("Could not load your profile.");
+                console.error("Profile fetch error:", error);
             } finally {
                 setLoading(false);
             }

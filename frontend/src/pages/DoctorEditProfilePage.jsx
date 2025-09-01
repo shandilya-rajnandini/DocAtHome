@@ -130,6 +130,7 @@ const DoctorEditProfilePage = () => {
     // eslint-disable-next-line no-unused-vars
     } catch (error) {
         toast.error("Failed to update profile.");
+        console.error("Profile update error:", error);
     } finally {
         setIsSaving(false);
     }

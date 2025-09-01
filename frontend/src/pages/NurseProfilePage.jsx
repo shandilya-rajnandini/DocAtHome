@@ -22,7 +22,7 @@ const generateDates = () => {
     }
     return dates;
 };
-const availableDates = generateDates();
+const available_Dates = generateDates();
 
 const NurseProfilePage = () => {
     const { id } = useParams();
@@ -30,8 +30,8 @@ const NurseProfilePage = () => {
     const { user } = useAuth();
     const [nurse, setNurse] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [selectedDate, setSelectedDate] = useState(available_Dates[0].fullDate);
     const [availableDates, setAvailableDates] = useState([]);
-    const [selectedDate, setSelectedDate] = useState(availableDates[0].fullDate);
     const [selectedTime, setSelectedTime] = useState('');
     const [bookingDetails, setBookingDetails] = useState({ symptoms: '' });
 
