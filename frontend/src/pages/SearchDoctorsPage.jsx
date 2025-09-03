@@ -1,12 +1,11 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { searchDoctors } from "../api";
+import { searchDoctors, suggestSpecialty } from "../api";
 import toast from "react-hot-toast";
 import DoctorCardSkeleton from "../components/DoctorCardSkeleton";
 
 // --- NEW IMPORTS ---
 import Modal from "../components/Modal.jsx";
-import axios from "axios";
 
 const doctorSpecialties = [
   "Cardiologist",
@@ -224,7 +223,7 @@ const SearchDoctorsPage = () => {
     }
     setAILoading(true);
     try {
-      const { data } = await axios.post("/api/ai/suggest-specialty", {
+      const { data } = await suggestSpecialty({
         symptoms: symptomsInput,
       });
       setAISuggestion(data.specialty);

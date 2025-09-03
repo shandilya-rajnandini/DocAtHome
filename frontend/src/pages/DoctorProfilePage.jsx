@@ -1,10 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
-import { getDoctorById, bookAppointment } from '../api';
+import { getDoctorById, bookAppointment, getAvailability, getProfileById } from '../api';
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
 import VerifiedSkillsBadge from '../components/VerifiedSkillsBadge.jsx';
-import { getAvailability } from '../api';
 
 // --- Mock Data ---
 const timeSlots = ["11:00 AM", "11:30 AM", "12:00 PM", "12:30 PM", "01:00 PM", "01:30 PM", "02:00 PM"];
@@ -34,7 +33,7 @@ const DoctorProfilePage = () => {
     const [availableDates, setAvailableDates] = useState([]);
     const [careFundBalance, setCareFundBalance] = useState(0);
     
-    const [selectedDate, setSelectedDate] = useState(availableDates[0].fullDate);
+    const [selectedDate, setSelectedDate] = useState('');
     const [selectedTime, setSelectedTime] = useState('');
     const [bookingType, setBookingType] = useState('In-Home Visit');
     const [bookingDetails, setBookingDetails] = useState({
@@ -56,15 +55,41 @@ const DoctorProfilePage = () => {
                 setLoading(false);
             }
         };
+
+        const fetchCareFundBalance = async () => {
+            if (user && user.role === "patient") {
+                try {
+                    const { data } = await getProfileById(user._id);
+                    setCareFundBalance(data.careFundBalance || 0);
+                } catch (error) {
+                    console.error('Error fetching care fund balance:', error);
+                }
+            }
+        };
+
+        const fetchAvailability = async () => {
+            try {
+                const { data } = await getAvailability(id);
+                const dates = data.availableDates?.map(d => ({
+                    dayName: new Date(d.date).toLocaleDateString('en-US', { weekday: 'short' }).toUpperCase(),
+                    day: new Date(d.date).getDate(),
+                    fullDate: d.date
+                })) || [];
+                setAvailableDates(dates);
+                if (dates.length > 0 && !selectedDate) {
+                    setSelectedDate(dates[0].fullDate);
+                }
+            } catch (error) {
+                setAvailableDates([]);
+                console.error('Error fetching availability:', error);
+            }
+        };
+
         fetchDoctor();
+        fetchCareFundBalance();
+        fetchAvailability();
 
-        // Fetch care fund balance for patient
-        if (user && user.role === "patient") {
-            fetch(`/api/profile/${user._id}`)
-                .then(res => res.json())
-                .then(data => setCareFundBalance(data.careFundBalance || 0));
-        }
-
+        // Handle URL parameters
         const params = new URLSearchParams(location.search);
         const previousMeds = params.get('previousMeds');
         const symptoms = params.get('symptoms');
@@ -83,16 +108,7 @@ const DoctorProfilePage = () => {
         if (followUpDate) {
             setSelectedDate(new Date(followUpDate).toISOString().split('T')[0]);
         }
-        getAvailability(id)
-            .then(res => {
-                setAvailableDates(res.data.availableDates?.map(d => ({
-                    dayName: new Date(d.date).toLocaleDateString('en-US', { weekday: 'short' }).toUpperCase(),
-                    day: new Date(d.date).getDate(),
-                    fullDate: d.date
-                })) || []);
-            })
-            .catch(() => setAvailableDates([]));
-    }, [id, user, location.search, navigate]);
+    }, [id, user, location.search, selectedDate]);
 
     const handleBookingDetailChange = (e) => {
         if (e.target.name === 'reportImage') {

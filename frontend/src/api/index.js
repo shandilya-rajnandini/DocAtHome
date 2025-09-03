@@ -84,6 +84,15 @@ export const bookLabTest = (labTestData) => API.post('/lab-tests/book', labTestD
 // Admin functions
 export const getProfileById = (id) => API.get(`/profile/${id}`);
 export const updateProfile = (id, profileData) => API.put(`/profile/${id}`, profileData);
+
+// Two-Factor Authentication functions
+export const disableTwoFactor = () => API.post('/twofactor/disable');
+
+// Account functions
+export const deactivateAccount = () => API.delete('/profile/me');
+
+// AI functions
+export const suggestSpecialty = (symptomsData) => API.post('/ai/suggest-specialty', symptomsData);
 export const getPendingUsers = () => API.get('/admin/pending-users');
 export const approveUser = (userId) => API.put(`/admin/approve-user/${userId}`);
 

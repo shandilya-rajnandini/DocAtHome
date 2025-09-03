@@ -1,9 +1,8 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { getMyProfile, updateMyProfile } from '../api';
+import { Link, useNavigate } from 'react-router-dom';
+import { getMyProfile, updateMyProfile, disableTwoFactor, deactivateAccount } from '../api';
 import toast from 'react-hot-toast';
 import ServiceAreaMap from '../components/ServiceAreaMap';
-import { useNavigate } from 'react-router-dom';
 
 const NurseEditProfilePage = () => {
     const [profile, setProfile] = useState({ 
@@ -56,21 +55,9 @@ const NurseEditProfilePage = () => {
     const disable2FA = async () => {
         setIsDisabling2FA(true);
         try {
-            const response = await fetch('http://localhost:5000/api/twofactor/disable', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
-                }
-            });
-            
-            if (response.ok) {
-                setProfile({ ...profile, isTwoFactorEnabled: false });
-                toast.success('2FA has been disabled successfully');
-            } else {
-                const errorData = await response.json();
-                toast.error(errorData.message || 'Failed to disable 2FA');
-            }
+            await disableTwoFactor();
+            setProfile({ ...profile, isTwoFactorEnabled: false });
+            toast.success('2FA has been disabled successfully');
         } catch (error) {
             toast.error('Failed to disable 2FA');
             console.error('2FA disable error:', error);
@@ -141,21 +128,10 @@ const NurseEditProfilePage = () => {
     const handleDeactivate = async () => {
         setIsDeactivating(true);
         try {
-            const response = await fetch('http://localhost:5000/api/profile/me', {
-                method: 'DELETE',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
-                }
-            });
-            if (response.ok) {
-                toast.success('Account deactivated.');
-                localStorage.clear();
-                navigate('/login');
-            } else {
-                const errorData = await response.json();
-                toast.error(errorData.message || 'Failed to deactivate account');
-            }
+            await deactivateAccount();
+            toast.success('Account deactivated.');
+            localStorage.clear();
+            navigate('/login');
         } catch (error) {
             console.error('Account deactivation error:', error);
             toast.error('Failed to deactivate account');
