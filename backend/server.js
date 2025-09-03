@@ -9,6 +9,8 @@ const connectDB = require('./config/db');
 dotenv.config();
 const app = express();
 
+const path = require('path');
+
 // --- THE DEFINITIVE CORS FIX ---
 // This setup is more explicit and handles the preflight request correctly.
 const allowedOrigins = [
@@ -29,6 +31,9 @@ app.use(cors({
 app.use(express.json());
 app.use(helmet());
 
+// Serve uploaded files
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
 // API Routes
 app.use('/api/auth', require('./routes/authRoutes'));
 app.use('/api/admin', require('./routes/adminRoutes'));
@@ -42,14 +47,12 @@ app.use('/api/lab-tests', require('./routes/labTestRoutes'));
 // Health Check
 app.get('/health', (req, res) => res.status(200).send('OK'));
 
-// Error Handlers
+// Error Handlers - use centralized global error handler
+const { globalErrorHandler } = require('./middleware/errorHandler');
 app.use((req, res, next) => {
   res.status(404).json({ message: 'API endpoint not found' });
 });
-app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).json({ message: 'Internal Server Error' });
-});
+app.use(globalErrorHandler);
 
 const server = http.createServer(app);
 const io = new Server(server, {
@@ -71,4 +74,9 @@ const startServer = async () => {
   }
 };
 
-startServer();
+// Export the app for testing (supertest will use this). Start the server only when run directly.
+module.exports = app;
+
+if (require.main === module) {
+  startServer();
+}

@@ -5,6 +5,7 @@ import {
   getAppointmentSummary,
   saveAppointmentVoiceNote,
   updateRelayNote,
+  downloadIntakeForm,
 } from "../api";
 import toast from "react-hot-toast";
 import DoctorNotesModal from "../components/DoctorNotesModal";
@@ -271,6 +272,27 @@ const DoctorAppointmentsPage = () => {
                           className="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold py-2 px-3 rounded"
                         >
                           View Summary
+                        </button>
+                      )}
+                      {/* Download Intake Form available to confirmed or completed appointments */}
+                      {(appt.status === "Confirmed" || appt.status === "Completed") && (
+                        <button
+                          onClick={async () => {
+                            try {
+                              const resp = await downloadIntakeForm(appt._id);
+                              if (!resp.ok) throw new Error('Failed to fetch intake form');
+                              const blob = await resp.blob();
+                              const url = window.URL.createObjectURL(blob);
+                              window.open(url, '_blank');
+                              // optional: revoke after some time
+                              setTimeout(() => window.URL.revokeObjectURL(url), 60000);
+                            } catch (err) {
+                              toast.error('Could not open intake form.');
+                            }
+                          }}
+                          className="bg-gray-600 hover:bg-gray-700 text-white text-sm font-bold py-2 px-3 rounded"
+                        >
+                          Open Intake Form
                         </button>
                       )}
                       {appt.status === "Pending" && (

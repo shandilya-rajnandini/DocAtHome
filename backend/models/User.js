@@ -205,6 +205,23 @@ const UserSchema = new mongoose.Schema({
       required: false,
     },
   },
+
+  // --- Professional Location ---
+  location: {
+    type: {
+      type: String,
+      enum: ['Point'],
+      required: function () {
+        return this.role === 'doctor' || this.role === 'nurse';
+      },
+    },
+    coordinates: {
+      type: [Number], // [longitude, latitude]
+      required: function () {
+        return this.role === 'doctor' || this.role === 'nurse';
+      },
+    },
+  },
 });
 
 // --- Mongoose Middleware & Hooks ---
@@ -229,6 +246,7 @@ UserSchema.methods.matchPassword = async function (enteredPassword) {
 // --- Indexes ---
 // Geospatial index
 UserSchema.index({ serviceArea: '2dsphere' });
+UserSchema.index({ location: '2dsphere' });
 
 // Multi-field query index
 UserSchema.index({ role: 1, city: 1, specialty: 1 });

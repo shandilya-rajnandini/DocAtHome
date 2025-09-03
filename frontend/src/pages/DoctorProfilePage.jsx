@@ -211,7 +211,7 @@ const DoctorProfilePage = () => {
                         </div>
                     </div>
 
-                    <div className="lg:col-span-1 bg-secondary-dark p-6 rounded-lg shadow-lg h-fit">
+                    <div className="lg:col-span-1 bg-secondary-dark p-6 rounded-lg shadow-lg h-fit lg:sticky lg:top-20">
                         <h2 className="text-2xl font-bold text-white mb-4">Booking Summary</h2>
                         <div className="space-y-4 text-secondary-text">
                             <div className="flex justify-between"><span>Doctor:</span><span className="text-white">{doctor.name}</span></div>

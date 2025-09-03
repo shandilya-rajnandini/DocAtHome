@@ -5,20 +5,17 @@ const connectDB = async () => {
   try {
     console.log('Attempting to connect to database...');
     
-    // Check if we're in a testing environment
-    const isTest = process.env.NODE_ENV === 'test' || process.argv.includes('--test');
-    
-    if (isTest) {
-      // For demo/test purposes, don't attempt a real connection
-      console.log('Running in test mode - using mock database connection');
-      
-      // Simple way to bypass real MongoDB connection in test mode
-      // This creates a fake mongoose-like interface
+    // Prefer TEST_MONGO_URI if provided (used by mongodb-memory-server in tests)
+    const mongoUri = process.env.TEST_MONGO_URI || process.env.MONGO_URI;
+
+    if (!mongoUri) {
+      // If no URI configured, and not in a test setup, return mock to avoid crashing.
+      console.log('No MongoDB URI provided; running with mock DB in this environment');
       return { connection: { host: 'mock-db-server' } };
     }
     
     // For production/development
-    const conn = await mongoose.connect(process.env.MONGO_URI);
+  const conn = await mongoose.connect(mongoUri);
     console.log(`MongoDB Connected: ${conn.connection.host}`);
     return conn;
     

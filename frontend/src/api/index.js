@@ -20,3 +20,28 @@ export const register = (formData) => API.post('/auth/register', formData);
 export const getMyAppointments = () => API.get('/appointments/my-appointments');
 export const updateAppointmentStatus = (id, statusData) => API.put(`/appointments/${id}`, statusData);
 // ... etc.
+export const downloadIntakeForm = (id) => {
+  // We don't use axios here because we want to handle the PDF blob and include auth header
+  const token = localStorage.getItem('token');
+  return fetch(`${API_URL}/appointments/${id}/intake-form`, {
+    method: 'GET',
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+  });
+};
+
+export const getIntakeFormLogs = (page = 1, limit = 20) => API.get(`/admin/intake-form-logs?page=${page}&limit=${limit}`);
+export const getIntakeFormLogsWithFilters = (params = {}) => {
+  const query = new URLSearchParams(params).toString();
+  return API.get(`/admin/intake-form-logs?${query}`);
+};
+
+// Search functions
+export const searchDoctors = (params = {}) => {
+  const query = new URLSearchParams(params).toString();
+  return API.get(`/doctors?${query}`);
+};
+
+export const searchNurses = (params = {}) => {
+  const query = new URLSearchParams(params).toString();
+  return API.get(`/nurses?${query}`);
+};

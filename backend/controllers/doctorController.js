@@ -202,18 +202,70 @@ const getDoctors = asyncHandler(async (req, res) => {
         lng: longitude,
         timestamp: new Date().toISOString(),
         searchRadius: radius,
-        decagonPolygon: decagonPolygon,
       };
 
-      // Find all doctors with service areas (apply filters but no pagination yet)
-      const geoQuery = {
+      // First, try to find doctors using the location field with $near
+      const locationQuery = {
         ...baseQuery,
-        serviceArea: { $exists: true, $ne: null },
+        location: {
+          $near: {
+            $geometry: {
+              type: 'Point',
+              coordinates: [longitude, latitude]
+            },
+            $maxDistance: parseFloat(radius) * 1000 // Convert km to meters
+          }
+        }
       };
 
-      const allDoctorsWithServiceArea = await User.find(geoQuery).select(
-        "-password"
-      );
+      const doctorsByLocation = await User.find(locationQuery)
+        .select('-password')
+        .sort(sortQuery)
+        .skip(skip)
+        .limit(limit);
+
+      // Calculate distances for doctors found by location
+      const doctorsWithLocationDistance = doctorsByLocation.map(doctor => {
+        const distance = calculateDistance(
+          latitude,
+          longitude,
+          doctor.location.coordinates[1], // latitude
+          doctor.location.coordinates[0]  // longitude
+        );
+
+        return {
+          ...doctor.toObject(),
+          distance: Math.round(distance * 10) / 10,
+          foundByLocation: true,
+        };
+      });
+
+      // If we have enough results from location-based search, use them
+      if (doctorsWithLocationDistance.length >= limit) {
+        totalDoctors = await User.countDocuments(locationQuery);
+        doctors = doctorsWithLocationDistance;
+      } else {
+        // Fall back to the existing service area logic for additional results
+        const remainingLimit = limit - doctorsWithLocationDistance.length;
+        const remainingSkip = Math.max(0, skip - doctorsWithLocationDistance.length);
+
+        // Create 10-point decagon polygon around patient's location
+        const decagonPolygon = createDecagonPolygon(
+          latitude,
+          longitude,
+          parseFloat(radius)
+        );
+
+        // Find doctors with service areas (excluding those already found by location)
+        const geoQuery = {
+          ...baseQuery,
+          serviceArea: { $exists: true, $ne: null },
+          _id: { $nin: doctorsWithLocationDistance.map(d => d._id) }
+        };
+
+        const allDoctorsWithServiceArea = await User.find(geoQuery).select(
+          "-password"
+        );
 
       // Filter doctors whose service areas intersect with the decagon polygon
       const doctorsWithinDecagon = allDoctorsWithServiceArea.filter(
@@ -305,6 +357,7 @@ const getDoctors = asyncHandler(async (req, res) => {
       // Apply pagination to the sorted results
       totalDoctors = allDoctors.length;
       doctors = allDoctors.slice(skip, skip + limit);
+      }
     } else {
       // Invalid coordinates, fall back to regular search
       totalDoctors = await User.countDocuments(baseQuery);

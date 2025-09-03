@@ -76,6 +76,12 @@ const Navbar = () => {
               <span className="absolute left-0 bottom-0 w-0 h-[2px] bg-accent-blue transition-all duration-300 group-hover:w-full"></span>
             </Link>
           )}
+          {user && user.role === 'admin' && (
+            <Link to="/admin/intake-logs" className="hover:text-accent-blue relative group transition">
+              Intake Logs
+              <span className="absolute left-0 bottom-0 w-0 h-[2px] bg-accent-blue transition-all duration-300 group-hover:w-full"></span>
+            </Link>
+          )}
           {user ? (
             <>
             <span className="text-white">Welcome, {user.name}</span>
