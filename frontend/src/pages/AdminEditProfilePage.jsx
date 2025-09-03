@@ -29,6 +29,7 @@ const AdminEditProfilePage = () => {
                     role: data.role || ''
                 });
             } catch (error) {
+                console.error('Error loading profile:', error);
                 toast.error("Could not load the profile.");
             } finally {
                 setLoading(false);
@@ -80,6 +81,7 @@ const AdminEditProfilePage = () => {
                 throw new Error("Upload failed");
             }
         } catch (err) {
+            console.error('Image upload error:', err);
             toast.dismiss();
             toast.error("Image upload failed.");
         }
@@ -96,6 +98,7 @@ const AdminEditProfilePage = () => {
             await updateProfile(userId, profileData);
             toast.success("Profile updated successfully!");
         } catch (error) {
+            console.error('Profile update error:', error);
             toast.error("Failed to update profile.");
         }
     };

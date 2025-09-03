@@ -8,21 +8,21 @@ import { getAvailability } from '../api';
 
 // --- Mock Data ---
 const timeSlots = ["11:00 AM", "11:30 AM", "12:00 PM", "12:30 PM", "01:00 PM", "01:30 PM", "02:00 PM"];
-const generateDates = () => {
-    const dates = [];
-    const today = new Date();
-    for (let i = 0; i < 7; i++) {
-        const futureDate = new Date(today);
-        futureDate.setDate(today.getDate() + i);
-        dates.push({
-            dayName: futureDate.toLocaleDateString('en-US', { weekday: 'short' }).toUpperCase(),
-            day: futureDate.getDate(),
-            fullDate: futureDate.toISOString().split('T')[0],
-        });
-    }
-    return dates;
-};
-const availableDates = generateDates();
+// const generateDates = () => { // Commented out as not currently used
+//     const dates = [];
+//     const today = new Date();
+//     for (let i = 0; i < 7; i++) {
+//         const futureDate = new Date(today);
+//         futureDate.setDate(today.getDate() + i);
+//         dates.push({
+//             dayName: futureDate.toLocaleDateString('en-US', { weekday: 'short' }).toUpperCase(),
+//             day: futureDate.getDate(),
+//             fullDate: futureDate.toISOString().split('T')[0],
+//         });
+//     }
+//     return dates;
+// };
+// const availableDates = generateDates(); // Commented out as not currently used
 
 const DoctorProfilePage = () => {
     const { id } = useParams();

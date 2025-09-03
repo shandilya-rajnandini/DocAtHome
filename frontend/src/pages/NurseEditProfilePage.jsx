@@ -157,6 +157,7 @@ const NurseEditProfilePage = () => {
                 toast.error(errorData.message || 'Failed to deactivate account');
             }
         } catch (error) {
+            console.error('Account deactivation error:', error);
             toast.error('Failed to deactivate account');
         } finally {
             setIsDeactivating(false);

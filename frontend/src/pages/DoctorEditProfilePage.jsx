@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom';
 import { getMyProfile, updateMyProfile } from '../api';
 import toast from 'react-hot-toast';
 import ServiceAreaMap from '../components/ServiceAreaMap';
-import { useNavigate } from 'react-router-dom';
 
 const DoctorEditProfilePage = () => {
     const [profile, setProfile] = useState({ 
@@ -19,9 +18,35 @@ const DoctorEditProfilePage = () => {
     const [loading, setLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
     const [isDisabling2FA, setIsDisabling2FA] = useState(false);
-    const navigate = useNavigate();
     const [showDeactivateModal, setShowDeactivateModal] = useState(false);
     const [isDeactivating, setIsDeactivating] = useState(false);
+
+    const handleDeactivate = async () => {
+        setIsDeactivating(true);
+        try {
+            const response = await fetch('http://localhost:5000/api/profile/me', {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                }
+            });
+            if (response.ok) {
+                toast.success('Account deactivated.');
+                localStorage.clear();
+                window.location.href = '/login'; // Use window.location instead of navigate
+            } else {
+                const errorData = await response.json();
+                toast.error(errorData.message || 'Failed to deactivate account');
+            }
+        } catch (error) {
+            console.error('Account deactivation error:', error);
+            toast.error('Failed to deactivate account');
+        } finally {
+            setIsDeactivating(false);
+            setShowDeactivateModal(false);
+        }
+    };
 
     useEffect(() => {
         const fetchProfile = async () => {
@@ -234,34 +259,5 @@ const DoctorEditProfilePage = () => {
         </div>
     );
 };
+
 export default DoctorEditProfilePage;
-
-
-                <div className="max-w-4xl mx-auto bg-secondary-dark p-8 rounded-lg shadow-lg mt-8">
-                </div>
-
-    const handleDeactivate = async () => {
-        setIsDeactivating(true);
-        try {
-            const response = await fetch('http://localhost:5000/api/profile/me', {
-                method: 'DELETE',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
-                }
-            });
-            if (response.ok) {
-                toast.success('Account deactivated.');
-                localStorage.clear();
-                navigate('/login');
-            } else {
-                const errorData = await response.json();
-                toast.error(errorData.message || 'Failed to deactivate account');
-            }
-        } catch (error) {
-            toast.error('Failed to deactivate account');
-        } finally {
-            setIsDeactivating(false);
-            setShowDeactivateModal(false);
-        }
-    };

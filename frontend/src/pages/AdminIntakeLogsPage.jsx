@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { getIntakeFormLogsWithFilters } from '../api';
 import ProtectedRoute from '../components/ProtectedRoute';
 import AnimatedPage from '../components/AnimatedPage';
@@ -6,7 +6,7 @@ import AnimatedPage from '../components/AnimatedPage';
 const AdminIntakeLogsPage = () => {
   const [logs, setLogs] = useState([]);
   const [page, setPage] = useState(1);
-  const [total, setTotal] = useState(0);
+  // const [total, setTotal] = useState(0); // Commented out as not currently used
   const [loading, setLoading] = useState(false);
   const [q, setQ] = useState('');
   const [generatedBy, setGeneratedBy] = useState('');
@@ -14,7 +14,7 @@ const AdminIntakeLogsPage = () => {
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
 
-  const fetchLogs = async (p = 1) => {
+  const fetchLogs = useCallback(async (p = 1) => {
     setLoading(true);
     try {
       const params = { page: p, limit: 20 };
@@ -25,16 +25,16 @@ const AdminIntakeLogsPage = () => {
       if (endDate) params.endDate = endDate;
       const { data } = await getIntakeFormLogsWithFilters(params);
       setLogs(data.data || []);
-      setTotal(data.total || 0);
+      // setTotal(data.total || 0); // Commented out as total state is not currently used
       setPage(p);
     } catch (err) {
       console.error(err);
     } finally {
       setLoading(false);
     }
-  };
+  }, [q, generatedBy, appointmentId, startDate, endDate]);
 
-  useEffect(() => { fetchLogs(1); }, []);
+  useEffect(() => { fetchLogs(1); }, [fetchLogs]);
 
   return (
     <AnimatedPage>

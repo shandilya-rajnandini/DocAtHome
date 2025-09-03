@@ -287,6 +287,7 @@ const DoctorAppointmentsPage = () => {
                               // optional: revoke after some time
                               setTimeout(() => window.URL.revokeObjectURL(url), 60000);
                             } catch (err) {
+                              console.error('Error opening intake form:', err);
                               toast.error('Could not open intake form.');
                             }
                           }}
