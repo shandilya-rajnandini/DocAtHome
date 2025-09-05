@@ -1,9 +1,6 @@
 import axios from 'axios';
 
-// This hardcoded URL is the most reliable way to ensure the live frontend
-// talks to the live backend.
 const API_URL = 'https://docathome-backend.onrender.com/api';
-
 const API = axios.create({ baseURL: API_URL });
 
 API.interceptors.request.use((req) => {
@@ -12,9 +9,6 @@ API.interceptors.request.use((req) => {
   }
   return req;
 });
-
-
-// --- API Function Exports (Consolidated from ALL Merged PRs & Features) ---
 
 // === Auth & User Routes ===
 export const login = (formData) => API.post('/auth/login', formData);
@@ -65,17 +59,20 @@ export const bookAmbulance = (bookingData) => API.post('/ambulance/book', bookin
 export const updateDriverStatus = (statusData) => API.put('/profile/me/driver-status', statusData);
 export const respondToAmbulanceRequest = (response) => API.post('/ambulance/respond', response);
 
-// === Payment & Subscription Routes (THE FIX) ===
+// === Payment & Subscription Routes ===
 export const createRazorpayOrder = (orderData) => API.post('/payment/create-order', orderData);
 export const verifyRazorpayPayment = (paymentData) => API.post('/payment/verify', paymentData);
 export const getPaymentHistory = () => API.get('/payment/my-history');
 export const getSubscriptionStatus = () => API.get('/subscription/status');
 export const createSubscription = (planId) => API.post('/subscription/create', { planId });
-export const createProSubscription = createSubscription; // Alias for components that use the other name
-export const verifySubscription = (paymentData) => API.post('/subscription/verify', paymentData); // Added for completeness
+export const createProSubscription = createSubscription;
+export const verifySubscription = (paymentData) => API.post('/subscription/verify', paymentData);
 
-// === Announcement Routes ===
+// === Announcement Routes (THE FIX) ===
 export const getActiveAnnouncements = () => API.get('/announcements/active');
+export const getAnnouncements = () => API.get('/announcements'); // For admin
+export const createAnnouncement = (announcementData) => API.post('/announcements', announcementData); // For admin
+export const deleteAnnouncement = (id) => API.delete(`/announcements/${id}`); // For admin
 
 // === Quest Routes ===
 export const getQuests = () => API.get('/quests');
