@@ -1,6 +1,7 @@
 import axios from 'axios';
 
 const API_URL = 'https://docathome-backend.onrender.com/api';
+
 const API = axios.create({ baseURL: API_URL });
 
 API.interceptors.request.use((req) => {
@@ -68,14 +69,18 @@ export const createSubscription = (planId) => API.post('/subscription/create', {
 export const createProSubscription = createSubscription;
 export const verifySubscription = (paymentData) => API.post('/subscription/verify', paymentData);
 
-// === Announcement Routes (THE FIX) ===
+// === Announcement Routes ===
 export const getActiveAnnouncements = () => API.get('/announcements/active');
-export const getAnnouncements = () => API.get('/announcements'); // For admin
-export const createAnnouncement = (announcementData) => API.post('/announcements', announcementData); // For admin
-export const deleteAnnouncement = (id) => API.delete(`/announcements/${id}`); // For admin
+export const getAnnouncements = () => API.get('/announcements');
+export const createAnnouncement = (announcementData) => API.post('/announcements', announcementData);
+export const deleteAnnouncement = (id) => API.delete(`/announcements/${id}`);
 
 // === Quest Routes ===
 export const getQuests = () => API.get('/quests');
 export const acceptQuest = (questId) => API.post(`/quests/${questId}/accept`);
 export const logQuestProgress = (userQuestId) => API.post(`/quests/${userQuestId}/log`);
 
+// === Two-Factor Authentication (2FA) Routes (THE FIX) ===
+export const setupTwoFactorAuth = () => API.post('/twofactor/setup');
+export const verifyTwoFactorAuth = (token) => API.post('/twofactor/verify', { token });
+export const loginWithTwoFactor = (credentials) => API.post('/auth/2fa/login', credentials);
