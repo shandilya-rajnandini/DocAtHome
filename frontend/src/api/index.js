@@ -76,3 +76,7 @@ export const logQuestProgress = (userQuestId) => API.post(`/quests/${userQuestId
 // === Care Fund Routes (NEW) ===
 export const getMyCareFund = () => API.get('/care-fund/my-fund');
 export const createDonationOrder = (donationData) => API.post('/care-fund/donate', donationData);
+
+// === Subscription Routes (NEW) ===
+export const getSubscriptionStatus = () => API.get('/subscription/status');
+export const createSubscription = (planId) => API.post('/subscription/create', { planId });
