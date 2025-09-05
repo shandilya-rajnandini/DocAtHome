@@ -83,6 +83,6 @@ export const createSubscription = (planId) => API.post('/subscription/create', {
 
 
 // === Ambulance / Driver Routes (THE FIX) ===
-export const bookAmbulance = (bookingData) => API.post('/ambulance/book', bookingData);
+
 export const updateDriverStatus = (statusData) => API.put('/profile/me/driver-status', statusData);
 export const respondToAmbulanceRequest = (response) => API.post('/ambulance/respond', response);
