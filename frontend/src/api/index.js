@@ -33,18 +33,18 @@ export const searchDoctors = (params) => API.get('/doctors', { params });
 export const getDoctorById = (id) => getProfessionalById(id);
 export const searchNurses = (params) => API.get('/nurses', { params });
 export const getNurseById = (id) => getProfessionalById(id);
-export const getProfileById = (id) => getProfessionalById(id); // Alias for components that need it
+export const getProfileById = (id) => getProfessionalById(id);
 
-// === Logged-in User Profile Routes ===
+// === Logged-in User Profile Routes (THE FIX) ===
 export const getMyProfile = () => API.get('/profile/me');
 export const updateMyProfile = (profileData) => API.put('/profile/me', profileData);
+export const updateProfile = updateMyProfile; // Alias for components that use the other name
 
-// === Appointment Routes (THE FIX) ===
+// === Appointment Routes ===
 export const bookAppointment = (appointmentData) => API.post('/appointments', appointmentData);
 export const getMyAppointments = () => API.get('/appointments/my-appointments');
 export const updateAppointmentStatus = (id, statusData) => API.put(`/appointments/${id}`, statusData);
-export const getAppointmentSummary = (id) => API.get(`/appointments/${id}/summary`);
-export const scheduleFollowUp = (appointmentId, followUpData) => API.post(`/appointments/${appointmentId}/schedule-follow-up`, followUpData); // <-- MISSING FUNCTION ADDED
+export const scheduleFollowUp = (appointmentId, followUpData) => API.post(`/appointments/${appointmentId}/schedule-follow-up`, followUpData);
 
 // === Availability Routes ===
 export const getAvailability = (professionalId) => API.get(`/availability/${professionalId}`);
