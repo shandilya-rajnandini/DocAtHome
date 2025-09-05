@@ -40,7 +40,7 @@ export const getMyProfile = () => API.get('/profile/me');
 export const updateMyProfile = (profileData) => API.put('/profile/me', profileData);
 export const updateProfile = updateMyProfile;
 
-// === Appointment Routes (THE FIX) ===
+// === Appointment Routes ===
 export const bookAppointment = (appointmentData) => API.post('/appointments', appointmentData);
 export const getMyAppointments = () => API.get('/appointments/my-appointments');
 export const updateAppointmentStatus = (id, statusData) => API.put(`/appointments/${id}`, statusData);
@@ -65,12 +65,14 @@ export const bookAmbulance = (bookingData) => API.post('/ambulance/book', bookin
 export const updateDriverStatus = (statusData) => API.put('/profile/me/driver-status', statusData);
 export const respondToAmbulanceRequest = (response) => API.post('/ambulance/respond', response);
 
-// === Payment & Subscription Routes ===
+// === Payment & Subscription Routes (THE FIX) ===
 export const createRazorpayOrder = (orderData) => API.post('/payment/create-order', orderData);
 export const verifyRazorpayPayment = (paymentData) => API.post('/payment/verify', paymentData);
 export const getPaymentHistory = () => API.get('/payment/my-history');
 export const getSubscriptionStatus = () => API.get('/subscription/status');
 export const createSubscription = (planId) => API.post('/subscription/create', { planId });
+export const createProSubscription = createSubscription; // Alias for components that use the other name
+export const verifySubscription = (paymentData) => API.post('/subscription/verify', paymentData); // Added for completeness
 
 // === Announcement Routes ===
 export const getActiveAnnouncements = () => API.get('/announcements/active');
