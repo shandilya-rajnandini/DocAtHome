@@ -58,3 +58,8 @@ export const getActiveAnnouncements = () => API.get('/announcements/active');
 
 // === Ambulance Routes (THE FIX) ===
 export const bookAmbulance = (bookingData) => API.post('/ambulance/book', bookingData);
+
+// === Quest Routes (THE FIX) ===
+export const getQuests = () => API.get('/quests');
+export const acceptQuest = (questId) => API.post(`/quests/${questId}/accept`);
+export const logQuestProgress = (userQuestId) => API.post(`/quests/${userQuestId}/log`);
