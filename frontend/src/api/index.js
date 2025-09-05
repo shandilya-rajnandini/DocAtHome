@@ -1,13 +1,9 @@
 import axios from 'axios';
 
-// This hardcoded URL is the most reliable way to ensure the live frontend
-// talks to the live backend.
 const API_URL = 'https://docathome-backend.onrender.com/api';
 
-// Create a configured instance of Axios with the correct, full base URL
 const API = axios.create({ baseURL: API_URL });
 
-// This interceptor automatically adds the user's JWT token to every secure request.
 API.interceptors.request.use((req) => {
   if (localStorage.getItem('token')) {
     req.headers.Authorization = `Bearer ${localStorage.getItem('token')}`;
@@ -15,10 +11,7 @@ API.interceptors.request.use((req) => {
   return req;
 });
 
-
-// --- API Function Exports (Consolidated from all features) ---
-
-// === Authentication & User Routes ===
+// === Authentication Routes ===
 export const login = (formData) => API.post('/auth/login', formData);
 export const register = (formData) => API.post('/auth/register', formData);
 export const getMe = () => API.get('/auth/me');
@@ -28,10 +21,11 @@ export const resetPassword = (token, passwordData) => API.post(`/auth/reset-pass
 // === Admin Routes ===
 export const getPendingUsers = () => API.get('/admin/pending');
 export const approveUser = (id) => API.put(`/admin/approve/${id}`);
-// Add more admin functions here as they are built
 
-// === Professional Search & Profile Routes ===
+// === Generic Profile Fetching ===
 const getProfessionalById = (id) => API.get(`/profile/${id}`);
+
+// === Doctor & Nurse Search Routes ===
 export const searchDoctors = (params) => API.get('/doctors', { params });
 export const getDoctorById = (id) => getProfessionalById(id);
 export const searchNurses = (params) => API.get('/nurses', { params });
@@ -45,8 +39,6 @@ export const updateMyProfile = (profileData) => API.put('/profile/me', profileDa
 export const bookAppointment = (appointmentData) => API.post('/appointments', appointmentData);
 export const getMyAppointments = () => API.get('/appointments/my-appointments');
 export const updateAppointmentStatus = (id, statusData) => API.put(`/appointments/${id}`, statusData);
-export const getAppointmentSummary = (id) => API.get(`/appointments/${id}/summary`);
-// NEWLY ADDED for the "Update Availability" feature
 export const getAvailability = (professionalId) => API.get(`/availability/${professionalId}`);
 export const updateAvailability = (availabilityData) => API.post('/availability', availabilityData);
 
@@ -61,14 +53,8 @@ export const bookLabTest = (testData) => API.post('/lab-tests', testData);
 export const createRazorpayOrder = (orderData) => API.post('/payment/create-order', orderData);
 export const verifyRazorpayPayment = (paymentData) => API.post('/payment/verify', paymentData);
 
-// === Review Routes ===
-export const getReviewsForDoctor = (doctorId) => API.get(`/doctors/${doctorId}/reviews`);
-export const createReview = (doctorId, reviewData) => API.post(`/doctors/${doctorId}/reviews`, reviewData);
-
 // === Announcement Routes ===
 export const getActiveAnnouncements = () => API.get('/announcements/active');
 
-// === Quest Routes ===
-export const getQuests = () => API.get('/quests');
-export const acceptQuest = (questId) => API.post(`/quests/${questId}/accept`);
-export const logQuestProgress = (userQuestId) => API.post(`/quests/${userQuestId}/log`);
+// === Ambulance Routes (THE FIX) ===
+export const bookAmbulance = (bookingData) => API.post('/ambulance/book', bookingData);

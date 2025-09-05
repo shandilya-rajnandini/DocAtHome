@@ -40,6 +40,8 @@ app.use('/api/nurses', require('./routes/nurseRoutes'));
 app.use('/api/profile', require('./routes/profileRoutes'));
 app.use('/api/appointments', require('./routes/appointmentRoutes'));
 app.use('/api/lab-tests', require('./routes/labTestRoutes'));
+app.use('/api/payment', require('./routes/paymentRoutes'));
+app.use('/api/ambulance', require('./routes/ambulanceRoutes'));
 // app.use('/api/payment', require('./routes/paymentRoutes'));
 
 // Health Check
