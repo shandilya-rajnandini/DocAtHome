@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
-import API, { login as loginApi, getMe } from '../api';
+import { login as loginApi, getMe } from '../api/index.js'; // Correct
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
 
