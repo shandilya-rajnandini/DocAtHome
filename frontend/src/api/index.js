@@ -80,3 +80,9 @@ export const createDonationOrder = (donationData) => API.post('/care-fund/donate
 // === Subscription Routes (NEW) ===
 export const getSubscriptionStatus = () => API.get('/subscription/status');
 export const createSubscription = (planId) => API.post('/subscription/create', { planId });
+
+
+// === Ambulance / Driver Routes (THE FIX) ===
+export const bookAmbulance = (bookingData) => API.post('/ambulance/book', bookingData);
+export const updateDriverStatus = (statusData) => API.put('/profile/me/driver-status', statusData);
+export const respondToAmbulanceRequest = (response) => API.post('/ambulance/respond', response);
