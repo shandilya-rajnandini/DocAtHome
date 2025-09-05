@@ -1,5 +1,7 @@
 import axios from 'axios';
 
+// This hardcoded URL is the most reliable way to ensure the live frontend
+// talks to the live backend.
 const API_URL = 'https://docathome-backend.onrender.com/api';
 
 const API = axios.create({ baseURL: API_URL });
@@ -10,6 +12,9 @@ API.interceptors.request.use((req) => {
   }
   return req;
 });
+
+
+// --- API Function Exports (Consolidated from ALL Merged PRs & Features) ---
 
 // === Auth & User Routes ===
 export const login = (formData) => API.post('/auth/login', formData);
@@ -28,17 +33,18 @@ export const searchDoctors = (params) => API.get('/doctors', { params });
 export const getDoctorById = (id) => getProfessionalById(id);
 export const searchNurses = (params) => API.get('/nurses', { params });
 export const getNurseById = (id) => getProfessionalById(id);
-export const getProfileById = (id) => getProfessionalById(id); // <-- THE FIX
+export const getProfileById = (id) => getProfessionalById(id); // Alias for components that need it
 
 // === Logged-in User Profile Routes ===
 export const getMyProfile = () => API.get('/profile/me');
 export const updateMyProfile = (profileData) => API.put('/profile/me', profileData);
-export const updateProfile = (profileData) => API.put('/profile/me', profileData); // Alias for updateMyProfile
 
-// === Appointment Routes ===
+// === Appointment Routes (THE FIX) ===
 export const bookAppointment = (appointmentData) => API.post('/appointments', appointmentData);
 export const getMyAppointments = () => API.get('/appointments/my-appointments');
 export const updateAppointmentStatus = (id, statusData) => API.put(`/appointments/${id}`, statusData);
+export const getAppointmentSummary = (id) => API.get(`/appointments/${id}/summary`);
+export const scheduleFollowUp = (appointmentId, followUpData) => API.post(`/appointments/${appointmentId}/schedule-follow-up`, followUpData); // <-- MISSING FUNCTION ADDED
 
 // === Availability Routes ===
 export const getAvailability = (professionalId) => API.get(`/availability/${professionalId}`);
@@ -50,8 +56,11 @@ export const inviteToCareCircle = (inviteData) => API.post('/profile/my-care-cir
 export const getMyCareFund = () => API.get('/care-fund/my-fund');
 export const createDonationOrder = (donationData) => API.post('/care-fund/donate', donationData);
 
-// === Lab Test Routes ===
+// === Lab Test & Ambulance Routes ===
 export const bookLabTest = (testData) => API.post('/lab-tests', testData);
+export const bookAmbulance = (bookingData) => API.post('/ambulance/book', bookingData);
+export const updateDriverStatus = (statusData) => API.put('/profile/me/driver-status', statusData);
+export const respondToAmbulanceRequest = (response) => API.post('/ambulance/respond', response);
 
 // === Payment & Subscription Routes ===
 export const createRazorpayOrder = (orderData) => API.post('/payment/create-order', orderData);
@@ -67,8 +76,3 @@ export const getActiveAnnouncements = () => API.get('/announcements/active');
 export const getQuests = () => API.get('/quests');
 export const acceptQuest = (questId) => API.post(`/quests/${questId}/accept`);
 export const logQuestProgress = (userQuestId) => API.post(`/quests/${userQuestId}/log`);
-
-// === Ambulance / Driver Routes ===
-export const bookAmbulance = (bookingData) => API.post('/ambulance/book', bookingData);
-export const updateDriverStatus = (statusData) => API.put('/profile/me/driver-status', statusData);
-export const respondToAmbulanceRequest = (response) => API.post('/ambulance/respond', response);
