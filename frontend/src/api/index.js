@@ -78,3 +78,4 @@ export const deleteAnnouncement = (id) => API.delete(`/announcements/${id}`); //
 export const getQuests = () => API.get('/quests');
 export const acceptQuest = (questId) => API.post(`/quests/${questId}/accept`);
 export const logQuestProgress = (userQuestId) => API.post(`/quests/${userQuestId}/log`);
+
