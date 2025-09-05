@@ -17,6 +17,7 @@ export const login = (formData) => API.post('/auth/login', formData);
 export const register = (formData) => API.post('/auth/register', formData);
 export const getMe = () => API.get('/auth/me');
 export const searchDoctors = (params) => API.get('/doctors', { params });
+export const getActiveAnnouncements = () => API.get('/announcements/active');
 // ... include ALL your other exports here ...
 export const getMyAppointments = () => API.get('/appointments/my-appointments');
 // ...etc.
