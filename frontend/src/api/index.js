@@ -72,3 +72,7 @@ export const bookAmbulance = (bookingData) => API.post('/ambulance/book', bookin
 export const getQuests = () => API.get('/quests');
 export const acceptQuest = (questId) => API.post(`/quests/${questId}/accept`);
 export const logQuestProgress = (userQuestId) => API.post(`/quests/${userQuestId}/log`);
+
+// === Care Fund Routes (NEW) ===
+export const getMyCareFund = () => API.get('/care-fund/my-fund');
+export const createDonationOrder = (donationData) => API.post('/care-fund/donate', donationData);
