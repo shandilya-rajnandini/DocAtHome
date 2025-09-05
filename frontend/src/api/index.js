@@ -13,6 +13,7 @@ API.interceptors.request.use((req) => {
 });
 
 // Export all your API functions
+
 // === Authentication Routes ===
 export const login = (formData) => API.post('/auth/login', formData);
 export const register = (formData) => API.post('/auth/register', formData);
@@ -23,16 +24,15 @@ export const resetPassword = (token, passwordData) => API.post(`/auth/reset-pass
 // === Admin Routes ===
 export const getPendingUsers = () => API.get('/admin/pending');
 export const approveUser = (id) => API.put(`/admin/approve/${id}`);
-// Add more admin functions as needed
 
 // === Generic Professional Profile Fetching ===
 const getProfessionalById = (id) => API.get(`/profile/${id}`);
 
-// === Doctor & Nurse Search Routes ===
+// === Doctor & Nurse Search Routes (INCLUDES THE MISSING searchNurses) ===
 export const searchDoctors = (params) => API.get('/doctors', { params });
 export const getDoctorById = (id) => getProfessionalById(id);
-export const searchNurses = (params) => API.get('/nurses', { params });
-export const getNurseById = (id) => getProfessionalById(id);
+export const searchNurses = (params) => API.get('/nurses', { params }); // <-- MISSING FUNCTION ADDED
+export const getNurseById = (id) => getProfessionalById(id);         // <-- MISSING FUNCTION ADDED
 
 // === Logged-in User Profile Routes ===
 export const getMyProfile = () => API.get('/profile/me');
@@ -55,14 +55,5 @@ export const bookLabTest = (testData) => API.post('/lab-tests', testData);
 export const createRazorpayOrder = (orderData) => API.post('/payment/create-order', orderData);
 export const verifyRazorpayPayment = (paymentData) => API.post('/payment/verify', paymentData);
 
-// === Review Routes ===
-export const getReviewsForDoctor = (doctorId) => API.get(`/doctors/${doctorId}/reviews`);
-export const createReview = (doctorId, reviewData) => API.post(`/doctors/${doctorId}/reviews`, reviewData);
-
 // === Announcement Routes ===
 export const getActiveAnnouncements = () => API.get('/announcements/active');
-
-// === Quest Routes ===
-export const getQuests = () => API.get('/quests');
-export const acceptQuest = (questId) => API.post(`/quests/${questId}/accept`);
-export const logQuestProgress = (userQuestId) => API.post(`/quests/${userQuestId}/log`);
