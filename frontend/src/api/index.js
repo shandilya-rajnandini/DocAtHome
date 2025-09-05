@@ -35,16 +35,19 @@ export const searchNurses = (params) => API.get('/nurses', { params });
 export const getNurseById = (id) => getProfessionalById(id);
 export const getProfileById = (id) => getProfessionalById(id);
 
-// === Logged-in User Profile Routes (THE FIX) ===
+// === Logged-in User Profile Routes ===
 export const getMyProfile = () => API.get('/profile/me');
 export const updateMyProfile = (profileData) => API.put('/profile/me', profileData);
-export const updateProfile = updateMyProfile; // Alias for components that use the other name
+export const updateProfile = updateMyProfile;
 
-// === Appointment Routes ===
+// === Appointment Routes (THE FIX) ===
 export const bookAppointment = (appointmentData) => API.post('/appointments', appointmentData);
 export const getMyAppointments = () => API.get('/appointments/my-appointments');
 export const updateAppointmentStatus = (id, statusData) => API.put(`/appointments/${id}`, statusData);
 export const scheduleFollowUp = (appointmentId, followUpData) => API.post(`/appointments/${appointmentId}/schedule-follow-up`, followUpData);
+export const getAppointmentSummary = (id) => API.get(`/appointments/${id}/summary`);
+export const saveAppointmentVoiceNote = (appointmentId, voiceNoteUrl) => API.post(`/appointments/${appointmentId}/voicenote`, { voiceNoteUrl });
+export const updateRelayNote = (appointmentId, relayNote) => API.put(`/appointments/${appointmentId}/relay`, { relayNote });
 
 // === Availability Routes ===
 export const getAvailability = (professionalId) => API.get(`/availability/${professionalId}`);
