@@ -77,11 +77,118 @@ exports.getNurses = asyncHandler(async (req, res) => {
       if (!Number.isNaN(latitude) && !Number.isNaN(longitude)) {
         const _radiusInMeters = parseFloat(radius) * 1000; // Convert km to meters
         
-        // Find all nurses with service areas using distance calculation
-        const geoQuery = {
+        // First, try to find nurses using the location field with $near
+        const locationQuery = {
           ...baseQuery,
-          serviceArea: { $exists: true, $ne: null }
+          location: {
+            $near: {
+              $geometry: {
+                type: 'Point',
+                coordinates: [longitude, latitude]
+              },
+              $maxDistance: _radiusInMeters
+            }
+          }
         };
+        
+        const nursesByLocation = await User.find(locationQuery).select('-password');
+        
+        // Calculate distances for nurses found by location
+        const nursesWithLocationDistance = nursesByLocation.map(nurse => {
+          const distance = calculateDistance(
+            latitude,
+            longitude,
+            nurse.location.coordinates[1], // latitude
+            nurse.location.coordinates[0]  // longitude
+          );
+          
+          return { 
+            ...nurse.toObject(), 
+            distance: Math.round(distance * 10) / 10,
+            foundByLocation: true 
+          };
+        });
+        
+        // If we have results from location-based search, use them
+        if (nursesWithLocationDistance.length > 0) {
+          nurses = nursesWithLocationDistance;
+        } else {
+          // Fall back to the existing service area logic
+          const geoQuery = {
+            ...baseQuery,
+            serviceArea: { $exists: true, $ne: null }
+          };
+          
+          const allNursesWithServiceArea = await User.find(geoQuery).select('-password');
+          
+          // Filter nurses whose service areas are within the radius
+          const nursesWithinRadius = allNursesWithServiceArea.filter(nurse => {
+            if (nurse.serviceArea && nurse.serviceArea.coordinates && nurse.serviceArea.coordinates[0]) {
+              // Calculate distance to the centroid of the service area polygon
+              const polygon = nurse.serviceArea.coordinates[0];
+              const centroid = calculatePolygonCentroid(polygon);
+              const distance = calculateDistance(latitude, longitude, centroid.lat, centroid.lng);
+              return distance <= radius; // Include if service area center is within radius
+            }
+            return false;
+          });
+          
+          // Calculate actual distances for nurses with service areas within radius
+          const nursesWithDistance = nursesWithinRadius.map(nurse => {
+            const polygon = nurse.serviceArea.coordinates[0];
+            const centroid = calculatePolygonCentroid(polygon);
+            const distance = calculateDistance(latitude, longitude, centroid.lat, centroid.lng);
+            
+            return { 
+              ...nurse.toObject(), 
+              distance: Math.round(distance * 10) / 10,
+              hasServiceArea: true 
+            };
+          });
+          
+          // Also find nurses without service areas within radius (fallback to city)
+          const nearbyQuery = {
+            ...baseQuery,
+            $or: [
+              { serviceArea: { $exists: false } },
+              { serviceArea: null }
+            ]
+          };
+          
+          const allNursesNoServiceArea = await User.find(nearbyQuery).select('-password');
+          
+          // Calculate distances for nurses without service areas (using city coordinates)
+          const nursesNearbyByCity = allNursesNoServiceArea.map(nurse => {
+            if (nurse.city) {
+              const cityCoords = getCityCoordinates(nurse.city);
+              if (cityCoords) {
+                const distance = calculateDistance(latitude, longitude, cityCoords.lat, cityCoords.lng);
+                if (distance <= radius) {
+                  return { 
+                    ...nurse.toObject(), 
+                    distance: Math.round(distance * 10) / 10,
+                    hasServiceArea: false,
+                    estimatedFromCity: true
+                  };
+                }
+              }
+            }
+            return null;
+          }).filter(Boolean);
+          
+          // Combine both sets of nurses
+          nurses = [...nursesWithDistance, ...nursesNearbyByCity];
+          
+          // Sort by subscription tier first (Pro users on top), then by distance
+          nurses.sort((a, b) => {
+            // Pro users get higher priority
+            if (a.subscriptionTier === 'pro' && b.subscriptionTier !== 'pro') return -1;
+            if (b.subscriptionTier === 'pro' && a.subscriptionTier !== 'pro') return 1;
+            
+            // If same subscription tier, sort by distance
+            return a.distance - b.distance;
+          });
+        }
         
         const allNursesWithServiceArea = await User.find(geoQuery).select('-password');
         

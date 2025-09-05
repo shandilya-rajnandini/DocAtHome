@@ -3,6 +3,9 @@ const User = require('../models/User');
 const FollowUp = require('../models/FollowUp');
 const { generateSummary } = require('../utils/aiService');
 const asyncHandler = require('../middleware/asyncHandler');
+const PDFDocument = require('pdfkit');
+const IntakeFormLog = require('../models/IntakeFormLog');
+const QRCode = require('qrcode');
 
 // @desc    Create a new appointment
 // @route   POST /api/appointments
@@ -358,4 +361,203 @@ exports.scheduleFollowUp = asyncHandler(async (req, res) => {
         success: true,
         data: followUp,
     });
+});
+
+// @desc    Generate and return a Patient Intake Form PDF for an appointment
+// @route   GET /api/appointments/:id/intake-form
+exports.getIntakeForm = asyncHandler(async (req, res) => {
+  const appointment = await Appointment.findById(req.params.id).populate(
+    'patient doctor'
+  );
+
+  if (!appointment) {
+    return res.status(404).json({ msg: 'Appointment not found' });
+  }
+
+  // Authorization: allow only assigned doctor or the patient to download
+  const userId = req.user.id;
+  if (
+    appointment.doctor._id.toString() !== userId &&
+    appointment.patient._id.toString() !== userId &&
+    req.user.role !== 'admin'
+  ) {
+    return res.status(401).json({ msg: 'User not authorized' });
+  }
+
+  // Create PDF
+  const doc = new PDFDocument({ margin: 50 });
+
+  // Stream headers
+  res.setHeader('Content-Type', 'application/pdf');
+  res.setHeader(
+    'Content-Disposition',
+    `attachment; filename="intake-form-${appointment._id}.pdf"`
+  );
+
+  // Prepare file persistence
+  const fs = require('fs');
+  const path = require('path');
+  const uploadsDir = path.join(__dirname, '..', 'uploads', 'intake-forms');
+  let filePath = null;
+  try {
+    if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
+    const filename = `intake-form-${appointment._id}-${Date.now()}.pdf`;
+    filePath = path.join(uploadsDir, filename);
+    const writeStream = fs.createWriteStream(filePath);
+    // Pipe PDF to both response and file
+    doc.pipe(writeStream);
+    doc.pipe(res);
+  } catch (e) {
+    // If file persistence fails, just pipe to response
+    try { doc.pipe(res); } catch (e2) { /* ignore */ }
+    filePath = null;
+  }
+  // Enhanced header with optional logo
+  const clinicLogoUrl = process.env.CLINIC_LOGO_URL || null;
+  const patient = appointment.patient || {};
+
+  try {
+    // Header: logo (if available) and title
+    const headerY = 40;
+    if (clinicLogoUrl) {
+      try {
+        const logoRes = await fetch(clinicLogoUrl);
+        if (logoRes.ok) {
+          const logoBuf = await logoRes.arrayBuffer();
+          doc.image(Buffer.from(logoBuf), 50, headerY - 10, { width: 80 });
+        }
+      } catch (e) {
+        // ignore logo fetch errors
+      }
+    }
+
+    doc.fontSize(18).font('Helvetica-Bold').text('Patient Intake Form', 150, headerY, { align: 'left' });
+
+    // Add QR code linking to the appointment page (if possible)
+    try {
+      const frontendBase = process.env.FRONTEND_URL || 'http://localhost:5173';
+      // Assumption: frontend has an appointment detail route at /appointments/:id
+      const appointmentUrl = `${frontendBase}/appointments/${appointment._id}`;
+      const qrBuf = await QRCode.toBuffer(appointmentUrl, { type: 'png', width: 256 });
+      // place QR under the patient photo or at top-right
+      const qrX = 430;
+      const qrY = 160;
+      doc.image(qrBuf, qrX, qrY, { width: 90 });
+      doc.fontSize(9).font('Helvetica').fillColor('black').text('Scan to view appointment', qrX, qrY + 96, { width: 90, align: 'center' });
+    } catch (e) {
+      // ignore QR generation errors
+    }
+    doc.moveDown(2);
+
+    // Small patient photo on the top-right if available
+    if (patient.profilePictureUrl) {
+      try {
+        const imgRes = await fetch(patient.profilePictureUrl);
+        if (imgRes.ok) {
+          const imgBuf = await imgRes.arrayBuffer();
+          // place image to the right
+          doc.image(Buffer.from(imgBuf), 430, 60, { width: 90, height: 90, fit: [90, 90] });
+        }
+      } catch (e) {
+        // ignore image fetch errors
+      }
+    }
+
+    doc.moveDown(1.5);
+
+    // Patient Details box
+    doc.rect(50, 150, 500, 110).stroke();
+    doc.fontSize(12).font('Helvetica-Bold').text('Patient Details', 60, 158);
+    doc.font('Helvetica').fontSize(11).text(`Name: ${patient.name || ''}`, 60, 178);
+    doc.text(`Email: ${patient.email || ''}`, 60, 195);
+    doc.text(`Phone: ${patient.phone || ''}`, 300, 178);
+    doc.text(`Booking Type: ${appointment.bookingType || ''}`, 300, 195);
+    doc.text(`Appointment: ${appointment.appointmentDate || ''} ${appointment.appointmentTime || ''}`, 60, 212);
+
+    // Medical info (allergies, chronic conditions)
+    doc.moveDown(6);
+    doc.fontSize(13).font('Helvetica-Bold').text('Medical Background', 50, 270);
+    doc.font('Helvetica').fontSize(11).text(`Allergies: ${(patient.allergies || []).join(', ') || 'None'}`, 50, 290);
+    doc.text(`Chronic Conditions: ${(patient.chronicConditions || []).join(', ') || 'None'}`, 50, 307);
+
+    // Reason for Visit
+    doc.moveDown(2);
+    doc.fontSize(13).font('Helvetica-Bold').text('Reason for Visit', 50, 335);
+    doc.font('Helvetica').fontSize(11).text(appointment.symptoms || '', { width: 500, align: 'left' , indent: 0});
+
+    // Previous Medications
+    doc.moveDown(2);
+    doc.fontSize(13).font('Helvetica-Bold').text('Previous Medications', 50, 420);
+    doc.font('Helvetica').fontSize(11).text(appointment.previousMeds || 'None', { width: 500 });
+
+    // Include report image if present (small preview)
+    if (appointment.reportImage) {
+      try {
+        const rptRes = await fetch(appointment.reportImage);
+        if (rptRes.ok) {
+          const rptBuf = await rptRes.arrayBuffer();
+          doc.addPage();
+          doc.fontSize(14).font('Helvetica-Bold').text('Attached Report', 50, 60);
+          doc.image(Buffer.from(rptBuf), 50, 90, { fit: [500, 600], align: 'center' });
+        }
+      } catch (e) {
+        // ignore report fetch errors
+      }
+    }
+
+    // Space for doctor to write notes
+    if (!appointment.reportImage) {
+      doc.addPage();
+    }
+    doc.fontSize(13).font('Helvetica-Bold').text('Doctor Notes', 50, 60);
+    // Draw several ruled lines
+    let notesStartY = 90;
+    for (let i = 0; i < 18; i++) {
+      doc.moveTo(50, notesStartY).lineTo(560, notesStartY).strokeOpacity(0.05).stroke();
+      notesStartY += 25;
+    }
+
+    // Add footer to each page safely
+    const addFooter = (pageIndex) => {
+      try {
+        doc.switchToPage(pageIndex);
+        doc.fontSize(8).fillColor('gray').text(`Generated by DocAtHome`, 50, 760, { align: 'left' });
+        doc.text(`Page ${pageIndex + 1}`, -50, 760, { align: 'right' });
+      } catch (e) {
+        // ignore footer errors
+      }
+    };
+
+    // Add footer for the current buffered page (page 0) now
+    addFooter(0);
+    // Also respond to page additions and add footer to new pages
+    doc.on('pageAdded', () => {
+      const current = doc.bufferedPageRange().count - 1;
+      addFooter(current);
+    });
+
+  } catch (err) {
+    // If anything goes wrong during PDF generation, still attempt to finalize
+    console.error('PDF generation error:', err.message);
+  }
+
+  // Non-blocking audit log: record that an intake form was generated
+  try {
+    const ip = req.ip || req.headers['x-forwarded-for'] || req.connection?.remoteAddress;
+    const ua = req.headers['user-agent'] || '';
+    const logData = { appointment: appointment._id, generatedBy: req.user.id, role: req.user.role, ip, userAgent: ua };
+    if (filePath) {
+      // convert to public URL
+      const publicPath = `/uploads/intake-forms/${path.basename(filePath)}`;
+      logData.fileUrl = publicPath;
+    }
+    IntakeFormLog.create(logData).catch(e => {
+      // Log but don't fail the request
+      console.error('Failed to record intake form log:', e.message);
+    });
+  } catch (e) {
+    // ignore
+  }
+
+  doc.end();
 });

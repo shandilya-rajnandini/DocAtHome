@@ -51,6 +51,7 @@ import DemandHotspotPage from "../pages/DemandHotspotPage.jsx";
 
 // Protected Admin Page
 import AdminDashboard from "../pages/AdminDashboard.jsx";
+import AdminIntakeLogsPage from "../pages/AdminIntakeLogsPage.jsx";
 import TwoFactorAuthPage from "../pages/TwoFactorAuthPage.jsx";
 
 // 404 Not Found Page
@@ -432,6 +433,16 @@ const AnimatedRoutes = () => {
             <AnimatedPage>
               <ProtectedRoute adminOnly={true}>
                 <AdminEditProfilePage />
+              </ProtectedRoute>
+            </AnimatedPage>
+          }
+        />
+        <Route
+          path="/admin/intake-logs"
+          element={
+            <AnimatedPage>
+              <ProtectedRoute adminOnly={true}>
+                <AdminIntakeLogsPage />
               </ProtectedRoute>
             </AnimatedPage>
           }

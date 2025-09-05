@@ -1,28 +1,27 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { getNurseById, bookAppointment } from '../api'; // Correctly imports getNurseById
+import { getNurseById, bookAppointment, getAvailability } from '../api'; // Correctly imports getNurseById
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
 import VerifiedSkillsBadge from '../components/VerifiedSkillsBadge.jsx';
-import { getAvailability } from '../api';
 
 // --- Mock Data ---
 const timeSlots = ["09:00 AM", "12:00 PM", "03:00 PM", "06:00 PM"];
-const generateDates = () => {
-    const dates = [];
-    const today = new Date();
-    for (let i = 0; i < 7; i++) {
-        const futureDate = new Date(today);
-        futureDate.setDate(today.getDate() + i);
-        dates.push({
-            dayName: futureDate.toLocaleDateString('en-US', { weekday: 'short' }).toUpperCase(),
-            day: futureDate.getDate(),
-            fullDate: futureDate.toISOString().split('T')[0],
-        });
-    }
-    return dates;
-};
-const availableDates = generateDates();
+// const generateDates = () => { // Commented out as not currently used
+//     const dates = [];
+//     const today = new Date();
+//     for (let i = 0; i < 7; i++) {
+//         const futureDate = new Date(today);
+//         futureDate.setDate(today.getDate() + i);
+//         dates.push({
+//             dayName: futureDate.toLocaleDateString('en-US', { weekday: 'short' }).toUpperCase(),
+//             day: futureDate.getDate(),
+//             fullDate: futureDate.toISOString().split('T')[0],
+//         });
+//     }
+//     return dates;
+// };
+// const availableDates = generateDates(); // Commented out as not currently used
 
 const NurseProfilePage = () => {
     const { id } = useParams();
@@ -31,7 +30,7 @@ const NurseProfilePage = () => {
     const [nurse, setNurse] = useState(null);
     const [loading, setLoading] = useState(true);
     const [availableDates, setAvailableDates] = useState([]);
-    const [selectedDate, setSelectedDate] = useState(availableDates[0].fullDate);
+    const [selectedDate, setSelectedDate] = useState('');
     const [selectedTime, setSelectedTime] = useState('');
     const [bookingDetails, setBookingDetails] = useState({ symptoms: '' });
 
@@ -49,17 +48,28 @@ const NurseProfilePage = () => {
                 setLoading(false);
             }
         };
-        fetchNurse();
-        getAvailability(id)
-            .then(res => {
-                setAvailableDates(res.data.availableDates?.map(d => ({
+
+        const fetchAvailability = async () => {
+            try {
+                const { data } = await getAvailability(id);
+                const dates = data.availableDates?.map(d => ({
                     dayName: new Date(d.date).toLocaleDateString('en-US', { weekday: 'short' }).toUpperCase(),
                     day: new Date(d.date).getDate(),
                     fullDate: d.date
-                })) || []);
-            })
-            .catch(() => setAvailableDates([]));
-    }, [id]);
+                })) || [];
+                setAvailableDates(dates);
+                if (dates.length > 0 && !selectedDate) {
+                    setSelectedDate(dates[0].fullDate);
+                }
+            } catch (error) {
+                setAvailableDates([]);
+                console.error('Error fetching availability:', error);
+            }
+        };
+
+        fetchNurse();
+        fetchAvailability();
+    }, [id, selectedDate]);
 
     const handleBookAssignment = async () => {
         if (!user) {

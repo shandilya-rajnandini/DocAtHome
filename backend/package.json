@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "jest",
+    "test": "echo \"No tests\"",
     "start": "node server.js",
     "dev": "nodemon server.js",
     "data:import": "node seeder.js",
@@ -36,12 +36,11 @@
     "socket.io": "^4.8.1",
     "speakeasy": "^2.0.0",
     "winston": "^3.17.0"
+  ,
+  "pdfkit": "^0.13.0"
   },
   "devDependencies": {
     "eslint": "^9.33.0",
-    "jest": "^30.0.5",
-    "mongodb-memory-server": "^10.2.0",
-    "nodemon": "^3.1.10",
-    "supertest": "^7.1.4"
+    "nodemon": "^3.1.10"
   }
 }

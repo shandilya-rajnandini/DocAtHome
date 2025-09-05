@@ -10,6 +10,7 @@ const {
   saveVoiceNote,
   scheduleFollowUp,
   updateRelayNote
+  ,getIntakeForm
 } = require('../controllers/appointmentController');
 
 const { protect } = require("../middleware/authMiddleware");
@@ -37,6 +38,10 @@ router.route('/my-appointments').get(protect, getMyAppointments);
 router
   .route("/:id/summary")
   .get(protect, validateObjectId("id"), getAppointmentSummary);
+
+// GET /api/appointments/:id/intake-form
+// Returns a PDF intake form for the appointment
+router.route('/:id/intake-form').get(protect, validateObjectId('id'), getIntakeForm);
 
 // PUT /api/appointments/:id
 // Updates the status of a specific appointment with comprehensive validation
