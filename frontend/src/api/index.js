@@ -16,6 +16,8 @@ API.interceptors.request.use((req) => {
 export const login = (formData) => API.post('/auth/login', formData);
 export const register = (formData) => API.post('/auth/register', formData);
 export const getMe = () => API.get('/auth/me');
+export const forgotPassword = (emailData) => API.post('/auth/forgot-password', emailData);
+export const resetPassword = (token, passwordData) => API.post(`/auth/reset-password/${token}`, passwordData);
 export const searchDoctors = (params) => API.get('/doctors', { params });
 export const getActiveAnnouncements = () => API.get('/announcements/active');
 // ... include ALL your other exports here ...
