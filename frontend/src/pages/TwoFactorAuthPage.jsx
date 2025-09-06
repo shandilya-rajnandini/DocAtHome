@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { setupTwoFactorAuth, verifyTwoFactorAuth, loginWithTwoFactor } from '../api/index.js';
-import API from '../api';
+
 import toast from 'react-hot-toast';
 
 const TwoFactorAuthPage = () => {

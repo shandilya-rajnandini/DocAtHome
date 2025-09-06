@@ -84,3 +84,4 @@ export const logQuestProgress = (userQuestId) => API.post(`/quests/${userQuestId
 export const setupTwoFactorAuth = () => API.post('/twofactor/setup');
 export const verifyTwoFactorAuth = (token) => API.post('/twofactor/verify', { token });
 export const loginWithTwoFactor = (credentials) => API.post('/auth/2fa/login', credentials);
+
