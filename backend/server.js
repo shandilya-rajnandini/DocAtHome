@@ -18,12 +18,10 @@ const allowedOrigins = [
 
 app.use(cors({
     origin: function (origin, callback) {
-        // Allow requests with no origin (like Postman) or from our allowlist.
         if (!origin || allowedOrigins.indexOf(origin) !== -1) {
             callback(null, true);
         } else {
-            console.error(`CORS ERROR: The origin '${origin}' was blocked.`);
-            callback(new Error('This origin is not allowed by our CORS policy.'));
+            callback(new Error('Not allowed by CORS'));
         }
     }
 }));
@@ -40,8 +38,6 @@ app.use('/api/nurses', require('./routes/nurseRoutes'));
 app.use('/api/profile', require('./routes/profileRoutes'));
 app.use('/api/appointments', require('./routes/appointmentRoutes'));
 app.use('/api/lab-tests', require('./routes/labTestRoutes'));
-app.use('/api/payment', require('./routes/paymentRoutes'));
-app.use('/api/ambulance', require('./routes/ambulanceRoutes'));
 // app.use('/api/payment', require('./routes/paymentRoutes'));
 
 // Health Check
