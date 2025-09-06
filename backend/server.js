@@ -10,12 +10,11 @@ dotenv.config();
 const app = express();
 
 // --- THE DEFINITIVE CORS FIX ---
-// This configuration explicitly allows your Netlify domain.
+// This setup is more explicit and handles the preflight request correctly.
 const allowedOrigins = [
     "http://localhost:5173",
     "https://docathome-rajnandini.netlify.app"
 ];
-
 app.use(cors({
     origin: function (origin, callback) {
         if (!origin || allowedOrigins.indexOf(origin) !== -1) {
