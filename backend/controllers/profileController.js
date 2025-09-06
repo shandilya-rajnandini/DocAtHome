@@ -15,12 +15,13 @@ exports.getMyProfile = asyncHandler(async (req, res) => {
 // @desc    Update current user's profile
 // @route   PUT /api/profile/me
 exports.updateMyProfile = asyncHandler(async (req, res) => {
-  const { name, city, experience, qualifications, bio, profilePictureUrl, serviceArea } = req.body;
+  const { name, city, experience, qualifications, bio, profilePictureUrl, serviceArea, isAvailable } = req.body;
 
   const profileFields = {};
   if (name) profileFields.name = name;
   if (city) profileFields.city = city;
   if (experience) profileFields.experience = experience;
+  if (typeof isAvailable === 'boolean') profileFields.isAvailable = isAvailable;
   
   // Handle qualifications safely
   if (qualifications) {
