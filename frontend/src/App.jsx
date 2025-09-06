@@ -15,7 +15,7 @@ function App() {
         <AnnouncementBanner />
 
         <main className="flex-grow">
-          <AnimatedRoutes />
+            <AnimatedRoutes />
         </main>
 
         {/* scroll-to-to (absolute) */}
