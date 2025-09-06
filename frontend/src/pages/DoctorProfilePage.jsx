@@ -49,6 +49,7 @@ const DoctorProfilePage = () => {
             try {
                 const { data } = await getDoctorById(id);
                 setDoctor(data);
+                
             } catch (error) {
                 console.error("Failed to fetch doctor details", error);
                 toast.error("Could not load doctor details.");
