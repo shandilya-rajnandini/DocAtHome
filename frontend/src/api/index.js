@@ -1,9 +1,14 @@
 import axios from 'axios';
 
+// This hardcoded URL is the most reliable way to ensure the live frontend
+// talks to the live backend. Replace with your actual Render/Fly.io URL.
 const API_URL = 'https://docathome-backend.onrender.com/api';
 
+// Create a configured instance of Axios with the correct, full base URL
 const API = axios.create({ baseURL: API_URL });
 
+// This interceptor automatically adds the user's JWT token to every secure request.
+// It runs before any API call is sent.
 API.interceptors.request.use((req) => {
   if (localStorage.getItem('token')) {
     req.headers.Authorization = `Bearer ${localStorage.getItem('token')}`;
@@ -11,12 +16,20 @@ API.interceptors.request.use((req) => {
   return req;
 });
 
-// === Auth & User Routes ===
+
+// --- API Function Exports (Consolidated from ALL Features) ---
+
+// === Authentication & User Routes ===
 export const login = (formData) => API.post('/auth/login', formData);
 export const register = (formData) => API.post('/auth/register', formData);
 export const getMe = () => API.get('/auth/me');
 export const forgotPassword = (emailData) => API.post('/auth/forgot-password', emailData);
 export const resetPassword = (token, passwordData) => API.post(`/auth/reset-password/${token}`, passwordData);
+
+// === Two-Factor Authentication (2FA) Routes ===
+export const setupTwoFactorAuth = () => API.post('/twofactor/setup');
+export const verifyTwoFactorAuth = (token) => API.post('/twofactor/verify', { token });
+export const loginWithTwoFactor = (credentials) => API.post('/auth/2fa/login', credentials);
 
 // === Admin Routes ===
 export const getPendingUsers = () => API.get('/admin/pending');
@@ -28,12 +41,12 @@ export const searchDoctors = (params) => API.get('/doctors', { params });
 export const getDoctorById = (id) => getProfessionalById(id);
 export const searchNurses = (params) => API.get('/nurses', { params });
 export const getNurseById = (id) => getProfessionalById(id);
-export const getProfileById = (id) => getProfessionalById(id);
+export const getProfileById = (id) => getProfessionalById(id); // Alias for components
 
 // === Logged-in User Profile Routes ===
 export const getMyProfile = () => API.get('/profile/me');
 export const updateMyProfile = (profileData) => API.put('/profile/me', profileData);
-export const updateProfile = updateMyProfile;
+export const updateProfile = updateMyProfile; // Alias for components
 
 // === Appointment Routes ===
 export const bookAppointment = (appointmentData) => API.post('/appointments', appointmentData);
@@ -66,7 +79,7 @@ export const verifyRazorpayPayment = (paymentData) => API.post('/payment/verify'
 export const getPaymentHistory = () => API.get('/payment/my-history');
 export const getSubscriptionStatus = () => API.get('/subscription/status');
 export const createSubscription = (planId) => API.post('/subscription/create', { planId });
-export const createProSubscription = createSubscription;
+export const createProSubscription = createSubscription; // Alias
 export const verifySubscription = (paymentData) => API.post('/subscription/verify', paymentData);
 
 // === Announcement Routes ===
@@ -79,9 +92,3 @@ export const deleteAnnouncement = (id) => API.delete(`/announcements/${id}`);
 export const getQuests = () => API.get('/quests');
 export const acceptQuest = (questId) => API.post(`/quests/${questId}/accept`);
 export const logQuestProgress = (userQuestId) => API.post(`/quests/${userQuestId}/log`);
-
-// === Two-Factor Authentication (2FA) Routes (THE FIX) ===
-export const setupTwoFactorAuth = () => API.post('/twofactor/setup');
-export const verifyTwoFactorAuth = (token) => API.post('/twofactor/verify', { token });
-export const loginWithTwoFactor = (credentials) => API.post('/auth/2fa/login', credentials);
-
