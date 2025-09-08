@@ -10,17 +10,18 @@ dotenv.config();
 const app = express();
 
 // --- THE DEFINITIVE CORS FIX ---
-// This setup is more explicit and handles the preflight request correctly.
+// This configuration explicitly allows your Netlify domain.
 const allowedOrigins = [
     "http://localhost:5173",
     "https://docathome-rajnandini.netlify.app"
 ];
+
 app.use(cors({
     origin: function (origin, callback) {
         if (!origin || allowedOrigins.indexOf(origin) !== -1) {
             callback(null, true);
         } else {
-            callback(new Error('Not allowed by CORS'));
+            callback(new Error('This origin is not allowed by our CORS policy.'));
         }
     }
 }));
@@ -31,13 +32,8 @@ app.use(helmet());
 
 // API Routes
 app.use('/api/auth', require('./routes/authRoutes'));
-app.use('/api/admin', require('./routes/adminRoutes'));
-app.use('/api/doctors', require('./routes/doctorRoutes'));
-app.use('/api/nurses', require('./routes/nurseRoutes'));
-app.use('/api/profile', require('./routes/profileRoutes'));
-app.use('/api/appointments', require('./routes/appointmentRoutes'));
+// ... (all your other app.use routes) ...
 app.use('/api/lab-tests', require('./routes/labTestRoutes'));
-// app.use('/api/payment', require('./routes/paymentRoutes'));
 
 // Health Check
 app.get('/health', (req, res) => res.status(200).send('OK'));
@@ -52,10 +48,7 @@ app.use((err, req, res, next) => {
 });
 
 const server = http.createServer(app);
-const io = new Server(server, {
-  cors: { origin: allowedOrigins, methods: ["GET", "POST"] }
-});
-io.on('connection', (socket) => { console.log(`Socket Connected: ${socket.id}`); });
+// ... (Socket.IO setup) ...
 
 const PORT = process.env.PORT || 5000;
 

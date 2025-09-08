@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import api from '../api';
+import { getAnnouncements, createAnnouncement, deleteAnnouncement } from '../api';
 import { toast } from 'react-toastify';
 
 const AnnouncementManager = () => {

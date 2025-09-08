@@ -13,6 +13,8 @@ const {
 
 const { protect } = require('../middleware/authMiddleware');
 
+router.put('/me/driver-status', protect, updateMyProfile);
+
 
 // Route for fetching and updating the LOGGED-IN user's own profile
 router.route('/me')
