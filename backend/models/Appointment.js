@@ -5,15 +5,21 @@ const AppointmentSchema = new mongoose.Schema(
     doctor: {
       // This field stores the ID of the professional (doctor or nurse)
       type: mongoose.Schema.ObjectId,
-      ref: 'User',
+      ref: "User",
       required: true,
     },
     patient: {
       // This field stores the ID of the patient booking the appointment
       type: mongoose.Schema.ObjectId,
-      ref: 'User',
+      ref: "User",
       required: true,
     },
+    labTests: [
+      {
+        type: mongoose.Schema.ObjectId,
+        ref: "LabTest",
+      },
+    ],
     appointmentDate: {
       type: String, // e.g., "2025-07-02"
       required: true,
@@ -24,12 +30,12 @@ const AppointmentSchema = new mongoose.Schema(
     },
     bookingType: {
       type: String,
-      enum: ['In-Home Visit', 'Video Consultation', 'Nurse Assignment'],
+      enum: ["In-Home Visit", "Video Consultation", "Nurse Assignment"],
       required: true,
     },
     symptoms: {
       type: String,
-      required: [true, 'Please describe your symptoms or needs.'], // This field is required
+      required: [true, "Please describe your symptoms or needs."], // This field is required
     },
     previousMeds: {
       type: String, // This field is now optional
@@ -39,8 +45,8 @@ const AppointmentSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ['Pending', 'Confirmed', 'Completed', 'Cancelled'],
-      default: 'Pending',
+      enum: ["Pending", "Confirmed", "Completed", "Cancelled"],
+      default: "Pending",
     },
     fee: {
       type: Number,
@@ -48,13 +54,14 @@ const AppointmentSchema = new mongoose.Schema(
     },
     paymentMethod: {
       type: String,
-      enum: ['careFund', 'external', 'pending'],
-      default: 'external',
+      enum: ["careFund", "external", "pending"],
+      default: "external",
     },
     doctorNotes: {
       type: String,
-      default: '',
+      default: "",
     },
+
     voiceRecording: {
       type: String,
       default: '', // This field is now optional
