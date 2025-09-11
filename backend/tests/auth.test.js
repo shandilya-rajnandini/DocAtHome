@@ -24,7 +24,7 @@ describe('POST /api/auth/register', () => {
       .send({
         name: 'test user',
         email: 'testUser@example.com',
-        password: 'testpassword123',
+        password: 'TestPassword123!', // updated to meet validation rules
         role: 'patient',
       });
 
@@ -33,21 +33,23 @@ describe('POST /api/auth/register', () => {
   });
 
   it('should not register a user if email already exists', async () => {
+    // First registration
     await request(app)
       .post('/api/auth/register')
       .send({
         name: 'test user',
         email: 'duplicateUser@example.com',
-        password: 'testpassword123',
+        password: 'DuplicatePass123!', // updated to meet validation rules
         role: 'patient',
       });
 
+    // Attempt to register again with same email
     const res = await request(app)
       .post('/api/auth/register')
       .send({
         name: 'test user2',
         email: 'duplicateUser@example.com',
-        password: 'testpassword456',
+        password: 'DuplicatePass123!', // updated to meet validation rules
         role: 'patient',
       });
 
