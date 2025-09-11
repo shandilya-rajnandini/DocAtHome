@@ -43,4 +43,5 @@ jobs:
         env:
           MONGO_URI: mongodb://localhost:27017/testdb
           NODE_ENV: test
+          JWT_SECRET: testsecret123   # Added for JWT signing in tests
         run: npm test -- --detectOpenHandles --forceExit
