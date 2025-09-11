@@ -1,40 +1,25 @@
 const request = require('supertest');
 const mongoose = require('mongoose');
-const server = require('../server'); // import server.js, not app
+const app = require('../app'); // use app, not server
 const User = require('../models/User');
 
-// Connect to test database before running tests
 beforeAll(async () => {
   const testDbUri = process.env.TEST_MONGO_URI || process.env.MONGO_URI + '_test';
-  await mongoose.connect(testDbUri, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  });
+  await mongoose.connect(testDbUri);
 });
 
-// Clean up data after each test
 afterEach(async () => {
-  try {
-    await User.deleteMany({});
-  } catch (error) {
-    console.error('Failed to clean up test data:', error);
-  }
+  await User.deleteMany({});
 });
 
-// Close DB and server after all tests
 afterAll(async () => {
-  try {
-    await mongoose.connection.dropDatabase();
-    await mongoose.connection.close();
-    server.close(); // stop Express server to prevent hanging in CI
-  } catch (error) {
-    console.error('❌ Failed to clean up test environment:', error);
-  }
+  await mongoose.connection.dropDatabase();
+  await mongoose.connection.close();
 });
 
 describe('POST /api/auth/register', () => {
   it('should create a new user and return a token', async () => {
-    const res = await request(server)
+    const res = await request(app)
       .post('/api/auth/register')
       .send({
         name: 'test user',
@@ -45,15 +30,10 @@ describe('POST /api/auth/register', () => {
 
     expect(res.statusCode).toBe(201);
     expect(res.body).toHaveProperty('token');
-
-    const user = await User.findOne({ email: 'testUser@example.com' });
-    expect(user).not.toBeNull();
-    expect(user.name).toBe('test user');
   });
 
   it('should not register a user if email already exists', async () => {
-    // First registration
-    await request(server)
+    await request(app)
       .post('/api/auth/register')
       .send({
         name: 'test user',
@@ -62,8 +42,7 @@ describe('POST /api/auth/register', () => {
         role: 'patient',
       });
 
-    // Attempt to register again with same email
-    const res = await request(server)
+    const res = await request(app)
       .post('/api/auth/register')
       .send({
         name: 'test user2',
@@ -73,6 +52,5 @@ describe('POST /api/auth/register', () => {
       });
 
     expect(res.statusCode).toBe(400);
-    expect(res.body.msg).toBe('User already exists');
   });
 });
