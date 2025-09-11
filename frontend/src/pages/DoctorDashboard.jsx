@@ -83,6 +83,11 @@ const DoctorDashboard = () => {
     return (
         <div className="bg-primary-dark min-h-full pt-24 pb-12 px-4">
             <div className="container mx-auto">
+                {!user?.isAvailable && (
+                    <div className="mb-6 p-4 bg-red-600 text-white rounded-lg shadow-lg text-center font-bold text-lg">
+                        Vacation Mode is ACTIVE. You are currently unavailable for bookings.
+                    </div>
+                )}
                 <div className="mb-12">
                     <div className="flex items-center gap-4 mb-4">
                         <h1 className="text-4xl md:text-5xl font-bold text-white">
