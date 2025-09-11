@@ -8,11 +8,10 @@ app.use(express.json());
 
 // Routes
 app.use('/api/auth', require('./routes/auth'));
-// add other routes here
+// Add other routes as needed
 
-// Connect DB only in non-test mode
 if (process.env.NODE_ENV !== 'test') {
   connectDB();
 }
 
-module.exports = app; // export Express app for supertest
+module.exports = app; // Export app for supertest
