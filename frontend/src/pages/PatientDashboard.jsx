@@ -28,6 +28,25 @@ const PatientDashboard = () => {
           <p className="text-lg text-gray-800 dark:text-secondary-text mt-2">Your personal health command center.</p>
         </header>
 
+  {/* --- Recently Viewed Doctors Section --- */}
+        {recentlyViewed.length > 0 && (
+          <section className="mb-12">
+            <h2 className="text-2xl font-bold text-black dark:text-white mb-4">Recently Viewed</h2>
+            <div className="flex space-x-4 overflow-x-auto pb-2">
+              {recentlyViewed.map((doc) => (
+                <Link 
+                  key={doc._id} 
+                  to={`/doctor/${doc._id}`} 
+                  className="min-w-[180px] bg-secondary-dark rounded-lg p-4 shadow hover:bg-secondary-hover transition"
+                >
+                  <h3 className="text-lg font-semibold text-white">{doc.name}</h3>
+                  <p className="text-sm text-accent-blue">{doc.specialty}</p>
+                </Link>
+              ))}
+            </div>
+          </section>
+        )}
+
         <section aria-labelledby="care-navigator-title" className="mb-12 bg-secondary-dark text-center py-12 px-4 rounded-lg">
           <h2 id="care-navigator-title" className="text-3xl font-bold text-white mb-4">Not Sure Where to Start?</h2>
           <p className="text-secondary-text mb-8 max-w-2xl mx-auto">Let our Care Navigator guide you to the right professional based on your needs.</p>
