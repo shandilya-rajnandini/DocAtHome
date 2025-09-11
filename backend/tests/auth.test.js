@@ -24,7 +24,7 @@ describe('POST /api/auth/register', () => {
       .send({
         name: 'test user',
         email: 'testUser@example.com',
-        password: 'testpassword123',
+        password: 'Testpass123!', // satisfies password policy
         role: 'patient',
       });
 
@@ -39,7 +39,7 @@ describe('POST /api/auth/register', () => {
       .send({
         name: 'test user',
         email: 'duplicateUser@example.com',
-        password: 'testpassword123',
+        password: 'Testpass123!', // satisfies password policy
         role: 'patient',
       });
 
@@ -49,12 +49,11 @@ describe('POST /api/auth/register', () => {
       .send({
         name: 'test user2',
         email: 'duplicateUser@example.com',
-        password: 'testpassword456',
+        password: 'Testpass123!', // satisfies password policy
         role: 'patient',
       });
 
-    // Expect 409 Conflict instead of 400
-    expect(res.statusCode).toBe(409);
+    expect(res.statusCode).toBe(409); // correct status for duplicate email
     expect(res.body.msg).toBe('User already exists');
   });
 });
