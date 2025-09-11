@@ -43,4 +43,4 @@ jobs:
         env:
           MONGO_URI: mongodb://localhost:27017/testdb
           NODE_ENV: test
-        run: npm test
+        run: npm test -- --detectOpenHandles --forceExit
