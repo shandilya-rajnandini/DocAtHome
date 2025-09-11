@@ -41,7 +41,8 @@ jobs:
       - name: Run Jest tests
         working-directory: ./backend
         env:
-          MONGO_URI: mongodb://localhost:27017/testdb
+          MONGO_URI: mongodb://localhost:27017/docathome-test
           NODE_ENV: test
-          JWT_SECRET: testsecret123   # Added for JWT signing in tests
+          JWT_SECRET: your_super_secure_jwt_secret_minimum_32_characters_long
+          DEFAULT_SEED_PASSWORD: DevPassword123!
         run: npm test -- --detectOpenHandles --forceExit
