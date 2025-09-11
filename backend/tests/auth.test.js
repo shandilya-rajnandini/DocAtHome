@@ -24,7 +24,7 @@ describe('POST /api/auth/register', () => {
       .send({
         name: 'test user',
         email: 'testUser@example.com',
-        password: 'TestPassword123!', // updated to meet validation rules
+        password: 'testpassword123',
         role: 'patient',
       });
 
@@ -39,7 +39,7 @@ describe('POST /api/auth/register', () => {
       .send({
         name: 'test user',
         email: 'duplicateUser@example.com',
-        password: 'DuplicatePass123!', // updated to meet validation rules
+        password: 'testpassword123',
         role: 'patient',
       });
 
@@ -49,10 +49,12 @@ describe('POST /api/auth/register', () => {
       .send({
         name: 'test user2',
         email: 'duplicateUser@example.com',
-        password: 'DuplicatePass123!', // updated to meet validation rules
+        password: 'testpassword456',
         role: 'patient',
       });
 
-    expect(res.statusCode).toBe(400);
+    // Expect 409 Conflict instead of 400
+    expect(res.statusCode).toBe(409);
+    expect(res.body.msg).toBe('User already exists');
   });
 });
