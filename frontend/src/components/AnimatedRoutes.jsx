@@ -56,12 +56,16 @@ import TwoFactorAuthPage from "../pages/TwoFactorAuthPage.jsx";
 
 // 404 Not Found Page
 import NotFoundPage from "../pages/NotFoundPage.jsx";
+import ScrollToUp from "./ScrollToUp.jsx";
+
 
 const AnimatedRoutes = () => {
   const location = useLocation();
 
   return (
     <AnimatePresence mode="wait" initial={false}>
+      {/* scroll to top on every navigation */}
+     <ScrollToUp/>
       <Routes location={location} key={location.pathname}>
         {/* --- Public Routes --- */}
         <Route
@@ -470,6 +474,7 @@ const AnimatedRoutes = () => {
           }
         />
       </Routes>
+
     </AnimatePresence>
   );
 };
