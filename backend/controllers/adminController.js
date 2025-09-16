@@ -30,13 +30,24 @@ exports.getIntakeFormLogs = asyncHandler(async (req, res) => {
   const { generatedBy, appointmentId, q, startDate, endDate } = req.query;
   const IntakeFormLog = require('../models/IntakeFormLog');
 
+  const { Types, isValidObjectId } = require('mongoose');
   const match = {};
-  if (generatedBy) match.generatedBy = require('mongoose').Types.ObjectId.isValid(generatedBy) ? require('mongoose').Types.ObjectId(generatedBy) : undefined;
-  if (appointmentId) match.appointment = require('mongoose').Types.ObjectId.isValid(appointmentId) ? require('mongoose').Types.ObjectId(appointmentId) : undefined;
+  if (generatedBy) {
+    if (!isValidObjectId(generatedBy)) return res.status(400).json({ msg: 'Invalid generatedBy' });
+    match.generatedBy = new Types.ObjectId(generatedBy);
+  }
+  if (appointmentId) {
+    if (!isValidObjectId(appointmentId)) return res.status(400).json({ msg: 'Invalid appointmentId' });
+    match.appointment = new Types.ObjectId(appointmentId);
+  }
   if (startDate || endDate) {
     match.createdAt = {};
     if (startDate) match.createdAt.$gte = new Date(startDate);
-    if (endDate) match.createdAt.$lte = new Date(endDate);
+    if (endDate) {
+      const d = new Date(endDate);
+      d.setHours(23,59,59,999);
+      match.createdAt.$lte = d;
+    }
   }
 
   const pipeline = [
@@ -55,7 +66,15 @@ exports.getIntakeFormLogs = asyncHandler(async (req, res) => {
           { 'generatedBy.name': { $regex: q, $options: 'i' } },
           { 'generatedBy.email': { $regex: q, $options: 'i' } },
           { 'fileUrl': { $regex: q, $options: 'i' } },
-          { 'appointment._id': { $regex: q, $options: 'i' } },
+          {
+            $expr: {
+              $regexMatch: {
+                input: { $toString: '$appointment._id' },
+                regex: q,
+                options: 'i'
+              }
+            }
+          }
         ]
       }
     });
@@ -87,13 +106,24 @@ exports.getIntakeFormLogs = asyncHandler(async (req, res) => {
 // @route   GET /api/admin/intake-form-logs/export
 exports.exportIntakeFormLogs = asyncHandler(async (req, res) => {
   const { generatedBy, appointmentId, q, startDate, endDate } = req.query;
+  const { Types, isValidObjectId } = require('mongoose');
   const filter = {};
-  if (generatedBy) filter.generatedBy = generatedBy;
-  if (appointmentId) filter.appointment = appointmentId;
+  if (generatedBy) {
+    if (!isValidObjectId(generatedBy)) return res.status(400).json({ msg: 'Invalid generatedBy' });
+    filter.generatedBy = new Types.ObjectId(generatedBy);
+  }
+  if (appointmentId) {
+    if (!isValidObjectId(appointmentId)) return res.status(400).json({ msg: 'Invalid appointmentId' });
+    filter.appointment = new Types.ObjectId(appointmentId);
+  }
   if (startDate || endDate) {
     filter.createdAt = {};
     if (startDate) filter.createdAt.$gte = new Date(startDate);
-    if (endDate) filter.createdAt.$lte = new Date(endDate);
+    if (endDate) {
+      const d = new Date(endDate);
+      d.setHours(23,59,59,999);
+      filter.createdAt.$lte = d;
+    }
   }
 
   const IntakeFormLog = require('../models/IntakeFormLog');

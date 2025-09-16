@@ -40,6 +40,7 @@
     "winston": "^3.17.0"
   },
   "devDependencies": {
+    "abort-controller": "^3.0.0",
     "eslint": "^9.33.0",
     "nodemon": "^3.1.10"
   }

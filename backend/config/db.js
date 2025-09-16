@@ -33,6 +33,7 @@ const connectDB = async () => {
       process.exit(1);
     } else {
       console.log('Running in test mode - continuing with mock database');
+      return { connection: { host: 'mock-db-server' } };
     }
   }
 };

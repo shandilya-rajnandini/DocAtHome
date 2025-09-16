@@ -52,7 +52,7 @@ app.use(globalErrorHandler);
 
 const server = http.createServer(app);
 const io = new Server(server, {
-  cors: { origin: allowedOrigins, methods: ["GET", "POST"] }
+  cors: { origin: allowedOrigins, methods: ['GET', 'POST'] }
 });
 io.on('connection', (socket) => { console.log(`Socket Connected: ${socket.id}`); });
 

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 // Correctly import the specific function you need with curly braces
-import { getActiveAnnouncements } from '../api/index.js';
+import { getAnnouncements } from '../api/index.js';
 
 const AnnouncementBanner = () => {
     const [announcement, setAnnouncement] = useState(null);
@@ -9,10 +9,11 @@ const AnnouncementBanner = () => {
     useEffect(() => {
         const fetchAnnouncements = async () => {
             try {
-                const { data } = await getActiveAnnouncements();
-                // Assuming the API returns an array, we'll take the most recent one
-                if (data && data.length > 0) {
-                    const latestAnnouncement = data[0];
+                const { data } = await getAnnouncements();
+                // Filter only active announcements, pick the most recent (assuming sorted or just first after filter)
+                const active = (data || []).filter(a => a.isActive);
+                if (active.length > 0) {
+                    const latestAnnouncement = active[0];
                     // Check if this announcement has been dismissed before
                     const isDismissed = localStorage.getItem(`announcement_${latestAnnouncement._id}`);
                     if (!isDismissed) {

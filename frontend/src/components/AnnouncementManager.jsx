@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { getAnnouncements, createAnnouncement, deleteAnnouncement } from '../api';
+import { getAnnouncements, createAnnouncement, updateAnnouncement, deleteAnnouncement } from '../api';
 import { toast } from 'react-toastify';
 
 const AnnouncementManager = () => {
@@ -16,7 +16,7 @@ const AnnouncementManager = () => {
 
   const fetchAnnouncements = async () => {
     try {
-      const { data } = await api.get('/announcements');
+      const { data } = await getAnnouncements();
       setAnnouncements(data);
     } catch {
       toast.error('Failed to fetch announcements');
@@ -29,10 +29,10 @@ const AnnouncementManager = () => {
 
     try {
       if (editingId) {
-        await api.put(`/announcements/${editingId}`, announcementData);
+        await updateAnnouncement(editingId, announcementData);
         toast.success('Announcement updated successfully');
       } else {
-        await api.post('/announcements', announcementData);
+        await createAnnouncement(announcementData);
         toast.success('Announcement created successfully');
       }
       resetForm();
@@ -53,8 +53,8 @@ const AnnouncementManager = () => {
   const handleDelete = async (id) => {
     if (window.confirm('Are you sure you want to delete this announcement?')) {
       try {
-        await api.delete(`/announcements/${id}`);
-        toast.success('Announcement deleted successfully');
+  await deleteAnnouncement(id);
+  toast.success('Announcement deleted successfully');
         fetchAnnouncements();
       } catch {
         toast.error('Failed to delete announcement');

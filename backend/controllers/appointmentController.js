@@ -367,6 +367,28 @@ exports.scheduleFollowUp = asyncHandler(async (req, res) => {
 // @route   GET /api/appointments/:id/intake-form
 const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
 
+// Basic SSRF protection helpers for external asset fetching in PDF generation
+// Explicitly import URL & AbortController to satisfy ESLint (no-undef) in environments where globals may not be recognized.
+const { URL } = require('url');
+const AbortController = global.AbortController || require('abort-controller');
+const isSafeHttpUrl = (u) => {
+  try {
+    const parsed = new URL(u);
+    return ['http:', 'https:'].includes(parsed.protocol);
+  } catch {
+    return false;
+  }
+};
+const fetchWithTimeout = async (url, opts = {}, ms = 5000) => {
+  const controller = new AbortController();
+  const id = setTimeout(() => controller.abort(), ms);
+  try {
+    return await fetch(url, { ...opts, signal: controller.signal });
+  } finally {
+    clearTimeout(id);
+  }
+};
+
 exports.getIntakeForm = asyncHandler(async (req, res) => {
   const appointment = await Appointment.findById(req.params.id).populate(
     'patient doctor'
@@ -421,9 +443,9 @@ exports.getIntakeForm = asyncHandler(async (req, res) => {
   try {
     // Header: logo (if available) and title
     const headerY = 40;
-    if (clinicLogoUrl) {
+    if (clinicLogoUrl && isSafeHttpUrl(clinicLogoUrl)) {
       try {
-        const logoRes = await fetch(clinicLogoUrl);
+        const logoRes = await fetchWithTimeout(clinicLogoUrl);
         if (logoRes.ok) {
           const logoBuf = await logoRes.arrayBuffer();
           doc.image(Buffer.from(logoBuf), 50, headerY - 10, { width: 80 });
@@ -452,9 +474,9 @@ exports.getIntakeForm = asyncHandler(async (req, res) => {
     doc.moveDown(2);
 
     // Small patient photo on the top-right if available
-    if (patient.profilePictureUrl) {
+    if (patient.profilePictureUrl && isSafeHttpUrl(patient.profilePictureUrl)) {
       try {
-        const imgRes = await fetch(patient.profilePictureUrl);
+        const imgRes = await fetchWithTimeout(patient.profilePictureUrl);
         if (imgRes.ok) {
           const imgBuf = await imgRes.arrayBuffer();
           // place image to the right
@@ -493,9 +515,9 @@ exports.getIntakeForm = asyncHandler(async (req, res) => {
     doc.font('Helvetica').fontSize(11).text(appointment.previousMeds || 'None', { width: 500 });
 
     // Include report image if present (small preview)
-    if (appointment.reportImage) {
+    if (appointment.reportImage && isSafeHttpUrl(appointment.reportImage)) {
       try {
-        const rptRes = await fetch(appointment.reportImage);
+        const rptRes = await fetchWithTimeout(appointment.reportImage, {}, 8000);
         if (rptRes.ok) {
           const rptBuf = await rptRes.arrayBuffer();
           doc.addPage();

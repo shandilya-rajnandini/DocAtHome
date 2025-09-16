@@ -459,7 +459,10 @@ const searchDoctors = asyncHandler(async (req, res) => {
       sortQuery = { subscriptionTier: -1, averageRating: -1 };
   }
 
-  // If a patient location is provided, include geospatial filter
+  // If a patient location is provided, include geospatial filter.
+  // NOTE: Currently this checks whether the point lies inside the doctor's serviceArea polygon.
+  // Radius-based proximity is handled by getDoctors; searchDoctors intentionally does not apply a radius
+  // to avoid duplicate logic. If radius support is needed here, replicate the $near + fallback logic.
   if (lat && lng) {
     const latitude = parseFloat(lat);
     const longitude = parseFloat(lng);

@@ -36,7 +36,8 @@ export const getDoctorAppointments = () => API.get('/appointments/doctor');
 export const updateAppointmentStatus = (id, statusData) => API.put(`/appointments/${id}`, statusData);
 export const bookAppointment = (appointmentData) => API.post('/appointments', appointmentData);
 export const getAppointmentSummary = (id) => API.get(`/appointments/${id}/summary`);
-export const saveAppointmentVoiceNote = (id, voiceNoteUrl) => API.post(`/appointments/${id}/voice-note`, { voiceNoteUrl });
+// Backend expects { voiceUrl } key
+export const saveAppointmentVoiceNote = (id, voiceUrl) => API.post(`/appointments/${id}/voice-note`, { voiceUrl });
 export const updateRelayNote = (id, relayNote) => API.put(`/appointments/${id}/relay-note`, { relayNote });
 export const scheduleFollowUp = (id, followUpData) => API.post(`/appointments/${id}/follow-up`, followUpData);
 
@@ -78,6 +79,9 @@ export const createAppointment = (appointmentData) => API.post('/appointments', 
 export const getMyCareCircle = () => API.get('/care-circle/me');
 export const inviteToCareCircle = (inviteData) => API.post('/care-circle/invite', inviteData);
 
+// Care Fund (placeholder - adjust endpoint when backend route exists)
+export const getMyCareFund = () => API.get('/profile/me');
+
 // Lab Test functions
 export const bookLabTest = (labTestData) => API.post('/lab-tests/book', labTestData);
 
@@ -87,6 +91,9 @@ export const updateProfile = (id, profileData) => API.put(`/profile/${id}`, prof
 
 // Two-Factor Authentication functions
 export const disableTwoFactor = () => API.post('/twofactor/disable');
+export const setupTwoFactorAuth = () => API.post('/twofactor/setup');
+export const verifyTwoFactorAuth = (token) => API.post('/twofactor/verify', { token });
+export const loginWithTwoFactor = (loginData) => API.post('/twofactor/login', loginData);
 
 // Account functions
 export const deactivateAccount = () => API.delete('/profile/me');
@@ -112,6 +119,12 @@ export const searchNurses = (params = {}) => {
   const query = new URLSearchParams(params).toString();
   return API.get(`/nurses?${query}`);
 };
+
+// Announcement functions
+export const getAnnouncements = () => API.get('/announcements');
+export const createAnnouncement = (data) => API.post('/announcements', data);
+export const updateAnnouncement = (id, data) => API.put(`/announcements/${id}`, data);
+export const deleteAnnouncement = (id) => API.delete(`/announcements/${id}`);
 
 // Export the axios instance as default for components that need direct API access
 export default API;

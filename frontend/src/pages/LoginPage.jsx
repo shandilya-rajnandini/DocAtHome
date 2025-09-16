@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
-import { login as loginApi, getMe } from '../api/index.js'; // Correct
+import { login as loginApi, getMe, loginWithTwoFactor } from '../api/index.js'; // Added loginWithTwoFactor helper
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
 
@@ -55,7 +55,7 @@ const LoginPage = () => {
   const on2FASubmit = async (e) => {
     e.preventDefault();
     try {
-      const { data } = await API.post('/auth/2fa/login', { userId, token });
+      const { data } = await loginWithTwoFactor({ userId, token });
       localStorage.setItem('token', data.token);
       
       const { data: userData } = await getMe();
