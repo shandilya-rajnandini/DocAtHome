@@ -4,66 +4,6 @@ import { toast, Toaster } from "react-hot-toast";
 import { getMyPrescriptions, takeDose, logMedicationDose, getAdherenceData } from "../api";
 // import { Slide, Zoom, Flip, Bounce, POSITION } from 'react-toastify';
 
-// --- Enhanced Mock Data with Smart Stock fields ---
-const mockPrescriptions = [
-  {
-    _id: "p1",
-    date: "2024-09-10",
-    doctor: { name: "Dr. Aisha Khan", specialty: "Dermatologist" },
-    diagnosis: "Mild Eczema",
-    medicines: [
-      {
-        name: "Hydrocortisone Cream 1%",
-        dosage: "Apply twice daily",
-        duration: "7 days",
-        pillCount: 14, // Added for Smart Stock
-        initialCount: 14, // Added for Smart Stock
-        threshold: 3, // Added for Smart Stock
-        isSmartStockEnabled: false, // Added for Smart Stock
-        lastTaken: null, // Added for Smart Stock
-      },
-      {
-        name: "Cetirizine 10mg",
-        dosage: "1 tablet at night if needed",
-        duration: "5 days",
-        pillCount: 5, // Added for Smart Stock
-        initialCount: 5, // Added for Smart Stock
-        threshold: 2, // Added for Smart Stock
-        isSmartStockEnabled: true, // Added for Smart Stock
-        lastTaken: "2024-02-20T08:30:00Z", // Added for Smart Stock
-      },
-    ],
-  },
-  {
-    _id: "p2",
-    date: "2024-08-15",
-    doctor: { name: "Dr. Ben Carter", specialty: "Pediatrician" },
-    diagnosis: "Viral Pharyngitis (Sore Throat)",
-    medicines: [
-      {
-        name: "Ibuprofen Syrup",
-        dosage: "5ml every 6-8 hours",
-        duration: "3 days",
-        pillCount: 30, // Added for Smart Stock
-        initialCount: 30, // Added for Smart Stock
-        threshold: 5, // Added for Smart Stock
-        isSmartStockEnabled: true, // Added for Smart Stock
-        lastTaken: "2024-02-21T12:45:00Z", // Added for Smart Stock
-      },
-      {
-        name: "Lozenges",
-        dosage: "1 lozenge every 3-4 hours",
-        duration: "As needed",
-        pillCount: 10, // Added for Smart Stock
-        initialCount: 10, // Added for Smart Stock
-        threshold: 2, // Added for Smart Stock
-        isSmartStockEnabled: false, // Added for Smart Stock
-        lastTaken: null, // Added for Smart Stock
-      },
-    ],
-  },
-];
-
 // --- Reusable Prescription Card with Smart Stock Features ---
 const PrescriptionCard = ({ prescription, onTakeDose, onToggleSmartStock }) => {
   const handleDownloadPdf = () => {
@@ -247,7 +187,7 @@ const MyPrescriptionsPage = () => {
     }
   };
 
-  const handleLogAdherenceDose = async (prescriptionId, medIndex, medicine) => {
+  const handleLogAdherenceDose = async (prescriptionId, medIndex) => {
     try {
       const today = new Date().toISOString().split('T')[0];
       await logMedicationDose(prescriptionId, medIndex, today, '');
@@ -260,51 +200,9 @@ const MyPrescriptionsPage = () => {
     }
   };
 
-  const toggleSmartStock = (prescriptionId, medIndex, enable) => {
+  const toggleSmartStock = () => {
     // This would need a backend endpoint to update smart stock settings
     toast.info('Smart stock settings would be updated here');
-  };
-
-  const showRefillAlert = (medName, threshold) => {
-    toast.dismiss(); // Dismiss any existing toast before showing a new one
-    toast.info(
-      <div className="p-4">
-        <p className="font-bold text-lg text-white">⚠️ Low Stock Alert</p>
-        <p className="mt-1 text-gray-200">
-          You're running low on {medName}. Only {threshold} doses left.
-        </p>
-        <p className="mt-2 text-gray-300 text-sm">
-          Would you like to book a follow-up with your doctor to get a new
-          prescription?
-        </p>
-        <div className="mt-3 flex gap-3">
-          <button
-            onClick={() => {
-              toast.dismiss();
-              window.location.href = "my-appointments";
-            }}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium"
-          >
-            Book Follow-up
-          </button>
-          <button
-            onClick={() => {
-              toast.dismiss();
-            }}
-            className="bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-md text-sm font-medium"
-          >
-            Remind Me Later
-          </button>
-        </div>
-      </div>,
-      {
-        autoClose: false,
-        closeButton: false,
-        className:
-          "!bg-gray-800 !text-white !rounded-lg !border !border-gray-700 !shadow-lg",
-        position: "bottom-center",
-      }
-    );
   };
 
   if (loading)

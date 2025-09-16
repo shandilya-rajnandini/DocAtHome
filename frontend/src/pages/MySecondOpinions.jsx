@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { FaFileMedical, FaClock, FaUserMd, FaCheckCircle, FaHourglassHalf, FaPlayCircle } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 
@@ -7,11 +7,7 @@ const MySecondOpinions = () => {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all');
 
-  useEffect(() => {
-    fetchMyRequests();
-  }, [filter]);
-
-  const fetchMyRequests = async () => {
+  const fetchMyRequests = useCallback(async () => {
     try {
       const params = new URLSearchParams();
       if (filter !== 'all') params.append('status', filter);
@@ -32,7 +28,11 @@ const MySecondOpinions = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [filter]);
+
+  useEffect(() => {
+    fetchMyRequests();
+  }, [filter, fetchMyRequests]);
 
   const getStatusColor = (status) => {
     switch (status) {

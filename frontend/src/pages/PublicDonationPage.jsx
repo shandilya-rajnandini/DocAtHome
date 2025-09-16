@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 // Correctly import the specific functions you need with curly braces
-import { getMyCareFund, createDonationOrder } from '../api/index.js';
-import { useAuth } from '../context/AuthContext';
+import { getMyCareFund } from '../api/index.js';
 import toast from 'react-hot-toast';
 
 const PublicDonationPage = () => {
@@ -14,7 +13,7 @@ const PublicDonationPage = () => {
             try {
                 const { data } = await getMyCareFund();
                 setFund(data);
-            } catch (error) {
+            } catch {
                 toast.error("Could not load the Care Fund details.");
             } finally {
                 setLoading(false);

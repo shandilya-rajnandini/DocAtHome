@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getGroupMessages, sendGroupMessage, getMyAnonymousProfile } from '../api';
 import { FaArrowLeft, FaPaperPlane, FaUserCircle, FaFlag } from 'react-icons/fa';
@@ -17,7 +17,7 @@ const SupportGroupChat = () => {
   useEffect(() => {
     loadAnonymousProfile();
     loadMessages();
-  }, [groupId]);
+  }, [groupId, loadMessages]);
 
   useEffect(() => {
     scrollToBottom();
@@ -32,7 +32,7 @@ const SupportGroupChat = () => {
     }
   };
 
-  const loadMessages = async () => {
+  const loadMessages = useCallback(async () => {
     try {
       const response = await getGroupMessages(groupId);
       setMessages(response.data);
@@ -42,7 +42,7 @@ const SupportGroupChat = () => {
       toast.error('Failed to load messages');
       setLoading(false);
     }
-  };
+  }, [groupId]);
 
   const handleSendMessage = async (e) => {
     e.preventDefault();

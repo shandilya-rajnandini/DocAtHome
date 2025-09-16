@@ -1,11 +1,11 @@
 // components/VideoCall.jsx
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useCallback } from 'react';
 import Peer from 'simple-peer';
 import { joinVideoCall, endVideoCall } from '../api';
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
 
-const VideoCall = ({ callId, patientId, onCallEnd }) => {
+const VideoCall = ({ callId, onCallEnd }) => {
   const { user } = useAuth();
   const [stream, setStream] = useState(null);
   const [call, setCall] = useState(null);
@@ -23,9 +23,9 @@ const VideoCall = ({ callId, patientId, onCallEnd }) => {
     return () => {
       cleanup();
     };
-  }, []);
+  }, [initializeCall, cleanup]);
 
-  const initializeCall = async () => {
+  const initializeCall = useCallback(async () => {
     try {
       // Get user media
       const mediaStream = await navigator.mediaDevices.getUserMedia({
@@ -85,16 +85,16 @@ const VideoCall = ({ callId, patientId, onCallEnd }) => {
       console.error('Error initializing call:', error);
       toast.error('Failed to access camera/microphone');
     }
-  };
+  }, [callId, user.id, onCallEnd]);
 
-  const cleanup = () => {
+  const cleanup = useCallback(() => {
     if (stream) {
       stream.getTracks().forEach(track => track.stop());
     }
     if (peerRef.current) {
       peerRef.current.destroy();
     }
-  };
+  }, [stream]);
 
   const toggleMute = () => {
     if (stream) {

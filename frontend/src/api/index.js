@@ -109,6 +109,7 @@ export const verifySubscription = (paymentData) => API.post('/subscription/verif
 export const getActiveAnnouncements = () => API.get('/announcements/active');
 export const getAnnouncements = () => API.get('/announcements');
 export const createAnnouncement = (announcementData) => API.post('/announcements', announcementData);
+export const updateAnnouncement = (id, announcementData) => API.put(`/announcements/${id}`, announcementData);
 export const deleteAnnouncement = (id) => API.delete(`/announcements/${id}`);
 
 // === Video Call Routes ===

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Link } from "react-router-dom";
 import { searchDoctors } from "../api"; // Assuming your AI call is separate for now
 import toast from "react-hot-toast";
@@ -27,7 +27,7 @@ const SearchDoctorsPage = () => {
     const [aiReasoning, setAIReasoning] = useState("");
     const [aiLoading, setAILoading] = useState(false);
 
-    const fetchDoctors = async (currentFilters, page = 1) => {
+    const fetchDoctors = useCallback(async (currentFilters, page = 1) => {
         setIsLoading(true);
         try {
             const queryParams = { ...currentFilters, page, limit: pagination.limit };
@@ -50,23 +50,17 @@ const SearchDoctorsPage = () => {
         } finally {
             setIsLoading(false);
         }
-    };
+    }, [pagination.limit]);
 
     useEffect(() => {
         fetchDoctors({}, 1);
-    }, []);
+    }, [fetchDoctors]);
 
     const handleFilterChange = (e) => setFilters({ ...filters, [e.target.name]: e.target.value });
     const handleApplyFilters = (e) => {
         e.preventDefault();
         setPagination(prev => ({ ...prev, currentPage: 1 }));
         fetchDoctors(filters, 1);
-    };
-
-    const handlePageChange = (newPage) => {
-        if (newPage >= 1 && newPage <= pagination.totalPages) {
-            fetchDoctors(filters, newPage);
-        }
     };
 
     const findNearbyDoctors = () => {
@@ -81,7 +75,7 @@ const SearchDoctorsPage = () => {
                 setIsGettingLocation(false);
                 toast.success(`Found doctors within ${filters.radius || "10"}km!`);
             },
-            (error) => {
+            () => {
                 setIsGettingLocation(false);
                 toast.error("Unable to get your location. Please select a city manually.");
             }
@@ -116,7 +110,7 @@ const SearchDoctorsPage = () => {
             setAISuggestion(data.specialty);
             setAIReasoning(data.reasoning || "");
             setFilters(f => ({ ...f, specialty: data.specialty }));
-        } catch (err) {
+        } catch {
             toast.error("Could not get a suggestion. Try again.");
         } finally {
             setAILoading(false);

@@ -3,9 +3,15 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "engines": {
+    "node": ">=20.0.0",
+    "npm": ">=10.0.0"
+  },
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "node build-with-polyfill.js",
+    "build:netlify": "npm cache clean --force && node --version && npm --version && node build-with-polyfill.js",
+    "build:direct": "vite build",
     "lint": "eslint .",
     "preview": "vite preview"
   },
@@ -37,13 +43,23 @@
     "@types/react": "^19.1.8",
     "@types/react-dom": "^19.1.6",
     "@vitejs/plugin-react": "^4.5.2",
+    "assert": "^2.1.0",
     "autoprefixer": "^10.4.21",
+    "buffer": "^6.0.3",
+    "crypto-browserify": "^3.12.1",
+    "cssnano": "^7.1.1",
     "eslint": "^9.29.0",
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.20",
     "globals": "^16.2.0",
+    "https-browserify": "^1.0.0",
+    "os-browserify": "^0.3.0",
     "postcss": "^8.5.6",
+    "process": "^0.11.10",
+    "stream-browserify": "^3.0.0",
+    "stream-http": "^3.2.0",
     "tailwindcss": "^3.4.17",
+    "url": "^0.11.4",
     "vite": "^7.0.0",
     "vite-plugin-static-copy": "^3.1.1"
   }

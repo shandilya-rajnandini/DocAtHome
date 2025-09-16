@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { getMyCareCircle, inviteToCareCircle } from '../api';
 import { getCallHistory, getActiveCall, joinVideoCall } from '../api';
 import toast from 'react-hot-toast';
@@ -38,12 +38,22 @@ const CareCirclePage = () => {
             } catch (activeError) {
                 console.error('Error fetching active call:', activeError);
             }
-        } catch (error) {
+        } catch {
             toast.error("Could not load your Care Circle.");
         } finally {
             setLoading(false);
         }
     };
+
+    const handleJoinCall = useCallback(async (callId) => {
+        try {
+            await joinVideoCall(callId);
+            setCurrentCall(callId);
+        } catch (error) {
+            console.error('Error joining call:', error);
+            toast.error('Failed to join call');
+        }
+    }, []);
 
     useEffect(() => {
         fetchCircle();
@@ -78,21 +88,26 @@ const CareCirclePage = () => {
         }, 30000); // Poll every 30 seconds
         
         return () => clearInterval(pollInterval);
-    }, [circle?.patient]);
-
-    const handleJoinCall = async (callId) => {
-        try {
-            await joinVideoCall(callId);
-            setCurrentCall(callId);
-        } catch (error) {
-            console.error('Error joining call:', error);
-            toast.error('Failed to join call');
-        }
-    };
+    }, [circle?.patient, circle, activeCall, currentCall, handleJoinCall]);
 
     const handleCallEnd = () => {
         setCurrentCall(null);
         fetchCircle(); // Refresh data
+    };
+
+    const handleInvite = async (e) => {
+        e.preventDefault();
+        if (!inviteEmail.trim()) return;
+
+        try {
+            await inviteToCareCircle({ email: inviteEmail });
+            toast.success('Invitation sent successfully!');
+            setInviteEmail('');
+            fetchCircle(); // Refresh the circle data
+        } catch (error) {
+            console.error('Error sending invitation:', error);
+            toast.error('Failed to send invitation');
+        }
     };
 
     if (loading) return <div className="text-center p-10 text-white">Loading Your Care Circle...</div>;

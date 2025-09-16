@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { FaFileMedical, FaClock, FaUserMd, FaCheckCircle, FaEye, FaDownload, FaPlayCircle } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 
@@ -10,11 +10,7 @@ const SpecialistSecondOpinions = () => {
   const [selectedCase, setSelectedCase] = useState(null);
   const [showCaseModal, setShowCaseModal] = useState(false);
 
-  useEffect(() => {
-    fetchCases();
-  }, [activeTab]);
-
-  const fetchCases = async () => {
+  const fetchCases = useCallback(async () => {
     try {
       setLoading(true);
 
@@ -40,7 +36,11 @@ const SpecialistSecondOpinions = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [activeTab]);
+
+  useEffect(() => {
+    fetchCases();
+  }, [activeTab, fetchCases]);
 
   const handleAcceptCase = async (caseId) => {
     try {
