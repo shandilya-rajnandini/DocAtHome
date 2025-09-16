@@ -495,7 +495,7 @@ const AnimatedRoutes = () => {
           path="/nurse/moderation"
           element={
             <AnimatedPage>
-              <ProtectedRoute>
+              <ProtectedRoute roles={['nurse', 'admin']}>
                 <NurseModerationDashboard />
               </ProtectedRoute>
             </AnimatedPage>

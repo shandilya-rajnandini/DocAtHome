@@ -4,8 +4,10 @@ const { Server } = require('socket.io');
 const dotenv = require('dotenv');
 const cors = require('cors');
 const helmet = require('helmet');
+const path = require('path');
 const connectDB = require('./config/db');
 const { startScheduler } = require('./utils/adherenceScheduler');
+const { protect } = require('./middleware/authMiddleware');
 
 dotenv.config();
 const app = express();
@@ -31,8 +33,14 @@ app.use(cors({
 app.use(express.json());
 app.use(helmet());
 
-// Serve static files from uploads directory
-app.use('/uploads', express.static('uploads'));
+// Secure uploads access (auth required; add resource-level ACLs in controller)
+app.get('/uploads/:bucket/:file', protect, async (req, res) => {
+  const { bucket, file } = req.params;
+  const allow = new Set(['second-opinions', 'video-responses']); // tighten as needed
+  if (!allow.has(bucket)) return res.status(404).end();
+  // TODO: enforce per-file authorization (e.g., patient is owner, specialist assigned)
+  res.sendFile(path.join(process.cwd(), 'uploads', bucket, file));
+});
 
 // API Routes
 app.use('/api/auth', require('./routes/authRoutes'));

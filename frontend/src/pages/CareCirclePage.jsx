@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { getMyCareCircle, inviteToCareCircle } from '../api';
-import { getCallHistory, getActiveCall, joinVideoCall } from '../api';
+import { getCallHistory, getActiveCall } from '../api';
 import toast from 'react-hot-toast';
 import IconUserPlus from '../components/icons/IconUserPlus.jsx';
 import IconUserShield from '../components/icons/IconUserShield.jsx';
@@ -47,7 +47,6 @@ const CareCirclePage = () => {
 
     const handleJoinCall = useCallback(async (callId) => {
         try {
-            await joinVideoCall(callId);
             setCurrentCall(callId);
         } catch (error) {
             console.error('Error joining call:', error);

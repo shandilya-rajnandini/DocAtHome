@@ -36,8 +36,7 @@ const medicalFileFilter = (req, file, cb) => {
     'application/msword',
     'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
     'text/plain',
-    'application/dicom', // For DICOM files
-    'application/octet-stream' // For other medical formats
+    'application/dicom' // For DICOM files
   ];
 
   const allowedExtensions = [
@@ -46,7 +45,11 @@ const medicalFileFilter = (req, file, cb) => {
 
   const fileExtension = path.extname(file.originalname).toLowerCase();
 
-  if (allowedTypes.includes(file.mimetype) || allowedExtensions.includes(fileExtension)) {
+  const isAllowedMime = allowedTypes.includes(file.mimetype);
+  const isOctetStream = file.mimetype === 'application/octet-stream';
+  const isAllowedExt = allowedExtensions.includes(fileExtension);
+
+  if (isAllowedMime || (isOctetStream && isAllowedExt)) {
     cb(null, true);
   } else {
     cb(new Error(`Invalid file type: ${file.originalname}. Only PDF, images, and documents are allowed.`), false);

@@ -87,7 +87,7 @@ const videoCallSchema = new mongoose.Schema({
 // Indexes for efficient queries
 videoCallSchema.index({ patient: 1, createdAt: -1 });
 videoCallSchema.index({ professional: 1, status: 1 });
-videoCallSchema.index({ callId: 1 });
+videoCallSchema.index({ callId: 1 }, { unique: true });
 videoCallSchema.index({ location: '2dsphere' });
 
 module.exports = mongoose.model('VideoCall', videoCallSchema);

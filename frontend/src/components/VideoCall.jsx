@@ -4,6 +4,7 @@ import Peer from 'simple-peer';
 import { joinVideoCall, endVideoCall } from '../api';
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
+import io from 'socket.io-client';
 
 const VideoCall = ({ callId, onCallEnd }) => {
   const { user } = useAuth();
@@ -17,16 +18,25 @@ const VideoCall = ({ callId, onCallEnd }) => {
   const myVideoRef = useRef();
   const remoteVideoRef = useRef();
   const peerRef = useRef();
-
-  useEffect(() => {
-    initializeCall();
-    return () => {
-      cleanup();
-    };
-  }, [initializeCall, cleanup]);
+  const socketRef = useRef();
 
   const initializeCall = useCallback(async () => {
     try {
+      // Setup socket connection for signaling
+      const API_URL = import.meta.env.VITE_API_URL || 'https://docathome-backend.onrender.com/api';
+      const socketURL = API_URL.replace('/api', ''); // Remove /api suffix for socket connection
+      socketRef.current = io.connect(socketURL);
+
+      socketRef.current.on('connect', () => {
+        console.log('Socket connected for video call');
+        socketRef.current.emit('join-video-call', { callId, userId: user.id });
+      });
+
+      socketRef.current.on('connect_error', (error) => {
+        console.error('Socket connection error:', error.message);
+        toast.error('Connection failed');
+      });
+
       // Get user media
       const mediaStream = await navigator.mediaDevices.getUserMedia({
         video: true,
@@ -46,7 +56,12 @@ const VideoCall = ({ callId, onCallEnd }) => {
 
       // Initialize WebRTC peer
       const peer = new Peer({
-        initiator: data.call.professional.toString() === user.id, // Professional initiates
+        initiator: (
+          (typeof data.call.professional === 'string'
+            ? data.call.professional
+            : data.call.professional?._id?.toString()
+          ) === user.id
+        ),
         trickle: false,
         stream: mediaStream
       });
@@ -54,8 +69,15 @@ const VideoCall = ({ callId, onCallEnd }) => {
       peerRef.current = peer;
 
       peer.on('signal', (signalData) => {
-        // Send signaling data to server
-        console.log('Signal data:', signalData);
+        // Send signaling data to server via socket
+        socketRef.current.emit('video-signal', { callId, signal: signalData });
+      });
+
+      // Listen for incoming signals
+      socketRef.current.on('video-signal', ({ callId: incomingId, signal }) => {
+        if (incomingId === callId) {
+          peer.signal(signal);
+        }
       });
 
       peer.on('stream', (remoteStream) => {
@@ -94,7 +116,17 @@ const VideoCall = ({ callId, onCallEnd }) => {
     if (peerRef.current) {
       peerRef.current.destroy();
     }
+    if (socketRef.current) {
+      socketRef.current.disconnect();
+    }
   }, [stream]);
+
+  useEffect(() => {
+    initializeCall();
+    return () => {
+      cleanup();
+    };
+  }, [initializeCall, cleanup]);
 
   const toggleMute = () => {
     if (stream) {

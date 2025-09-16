@@ -1,11 +1,19 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { Link } from 'react-router-dom';
 import { FaFileMedical, FaClock, FaUserMd, FaCheckCircle, FaHourglassHalf, FaPlayCircle } from 'react-icons/fa';
 import { toast } from 'react-toastify';
+import { createRazorpayOrder, verifyRazorpayPayment } from '../api';
+import { useAuth } from '../context/AuthContext';
 
 const MySecondOpinions = () => {
+  const { user } = useAuth();
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all');
+  const [selectedReport, setSelectedReport] = useState(null);
+  const [showReportModal, setShowReportModal] = useState(false);
+  const [reportLoading, setReportLoading] = useState(false);
+  const [paymentLoading, setPaymentLoading] = useState(null); // Track which request is being paid for
 
   const fetchMyRequests = useCallback(async () => {
     try {
@@ -66,6 +74,121 @@ const MySecondOpinions = () => {
       return `${diffHours} hours remaining`;
     } else {
       return `${Math.floor(diffHours / 24)} days remaining`;
+    }
+  };
+
+  const handleViewReport = async (requestId) => {
+    setReportLoading(true);
+    try {
+      const response = await fetch(`/api/second-opinions/${requestId}/report`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+
+      if (!response.ok) throw new Error('Failed to fetch report');
+
+      const reportData = await response.json();
+      setSelectedReport(reportData.data);
+      setShowReportModal(true);
+    } catch (error) {
+      console.error('Error fetching report:', error);
+      toast.error('Failed to load report');
+    } finally {
+      setReportLoading(false);
+    }
+  };
+
+  const closeReportModal = () => {
+    setShowReportModal(false);
+    setSelectedReport(null);
+  };
+
+  const handlePayNow = async (requestId, amount) => {
+    setPaymentLoading(requestId);
+    
+    try {
+      // Create Razorpay order
+      const orderResponse = await createRazorpayOrder({
+        amount: amount,
+        currency: 'INR',
+        type: 'second_opinion',
+        referenceId: requestId
+      });
+
+      const { order, key } = orderResponse.data;
+
+      // Load Razorpay script if not already loaded
+      if (!window.Razorpay) {
+        const script = document.createElement('script');
+        script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+        script.async = true;
+        document.body.appendChild(script);
+        
+        await new Promise((resolve, reject) => {
+          script.onload = resolve;
+          script.onerror = reject;
+        });
+      }
+
+      // Configure Razorpay options
+      const options = {
+        key: key || import.meta.env.VITE_RAZORPAY_KEY_ID,
+        amount: order.amount,
+        currency: order.currency,
+        name: 'Doc@Home',
+        description: 'Second Opinion Payment',
+        order_id: order.id,
+        handler: async function (response) {
+          try {
+            // Verify payment
+            const _verifyResponse = await verifyRazorpayPayment({
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_signature: response.razorpay_signature,
+              type: 'second_opinion',
+              referenceId: requestId
+            });
+
+            // Update local state
+            setRequests(prevRequests => 
+              prevRequests.map(req => 
+                req._id === requestId 
+                  ? { ...req, paymentStatus: 'paid' }
+                  : req
+              )
+            );
+
+            toast.success('Payment successful! Your second opinion request is now active.');
+          } catch (error) {
+            console.error('Payment verification error:', error);
+            toast.error('Payment verification failed. Please contact support.');
+          } finally {
+            setPaymentLoading(null);
+          }
+        },
+        prefill: {
+          name: user?.name || 'User',
+          email: user?.email || 'user@example.com'
+        },
+        theme: {
+          color: '#3B82F6'
+        },
+        modal: {
+          ondismiss: function() {
+            setPaymentLoading(null);
+            toast.info('Payment cancelled');
+          }
+        }
+      };
+
+      const rzp = new window.Razorpay(options);
+      rzp.open();
+
+    } catch (error) {
+      console.error('Payment creation error:', error);
+      toast.error('Failed to initiate payment. Please try again.');
+      setPaymentLoading(null);
     }
   };
 
@@ -134,12 +257,12 @@ const MySecondOpinions = () => {
               }
             </p>
             {filter === 'all' && (
-              <a
-                href="/second-opinion-request"
+              <Link
+                to="/second-opinion-request"
                 className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
               >
                 Request Second Opinion
-              </a>
+              </Link>
             )}
           </div>
         ) : (
@@ -187,15 +310,23 @@ const MySecondOpinions = () => {
 
                   <div className="flex space-x-2">
                     {request.status === 'completed' && (
-                      <button className="inline-flex items-center px-3 py-1 text-sm text-white bg-green-600 rounded-md hover:bg-green-700 transition-colors">
+                      <button 
+                        onClick={() => handleViewReport(request._id)}
+                        disabled={reportLoading}
+                        className="inline-flex items-center px-3 py-1 text-sm text-white bg-green-600 rounded-md hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                      >
                         <FaPlayCircle className="mr-1" />
-                        View Report
+                        {reportLoading ? 'Loading...' : 'View Report'}
                       </button>
                     )}
 
                     {request.status === 'pending' && request.paymentStatus !== 'paid' && (
-                      <button className="inline-flex items-center px-3 py-1 text-sm text-white bg-blue-600 rounded-md hover:bg-blue-700 transition-colors">
-                        Pay Now
+                      <button 
+                        onClick={() => handlePayNow(request._id, request.price)}
+                        disabled={paymentLoading === request._id}
+                        className="inline-flex items-center px-3 py-1 text-sm text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                      >
+                        {paymentLoading === request._id ? 'Processing...' : 'Pay Now'}
                       </button>
                     )}
                   </div>
@@ -213,6 +344,107 @@ const MySecondOpinions = () => {
           </div>
         )}
       </div>
+
+      {/* Report Modal */}
+      {showReportModal && selectedReport && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-2xl font-bold text-gray-900">Second Opinion Report</h2>
+                <button
+                  onClick={closeReportModal}
+                  className="text-gray-400 hover:text-gray-600 text-2xl"
+                >
+                  ×
+                </button>
+              </div>
+
+              <div className="space-y-6">
+                {/* Report Header */}
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">Report Details</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                    <div>
+                      <span className="font-medium text-gray-700">Request ID:</span>
+                      <span className="ml-2 text-gray-900">{selectedReport.requestId}</span>
+                    </div>
+                    <div>
+                      <span className="font-medium text-gray-700">Date:</span>
+                      <span className="ml-2 text-gray-900">
+                        {new Date(selectedReport.createdAt).toLocaleDateString()}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="font-medium text-gray-700">Doctor:</span>
+                      <span className="ml-2 text-gray-900">{selectedReport.doctorName}</span>
+                    </div>
+                    <div>
+                      <span className="font-medium text-gray-700">Specialty:</span>
+                      <span className="ml-2 text-gray-900">{selectedReport.specialty}</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Diagnosis Section */}
+                {selectedReport.diagnosis && (
+                  <div className="bg-blue-50 p-4 rounded-lg">
+                    <h3 className="text-lg font-semibold text-blue-900 mb-2">Diagnosis</h3>
+                    <p className="text-blue-800">{selectedReport.diagnosis}</p>
+                  </div>
+                )}
+
+                {/* Recommendations Section */}
+                {selectedReport.recommendations && (
+                  <div className="bg-green-50 p-4 rounded-lg">
+                    <h3 className="text-lg font-semibold text-green-900 mb-2">Recommendations</h3>
+                    <p className="text-green-800 whitespace-pre-line">{selectedReport.recommendations}</p>
+                  </div>
+                )}
+
+                {/* Additional Notes */}
+                {selectedReport.notes && (
+                  <div className="bg-yellow-50 p-4 rounded-lg">
+                    <h3 className="text-lg font-semibold text-yellow-900 mb-2">Additional Notes</h3>
+                    <p className="text-yellow-800 whitespace-pre-line">{selectedReport.notes}</p>
+                  </div>
+                )}
+
+                {/* Attachments */}
+                {selectedReport.attachments && selectedReport.attachments.length > 0 && (
+                  <div className="bg-gray-50 p-4 rounded-lg">
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">Attachments</h3>
+                    <div className="space-y-2">
+                      {selectedReport.attachments.map((attachment, index) => (
+                        <div key={index} className="flex items-center justify-between bg-white p-2 rounded">
+                          <span className="text-sm text-gray-700">{attachment.filename}</span>
+                          <a
+                            href={attachment.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-blue-600 hover:text-blue-800 text-sm underline"
+                          >
+                            Download
+                          </a>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <div className="mt-6 flex justify-end">
+                <button
+                  onClick={closeReportModal}
+                  className="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-colors"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

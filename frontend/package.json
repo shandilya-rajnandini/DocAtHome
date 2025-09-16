@@ -35,8 +35,7 @@
     "react-router-dom": "^7.6.3",
     "react-toastify": "^11.0.5",
     "simple-peer": "^9.11.1",
-    "socket.io-client": "^4.8.1",
-    "vite-plugin-static-copy": "^3.1.1"
+    "socket.io-client": "^4.8.1"
   },
   "devDependencies": {
     "@eslint/js": "^9.29.0",
@@ -53,13 +52,16 @@
     "eslint-plugin-react-refresh": "^0.4.20",
     "globals": "^16.2.0",
     "https-browserify": "^1.0.0",
+    "memfs": "^4.11.1",
     "os-browserify": "^0.3.0",
+    "path-browserify": "^1.0.1",
     "postcss": "^8.5.6",
     "process": "^0.11.10",
     "stream-browserify": "^3.0.0",
     "stream-http": "^3.2.0",
     "tailwindcss": "^3.4.17",
     "url": "^0.11.4",
+    "util": "^0.12.5",
     "vite": "^7.0.0",
     "vite-plugin-static-copy": "^3.1.1"
   }

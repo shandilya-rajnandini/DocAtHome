@@ -8,6 +8,15 @@ import { AuthProvider } from './context/AuthContext.jsx'; // For user login stat
 import { Toaster } from 'react-hot-toast'; // For pop-up notifications
 import ErrorBoundary from './components/ErrorBoundary.jsx'; // For error handling
 
+// Setup polyfills for browser compatibility
+import { Buffer } from 'buffer';
+window.Buffer = Buffer;
+
+// Setup crypto polyfill if needed
+if (!window.crypto) {
+  window.crypto = crypto;
+}
+
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <ErrorBoundary>

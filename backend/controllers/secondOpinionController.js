@@ -115,8 +115,9 @@ const assignSecondOpinion = asyncHandler(async (req, res) => {
   }
 
   // Check if specialist has the required specialty
-  const specialist = await User.findById(req.user.id);
-  if (!specialist.profile.specialization.includes(secondOpinion.specialty)) {
+  const specialist = await User.findById(req.user.id).select('profile.specialization');
+  const specs = specialist?.profile?.specialization;
+  if (!Array.isArray(specs) || !specs.includes(secondOpinion.specialty)) {
     return res.status(403).json({
       success: false,
       message: 'You are not qualified for this specialty'
@@ -258,6 +259,10 @@ const createSecondOpinionPayment = asyncHandler(async (req, res) => {
     receipt: `second_opinion_${secondOpinion._id}`
   });
 
+  // Bind payment orderId to the request for later verification
+  secondOpinion.paymentOrderId = order.id;
+  await secondOpinion.save();
+
   res.json({
     success: true,
     data: {
@@ -288,6 +293,14 @@ const verifySecondOpinionPayment = asyncHandler(async (req, res) => {
     return res.status(403).json({
       success: false,
       message: 'Not authorized'
+    });
+  }
+
+  // Verify that the order ID matches the one stored for this request
+  if (secondOpinion.paymentOrderId !== razorpay_order_id) {
+    return res.status(400).json({
+      success: false,
+      message: 'Invalid order ID for this request'
     });
   }
 

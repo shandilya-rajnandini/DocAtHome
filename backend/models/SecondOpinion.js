@@ -15,23 +15,23 @@ const secondOpinionSchema = new mongoose.Schema({
     type: String,
     required: true,
     trim: true,
-    maxLength: 200
+    maxlength: 200
   },
   description: {
     type: String,
     required: true,
     trim: true,
-    maxLength: 2000
+    maxlength: 2000
   },
   medicalHistory: {
     type: String,
     trim: true,
-    maxLength: 1000
+    maxlength: 1000
   },
   currentDiagnosis: {
     type: String,
     trim: true,
-    maxLength: 500
+    maxlength: 500
   },
   urgencyLevel: {
     type: String,
@@ -88,6 +88,10 @@ const secondOpinionSchema = new mongoose.Schema({
     type: String,
     trim: true
   },
+  paymentOrderId: {
+    type: String,
+    trim: true
+  },
   assignedAt: {
     type: Date
   },
@@ -110,7 +114,7 @@ const secondOpinionSchema = new mongoose.Schema({
   notes: {
     type: String,
     trim: true,
-    maxLength: 500
+    maxlength: 500
   }
 }, {
   timestamps: true

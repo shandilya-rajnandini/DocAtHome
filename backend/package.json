@@ -36,7 +36,8 @@
     "razorpay": "^2.9.6",
     "socket.io": "^4.8.1",
     "speakeasy": "^2.0.0",
-    "winston": "^3.17.0"
+    "winston": "^3.17.0",
+    "pdfkit": "^0.13.0"
   },
   "devDependencies": {
     "eslint": "^9.33.0",

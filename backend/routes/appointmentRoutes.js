@@ -55,17 +55,17 @@ router
 // Creates a new appointment with comprehensive input validation
 router.route('/').post(
   protect,
-  //validate(appointmentSchemas.create),
+  validate(appointmentSchemas.create),
   createAppointment
 );
 
 //POST /:id/voicenote
 //Creates a voice note for the appointment
-router.post('/:id/voice-note', protect, saveVoiceNote);
+router.post('/:id/voice-note', protect, validateObjectId('id'), saveVoiceNote);
 
 //PUT /:id/relay-note
 //Updates the relay note for the appointment
-router.put('/:id/relay-note', protect, updateRelayNote);
+router.put('/:id/relay-note', protect, validateObjectId('id'), updateRelayNote);
 
 // POST /api/appointments/:id/schedule-follow-up
 // Schedules a follow-up for a specific appointment

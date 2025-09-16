@@ -13,7 +13,7 @@ const {
   moderateMessage,
   getUserMemberships
 } = require('../controllers/supportController');
-const { protect } = require('../middleware/authMiddleware');
+const { protect, authorize } = require('../middleware/authMiddleware');
 
 // Public routes (no auth required)
 router.get('/groups', getSupportGroups);
@@ -23,7 +23,6 @@ router.use(protect);
 
 // Group management
 router.get('/groups/:id', getSupportGroup);
-router.post('/groups', createSupportGroup); // Nurse only
 router.post('/groups/:id/join', joinSupportGroup);
 router.post('/groups/:id/leave', leaveSupportGroup);
 
@@ -32,10 +31,12 @@ router.get('/groups/:id/messages', getGroupMessages);
 router.post('/groups/:id/messages', postMessage);
 router.post('/groups/:id/messages/:messageId/like', toggleMessageLike);
 
-// Moderation (nurse only)
-router.post('/groups/:id/messages/:messageId/moderate', moderateMessage);
-
 // User memberships
 router.get('/memberships', getUserMemberships);
+
+// Admin routes (nurse only)
+router.use('/admin', authorize('nurse'));
+router.post('/admin/groups', createSupportGroup);
+router.put('/admin/groups/:id/messages/:messageId/moderate', moderateMessage);
 
 module.exports = router;

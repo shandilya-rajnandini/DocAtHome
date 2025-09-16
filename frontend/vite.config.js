@@ -25,14 +25,7 @@ export default defineConfig({
   },
   define: {
     global: 'globalThis',
-    // Polyfill for crypto functions
     'process.env': {},
-    // Fix for crypto.hash issue
-    'crypto': 'crypto',
-    // Additional crypto polyfills
-    'Buffer': 'Buffer',
-    // Add global polyfills
-    'globalThis.crypto': 'crypto',
   },
   resolve: {
     alias: {
@@ -69,26 +62,7 @@ export default defineConfig({
       },
       external: [],
       plugins: [
-        {
-          name: 'crypto-polyfill',
-          generateBundle(options, bundle) {
-            // Add crypto polyfill to the bundle
-            for (const [, chunk] of Object.entries(bundle)) {
-              if (chunk.type === 'chunk' && chunk.code) {
-                // Replace crypto.hash calls with safe fallbacks
-                chunk.code = chunk.code.replace(
-                  /crypto\.hash/g,
-                  '(() => { try { return crypto.hash || crypto.createHash; } catch { return () => ({ update: () => ({}), digest: () => "" }); } })()'
-                );
-                // Also handle crypto.createHash
-                chunk.code = chunk.code.replace(
-                  /crypto\.createHash/g,
-                  '(() => { try { return crypto.createHash; } catch { return () => ({ update: () => ({}), digest: () => "" }); } })()'
-                );
-              }
-            }
-          }
-        }
+        // (Removed insecure crypto shim; use proper browser crypto in code instead)
       ]
     },
     chunkSizeWarningLimit: 1000,

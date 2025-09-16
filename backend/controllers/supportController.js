@@ -71,9 +71,9 @@ exports.getSupportGroup = asyncHandler(async (req, res) => {
 exports.createSupportGroup = asyncHandler(async (req, res) => {
   const { name, description, category, condition, rules, tags } = req.body;
 
-  // Verify user is a nurse
-  if (req.user.role !== 'nurse') {
-    return res.status(403).json({ error: 'Only nurses can create support groups' });
+  // Verify user is a verified nurse
+  if (req.user.role !== 'nurse' || !req.user.isVerified) {
+    return res.status(403).json({ error: 'Only verified nurses can create support groups' });
   }
 
   const group = new SupportGroup({
@@ -152,7 +152,9 @@ exports.leaveSupportGroup = asyncHandler(async (req, res) => {
 
 // Get group messages
 exports.getGroupMessages = asyncHandler(async (req, res) => {
-  const { page = 1, limit = 20 } = req.query;
+  // Validate and sanitize pagination parameters
+  const page = Math.max(1, parseInt(req.query.page) || 1);
+  const limit = Math.min(100, Math.max(1, parseInt(req.query.limit) || 20));
 
   // Check if user is a member
   const membership = await GroupMembership.findOne({
@@ -179,7 +181,7 @@ exports.getGroupMessages = asyncHandler(async (req, res) => {
     }
   })
   .sort({ createdAt: -1 })
-  .limit(limit * 1)
+  .limit(limit)
   .skip((page - 1) * limit);
 
   const total = await SupportMessage.countDocuments({
@@ -191,8 +193,8 @@ exports.getGroupMessages = asyncHandler(async (req, res) => {
     messages,
     membership,
     pagination: {
-      page: parseInt(page),
-      limit: parseInt(limit),
+      page,
+      limit,
       total,
       pages: Math.ceil(total / limit)
     }
@@ -250,7 +252,10 @@ exports.toggleMessageLike = asyncHandler(async (req, res) => {
     return res.status(403).json({ error: 'You must be a member to like messages' });
   }
 
-  const message = await SupportMessage.findById(req.params.messageId);
+  const message = await SupportMessage.findOne({
+    _id: req.params.messageId,
+    group: req.params.id
+  });
 
   if (!message || !message.isVisible) {
     return res.status(404).json({ error: 'Message not found' });
@@ -292,7 +297,10 @@ exports.moderateMessage = asyncHandler(async (req, res) => {
     return res.status(403).json({ error: 'Only group moderators can moderate messages' });
   }
 
-  const message = await SupportMessage.findById(req.params.messageId);
+  const message = await SupportMessage.findOne({
+    _id: req.params.messageId,
+    group: req.params.id
+  });
 
   if (!message) {
     return res.status(404).json({ error: 'Message not found' });
@@ -315,7 +323,7 @@ exports.moderateMessage = asyncHandler(async (req, res) => {
   res.json({
     message: 'Message moderated successfully',
     action,
-    message: message
+    data: message
   });
 });
 

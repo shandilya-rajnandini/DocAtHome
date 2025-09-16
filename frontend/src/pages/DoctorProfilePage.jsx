@@ -16,19 +16,33 @@ const DynamicTriageForm = ({ onSummary }) => {
   const [question, setQuestion] = useState('');
   const [summary, setSummary] = useState('');
   const [loading, setLoading] = useState(false);
+  const [answerOptions, setAnswerOptions] = useState([]);
 
   const fetchQuestion = async (symptomInput, answerList) => {
     setLoading(true);
+    setQuestion('');
+    setSummary('');
     try {
       const res = await axios.post('/api/triage/question', { symptom: symptomInput, answers: answerList });
-      if (res.data.question) setQuestion(res.data.question);
-      else if (res.data.summary) {
+      if (res.data.question) {
+        setSummary('');
+        setQuestion(res.data.question);
+        setAnswerOptions(res.data.answerOptions || []);
+      } else if (res.data.summary) {
+        setQuestion('');
         setSummary(res.data.summary);
+        setAnswerOptions([]);
         onSummary(res.data.summary);
-      } else setQuestion('');
-    } catch {
+      } else {
+        setQuestion('');
+        setSummary('');
+        setAnswerOptions([]);
+      }
+    } catch (err) {
       setQuestion('');
       setSummary('');
+      setAnswerOptions([]);
+      console.error('Triage fetch failed', err);
     } finally {
       setLoading(false);
     }
@@ -37,6 +51,7 @@ const DynamicTriageForm = ({ onSummary }) => {
   const handleSymptomChange = (e) => {
     setSymptom(e.target.value);
     setAnswers([]);
+    setAnswerOptions([]);
     setSummary('');
     if (e.target.value) fetchQuestion(e.target.value, []);
     else setQuestion('');
@@ -55,14 +70,25 @@ const DynamicTriageForm = ({ onSummary }) => {
       {loading && <div className="text-secondary-text">Loading...</div>}
       {question && !summary && (
         <div className="mt-2">
-          <label className="block text-white font-semibold mb-2">Follow-up Question:</label>
-          <div className="flex gap-2">
-            <button onClick={() => handleAnswer('yes')} className="bg-accent-blue text-white px-4 py-2 rounded">Yes</button>
-            <button onClick={() => handleAnswer('no')} className="bg-gray-600 text-white px-4 py-2 rounded">No</button>
-            <button onClick={() => handleAnswer('one side')} className="bg-accent-blue text-white px-4 py-2 rounded">One Side</button>
-            <button onClick={() => handleAnswer('both sides')} className="bg-gray-600 text-white px-4 py-2 rounded">Both Sides</button>
-            <button onClick={() => handleAnswer('above 102')} className="bg-accent-blue text-white px-4 py-2 rounded">Above 102</button>
-            <button onClick={() => handleAnswer('below 102')} className="bg-gray-600 text-white px-4 py-2 rounded">Below 102</button>
+          <label className="block text-white font-semibold mb-2">{question}</label>
+          <div className="flex gap-2 flex-wrap">
+            {answerOptions.length > 0 ? (
+              answerOptions.map((option, index) => (
+                <button
+                  key={index}
+                  onClick={() => handleAnswer(option.value)}
+                  className={`${index % 2 === 0 ? 'bg-accent-blue' : 'bg-gray-600'} text-white px-4 py-2 rounded hover:opacity-80 transition-opacity`}
+                >
+                  {option.label}
+                </button>
+              ))
+            ) : (
+              // Fallback to basic yes/no if no options provided
+              <>
+                <button onClick={() => handleAnswer('yes')} className="bg-accent-blue text-white px-4 py-2 rounded">Yes</button>
+                <button onClick={() => handleAnswer('no')} className="bg-gray-600 text-white px-4 py-2 rounded">No</button>
+              </>
+            )}
           </div>
         </div>
       )}
@@ -93,7 +119,6 @@ const DoctorProfilePage = () => {
         previousMeds: '',
         reportImage: null,
     });
-    const [triageSummary, setTriageSummary] = useState('');
 
     useEffect(() => {
         const fetchDoctor = async () => {
@@ -252,8 +277,12 @@ const DoctorProfilePage = () => {
                         </div>
                         <div className="mt-8 border-t border-gray-700 pt-6">
                             <h3 className="text-xl font-bold text-white mb-4">Tell us about your condition</h3>
-                            <DynamicTriageForm onSummary={setTriageSummary} />
-                            <textarea name="symptoms" value={triageSummary || bookingDetails.symptoms} onChange={handleBookingDetailChange} placeholder="Describe your symptoms or reason for visit..." rows="4" className="w-full p-3 bg-primary-dark rounded-md border-gray-700 text-white mt-4"></textarea>
+                            <DynamicTriageForm
+                              onSummary={(s) => {
+                                setBookingDetails(prev => ({ ...prev, symptoms: s }));
+                              }}
+                            />
+                            <textarea name="symptoms" value={bookingDetails.symptoms} onChange={handleBookingDetailChange} placeholder="Describe your symptoms or reason for visit..." rows="4" className="w-full p-3 bg-primary-dark rounded-md border-gray-700 text-white mt-4"></textarea>
                             <input type="text" name="previousMeds" value={bookingDetails.previousMeds} onChange={handleBookingDetailChange} placeholder="List any previous medications (optional)" className="w-full p-3 bg-primary-dark rounded-md border-gray-700 text-white"/>
                             <div>
                                 <label className="block text-secondary-text mb-2">Upload previous report/photo (optional)</label>

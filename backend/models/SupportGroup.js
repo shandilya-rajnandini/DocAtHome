@@ -23,7 +23,15 @@ const supportGroupSchema = new mongoose.Schema({
   moderator: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
-    required: true // Must be a verified nurse
+    required: true,
+    validate: {
+      validator: async function(userId) {
+        const User = require('./User');
+        const user = await User.findById(userId);
+        return user && user.role === 'nurse' && user.isVerified;
+      },
+      message: 'Moderator must be a verified nurse'
+    }
   },
   isActive: {
     type: Boolean,

@@ -131,22 +131,34 @@ const SecondOpinionRequest = () => {
       const secondOpinionId = result.data._id;
 
       // Upload files
+      const failedUploads = [];
       for (const file of files) {
-        const fileFormData = new FormData();
-        fileFormData.append('file', file);
-        fileFormData.append('category', 'medical-report');
+        try {
+          const fileFormData = new FormData();
+          fileFormData.append('file', file);
+          fileFormData.append('category', 'medical-report');
 
-        const uploadResponse = await fetch(`/api/second-opinions/${secondOpinionId}/upload`, {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token')}`
-          },
-          body: fileFormData
-        });
+          const uploadResponse = await fetch(`/api/second-opinions/${secondOpinionId}/upload`, {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${localStorage.getItem('token')}`
+            },
+            body: fileFormData
+          });
 
-        if (!uploadResponse.ok) {
-          console.error('Failed to upload file:', file.name);
+          if (!uploadResponse.ok) {
+            console.error('Failed to upload file:', file.name);
+            failedUploads.push(file.name);
+          }
+        } catch (error) {
+          console.error('Network error uploading file:', file.name, error);
+          failedUploads.push(file.name);
         }
+      }
+
+      // Show warning for failed uploads
+      if (failedUploads.length > 0) {
+        toast.warning(`Some files failed to upload: ${failedUploads.join(', ')}`);
       }
 
       toast.success('Second opinion request submitted successfully!');

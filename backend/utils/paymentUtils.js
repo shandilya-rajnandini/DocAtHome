@@ -1,5 +1,6 @@
 const Razorpay = require('razorpay');
 const crypto = require('crypto');
+const { Buffer } = require('buffer');
 
 // Initialize Razorpay only if keys are available
 let razorpay = null;
@@ -59,7 +60,14 @@ const verifyRazorpayPayment = async (paymentData) => {
       .digest('hex');
 
     // Verify signature
-    return expectedSignature === signature;
+    const expectedBuffer = Buffer.from(expectedSignature, 'hex');
+    const signatureBuffer = Buffer.from(signature, 'hex');
+    
+    if (expectedBuffer.length !== signatureBuffer.length) {
+      return false;
+    }
+    
+    return crypto.timingSafeEqual(expectedBuffer, signatureBuffer);
   } catch (error) {
     console.error('Error verifying Razorpay payment:', error);
     return false;

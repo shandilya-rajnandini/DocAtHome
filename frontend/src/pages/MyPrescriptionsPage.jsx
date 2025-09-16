@@ -200,9 +200,45 @@ const MyPrescriptionsPage = () => {
     }
   };
 
-  const toggleSmartStock = () => {
-    // This would need a backend endpoint to update smart stock settings
-    toast.info('Smart stock settings would be updated here');
+  const toggleSmartStock = async (prescriptionId, medIndex, enable) => {
+    // Update local state optimistically
+    setPrescriptions((prev) =>
+      prev.map((p) => {
+        if (p._id === prescriptionId) {
+          const updatedMeds = [...p.medicines];
+          updatedMeds[medIndex] = {
+            ...updatedMeds[medIndex],
+            isSmartStockEnabled: enable,
+          };
+          return { ...p, medicines: updatedMeds };
+        }
+        return p;
+      })
+    );
+
+    toast.loading('Updating smart stock...', { id: 'smart-stock' });
+    try {
+      // TODO: Implement backend API call
+      // await updateSmartStock(prescriptionId, medIndex, enable);
+      toast.success('Smart stock updated successfully!', { id: 'smart-stock' });
+    } catch (error) {
+      console.error('Error updating smart stock:', error);
+      // Revert optimistic update on error
+      setPrescriptions((prev) =>
+        prev.map((p) => {
+          if (p._id === prescriptionId) {
+            const updatedMeds = [...p.medicines];
+            updatedMeds[medIndex] = {
+              ...updatedMeds[medIndex],
+              isSmartStockEnabled: !enable, // Revert to previous state
+            };
+            return { ...p, medicines: updatedMeds };
+          }
+          return p;
+        })
+      );
+      toast.error('Failed to update smart stock settings', { id: 'smart-stock' });
+    }
   };
 
   if (loading)

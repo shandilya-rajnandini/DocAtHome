@@ -70,10 +70,11 @@ const SearchDoctorsPage = () => {
             (position) => {
                 const { latitude, longitude } = position.coords;
                 setUserLocation({ lat: latitude, lng: longitude });
-                const geoFilters = { ...filters, lat: latitude, lng: longitude, radius: filters.radius || "10" };
-                fetchDoctors(geoFilters, 1);
+                const newFilters = { ...filters, lat: latitude, lng: longitude, radius: filters.radius || "10" };
+                setFilters(newFilters);
+                fetchDoctors(newFilters, 1);
                 setIsGettingLocation(false);
-                toast.success(`Found doctors within ${filters.radius || "10"}km!`);
+                toast.success(`Found doctors within ${newFilters.radius}km!`);
             },
             () => {
                 setIsGettingLocation(false);
@@ -87,6 +88,7 @@ const SearchDoctorsPage = () => {
         const clearedFilters = { ...filters };
         delete clearedFilters.lat;
         delete clearedFilters.lng;
+        delete clearedFilters.radius;
         setFilters(clearedFilters);
         fetchDoctors(clearedFilters, 1);
         toast.success("Location filter cleared");

@@ -2,11 +2,10 @@
 const VideoCall = require('../models/VideoCall');
 const CareCircle = require('../models/CareCircle');
 const asyncHandler = require('../middleware/asyncHandler');
+const { randomUUID } = require('crypto');
 
 // Generate unique call ID
-const generateCallId = () => {
-  return `call_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-};
+const generateCallId = () => `call_${randomUUID()}`;
 
 // Start a new family bridge call
 exports.startFamilyBridgeCall = asyncHandler(async (req, res) => {
@@ -14,6 +13,11 @@ exports.startFamilyBridgeCall = asyncHandler(async (req, res) => {
 
   if (!patientId) {
     return res.status(400).json({ error: 'Patient ID is required' });
+  }
+
+  // Verify user is a professional
+  if (!['doctor', 'nurse', 'admin'].includes(req.user.role)) {
+    return res.status(403).json({ error: 'Only professionals can start calls' });
   }
 
   // Verify the professional has access to this patient
@@ -164,7 +168,9 @@ exports.endCall = asyncHandler(async (req, res) => {
 // Get call history for a user
 exports.getCallHistory = asyncHandler(async (req, res) => {
   const { patientId } = req.params;
-  const { page = 1, limit = 10 } = req.query;
+  // Validate and sanitize pagination parameters
+  const page = Math.max(1, parseInt(req.query.page) || 1);
+  const limit = Math.min(50, Math.max(1, parseInt(req.query.limit) || 10));
 
   // Check if user has access to this patient's calls
   let query = {};
@@ -191,7 +197,7 @@ exports.getCallHistory = asyncHandler(async (req, res) => {
     .populate('professional', 'name')
     .populate('participants.user', 'name')
     .sort({ createdAt: -1 })
-    .limit(limit * 1)
+    .limit(limit)
     .skip((page - 1) * limit);
 
   const total = await VideoCall.countDocuments(query);
@@ -199,8 +205,8 @@ exports.getCallHistory = asyncHandler(async (req, res) => {
   res.json({
     calls,
     pagination: {
-      page: parseInt(page),
-      limit: parseInt(limit),
+      page,
+      limit,
       total,
       pages: Math.ceil(total / limit)
     }
@@ -210,6 +216,21 @@ exports.getCallHistory = asyncHandler(async (req, res) => {
 // Get active call for a patient
 exports.getActiveCall = asyncHandler(async (req, res) => {
   const { patientId } = req.params;
+
+  // Access control check
+  if (req.user.role === 'patient' && req.user.id !== patientId) {
+    return res.status(403).json({ error: 'Access denied' });
+  }
+  if (req.user.role !== 'patient') {
+    const careCircle = await CareCircle.findOne({
+      patient: patientId,
+      'members.user': req.user.id,
+      'members.status': 'Active'
+    });
+    if (!careCircle) {
+      return res.status(403).json({ error: 'Access denied' });
+    }
+  }
 
   const activeCall = await VideoCall.findOne({
     patient: patientId,

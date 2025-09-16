@@ -21,12 +21,12 @@ const secondOpinionResponseSchema = new mongoose.Schema({
     title: {
       type: String,
       trim: true,
-      maxLength: 200
+      maxlength: 200
     },
     summary: {
       type: String,
       trim: true,
-      maxLength: 500
+      maxlength: 500
     },
     detailedAnalysis: {
       type: String,
@@ -34,17 +34,17 @@ const secondOpinionResponseSchema = new mongoose.Schema({
         return this.responseType === 'written';
       },
       trim: true,
-      maxLength: 5000
+      maxlength: 5000
     },
     recommendations: {
       type: String,
       trim: true,
-      maxLength: 2000
+      maxlength: 2000
     },
     alternativeDiagnosis: {
       type: String,
       trim: true,
-      maxLength: 500
+      maxlength: 500
     },
     confidenceLevel: {
       type: String,
@@ -77,12 +77,12 @@ const secondOpinionResponseSchema = new mongoose.Schema({
     transcript: {
       type: String,
       trim: true,
-      maxLength: 5000
+      maxlength: 5000
     },
     keyPoints: [{
       type: String,
       trim: true,
-      maxLength: 200
+      maxlength: 200
     }]
   },
   // Common fields
@@ -100,7 +100,7 @@ const secondOpinionResponseSchema = new mongoose.Schema({
   reviewNotes: {
     type: String,
     trim: true,
-    maxLength: 500
+    maxlength: 500
   },
   attachments: [{
     fileName: String,
@@ -113,12 +113,12 @@ const secondOpinionResponseSchema = new mongoose.Schema({
       type: String,
       required: true,
       trim: true,
-      maxLength: 300
+      maxlength: 300
     },
     answer: {
       type: String,
       trim: true,
-      maxLength: 500
+      maxlength: 500
     },
     askedAt: {
       type: Date,
@@ -150,7 +150,7 @@ const secondOpinionResponseSchema = new mongoose.Schema({
     comments: {
       type: String,
       trim: true,
-      maxLength: 300
+      maxlength: 300
     }
   },
   isFinal: {

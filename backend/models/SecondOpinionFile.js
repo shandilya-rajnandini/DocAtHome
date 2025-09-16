@@ -61,7 +61,7 @@ const secondOpinionFileSchema = new mongoose.Schema({
   description: {
     type: String,
     trim: true,
-    maxLength: 200
+    maxlength: 200
   },
   isConfidential: {
     type: Boolean,

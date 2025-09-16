@@ -30,17 +30,21 @@ const calculateAdherenceScore = async () => {
       const today = new Date();
       today.setHours(0, 0, 0, 0);
       
-      const sortedLogs = logs.sort((a, b) => b.scheduledDate - a.scheduledDate);
-      
-      for (const log of sortedLogs) {
-        const logDate = new Date(log.scheduledDate);
-        logDate.setHours(0, 0, 0, 0);
-        
-        if (logDate.getTime() === today.getTime() - (streak * 24 * 60 * 60 * 1000) && log.isTaken) {
-          streak++;
-        } else {
-          break;
-        }
+      // Build a set of days with any taken dose
+      const dayKey = d => {
+        const x = new Date(d);
+        x.setHours(0, 0, 0, 0);
+        return x.getTime();
+      };
+      const takenDays = new Set(
+        logs.filter(l => l.isTaken).map(l => dayKey(l.scheduledDate))
+      );
+      // Count consecutive days from today
+      let cursor = new Date(today);
+      while (takenDays.has(cursor.getTime())) {
+        streak++;
+        cursor.setDate(cursor.getDate() - 1);
+        cursor.setHours(0, 0, 0, 0);
       }
       
       // Update user

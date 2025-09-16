@@ -88,6 +88,7 @@ export const updateAvailability = (availabilityData) => API.post('/availability'
 export const getMyCareCircle = () => API.get('/profile/my-care-circle');
 export const inviteToCareCircle = (inviteData) => API.post('/profile/my-care-circle/invite', inviteData);
 export const getMyCareFund = () => API.get('/care-fund/my-fund');
+export const getCareFundPublic = (slugOrId) => API.get(`/care-fund/public/${slugOrId}`);
 export const createDonationOrder = (donationData) => API.post('/care-fund/donate', donationData);
 
 // === Lab Test & Ambulance Routes ===
@@ -145,7 +146,7 @@ export const deleteSupportGroup = (groupId) => API.delete(`/support/admin/groups
 export const getGroupMembers = (groupId) => API.get(`/support/admin/groups/${groupId}/members`);
 export const removeGroupMember = (groupId, memberId) => API.delete(`/support/admin/groups/${groupId}/members/${memberId}`);
 export const getFlaggedMessages = () => API.get('/support/admin/flagged-messages');
-export const moderateMessage = (messageId, action) => API.put(`/support/admin/messages/${messageId}/moderate`, { action });
+export const moderateMessage = (groupId, messageId, action) => API.put(`/support/admin/groups/${groupId}/messages/${messageId}/moderate`, { action });
 
 // === Quest Routes ===
 export const getQuests = () => API.get('/quests');
@@ -157,9 +158,11 @@ export const createSecondOpinion = (data) => API.post('/second-opinions', data);
 export const getMySecondOpinions = (params) => API.get('/second-opinions/my-requests', { params });
 export const getAvailableSecondOpinions = (params) => API.get('/second-opinions/available', { params });
 export const assignSecondOpinion = (id) => API.put(`/second-opinions/${id}/assign`);
-export const uploadSecondOpinionFile = (id, fileData) => API.post(`/second-opinions/${id}/upload`, fileData, {
-  headers: { 'Content-Type': 'multipart/form-data' }
-});
+export const uploadSecondOpinionFile = (id, fileData) =>
+  API.post(`/second-opinions/${id}/upload`, fileData);
 export const getSecondOpinionFiles = (id) => API.get(`/second-opinions/${id}/files`);
 export const createSecondOpinionPayment = (id) => API.post(`/second-opinions/${id}/payment`);
 export const verifySecondOpinionPayment = (id, paymentData) => API.post(`/second-opinions/${id}/payment/verify`, paymentData);
+
+// === Profile Routes ===
+export const deleteMyProfile = () => API.delete('/profile/me');

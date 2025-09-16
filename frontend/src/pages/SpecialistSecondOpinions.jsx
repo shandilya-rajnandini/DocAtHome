@@ -26,9 +26,17 @@ const SpecialistSecondOpinions = () => {
         const data = await response.json();
         setAvailableCases(data.data);
       } else {
-        // Fetch assigned cases - this would need a new API endpoint
-        // For now, we'll show a placeholder
-        setMyCases([]);
+        // Fetch assigned cases for the specialist
+        const response = await fetch('/api/second-opinions/my-assigned', {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          }
+        });
+
+        if (!response.ok) throw new Error('Failed to fetch assigned cases');
+
+        const data = await response.json();
+        setMyCases(data.data);
       }
     } catch (error) {
       console.error('Error fetching cases:', error);
@@ -81,6 +89,56 @@ const SpecialistSecondOpinions = () => {
       console.error('Error fetching case files:', error);
       setSelectedCase(caseData);
       setShowCaseModal(true);
+    }
+  };
+
+  const handleSubmitOpinion = async (_caseId) => { // eslint-disable-line no-unused-vars
+    // This would typically open a modal or navigate to a form
+    // For now, we'll show a placeholder
+    toast.info('Submit opinion functionality would open a form here');
+  };
+
+  const handleViewReport = async (caseId) => {
+    try {
+      const response = await fetch(`/api/second-opinions/${caseId}/report`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+
+      if (!response.ok) throw new Error('Failed to fetch report');
+
+      const _reportData = await response.json();
+      // This would typically open a modal to display the report
+      toast.success('Report viewing functionality would open here');
+    } catch (error) {
+      console.error('Error fetching report:', error);
+      toast.error('Failed to load report');
+    }
+  };
+
+  const handleDownloadFile = async (file) => {
+    try {
+      const response = await fetch(`/api/second-opinions/files/${file._id}/download`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+
+      if (!response.ok) throw new Error('Download failed');
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = file.originalName;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Error downloading file:', error);
+      toast.error('Failed to download file');
     }
   };
 
@@ -238,13 +296,110 @@ const SpecialistSecondOpinions = () => {
         )}
 
         {activeTab === 'my-cases' && (
-          <div className="text-center py-12">
-            <FaFileMedical className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">My Assigned Cases</h3>
-            <p className="text-gray-500">
-              Cases you've accepted will appear here for review and response.
-            </p>
-          </div>
+          <>
+            {myCases.length === 0 ? (
+              <div className="text-center py-12">
+                <FaFileMedical className="mx-auto h-12 w-12 text-gray-400 mb-4" />
+                <h3 className="text-lg font-medium text-gray-900 mb-2">No assigned cases</h3>
+                <p className="text-gray-500">
+                  You haven't accepted any cases yet. Check the Available Cases tab to see cases you can accept.
+                </p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {myCases.map((caseData) => (
+                  <div key={caseData._id} className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
+                    <div className="flex items-start justify-between mb-4">
+                      <div className="flex-1">
+                        <h3 className="text-xl font-semibold text-gray-900 mb-2 line-clamp-2">
+                          {caseData.title}
+                        </h3>
+                        <p className="text-gray-600 text-sm mb-3 line-clamp-3">
+                          {caseData.description}
+                        </p>
+                      </div>
+                      <div className={`px-2 py-1 text-xs rounded-full border ${getUrgencyColor(caseData.urgencyLevel)}`}>
+                        {caseData.urgencyLevel}
+                      </div>
+                    </div>
+
+                    <div className="space-y-3 mb-4">
+                      <div className="flex items-center text-sm text-gray-500">
+                        <FaUserMd className="h-4 w-4 mr-2" />
+                        <span className="capitalize">{caseData.specialty.replace('-', ' ')}</span>
+                      </div>
+
+                      <div className="flex items-center text-sm text-gray-500">
+                        <FaClock className="h-4 w-4 mr-2" />
+                        <span>{formatDeadline(caseData.deadline)}</span>
+                      </div>
+
+                      <div className="flex items-center text-sm text-gray-500">
+                        <span>Patient: {caseData.patientId?.name || 'Anonymous'}</span>
+                      </div>
+
+                      <div className="flex items-center text-sm text-gray-500">
+                        <span>Status: </span>
+                        <span className={`ml-1 px-2 py-1 text-xs rounded-full ${
+                          caseData.status === 'completed' 
+                            ? 'bg-green-100 text-green-800' 
+                            : caseData.status === 'in-review' 
+                            ? 'bg-blue-100 text-blue-800' 
+                            : 'bg-yellow-100 text-yellow-800'
+                        }`}>
+                          {caseData.status.replace('-', ' ')}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-between">
+                      <div className="text-lg font-semibold text-blue-600">
+                        ₹{caseData.price}
+                      </div>
+
+                      <div className="flex space-x-2">
+                        <button
+                          onClick={() => handleViewCase(caseData)}
+                          className="inline-flex items-center px-3 py-1 text-sm text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
+                        >
+                          <FaEye className="mr-1" />
+                          View
+                        </button>
+
+                        {caseData.status === 'assigned' && (
+                          <button
+                            onClick={() => handleSubmitOpinion(caseData._id)}
+                            className="inline-flex items-center px-3 py-1 text-sm text-white bg-green-600 rounded-md hover:bg-green-700 transition-colors"
+                          >
+                            <FaPlayCircle className="mr-1" />
+                            Submit Opinion
+                          </button>
+                        )}
+
+                        {caseData.status === 'completed' && (
+                          <button
+                            onClick={() => handleViewReport(caseData._id)}
+                            className="inline-flex items-center px-3 py-1 text-sm text-white bg-blue-600 rounded-md hover:bg-blue-700 transition-colors"
+                          >
+                            <FaDownload className="mr-1" />
+                            View Report
+                          </button>
+                        )}
+                      </div>
+                    </div>
+
+                    {caseData.currentDiagnosis && (
+                      <div className="mt-3 p-2 bg-gray-50 rounded-md">
+                        <p className="text-xs text-gray-600">
+                          <strong>Current Diagnosis:</strong> {caseData.currentDiagnosis}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </>
         )}
 
         {/* Case Detail Modal */}
@@ -312,7 +467,10 @@ const SpecialistSecondOpinions = () => {
                               </p>
                             </div>
                           </div>
-                          <button className="inline-flex items-center px-3 py-1 text-sm text-blue-600 border border-blue-600 rounded-md hover:bg-blue-50 transition-colors">
+                          <button 
+                            onClick={() => handleDownloadFile(file)}
+                            className="inline-flex items-center px-3 py-1 text-sm text-blue-600 border border-blue-600 rounded-md hover:bg-blue-50 transition-colors"
+                          >
                             <FaDownload className="mr-1" />
                             Download
                           </button>

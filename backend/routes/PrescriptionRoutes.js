@@ -105,12 +105,19 @@ router.post('/:id/log-dose', protect, async (req, res) => {
     const medicine = prescription.medicines[medicineIndex];
     if (!medicine) return res.status(400).json({ error: 'Invalid medicine index' });
 
-    // Check if log already exists for this date
+    // Validate date and prevent duplicate logs for the same day
+    const sd = new Date(scheduledDate);
+    if (Number.isNaN(sd.getTime())) {
+      return res.status(400).json({ error: 'Invalid scheduledDate' });
+    }
+    const dayStart = new Date(sd); dayStart.setHours(0,0,0,0);
+    const dayEnd = new Date(sd); dayEnd.setHours(23,59,59,999);
     const existingLog = await MedicationLog.findOne({
       patient: req.user.id,
       prescription: req.params.id,
       medicineName: medicine.name,
-      scheduledDate: new Date(scheduledDate)
+      // also persist medicineIndex to disambiguate renamed meds
+      scheduledDate: { $gte: dayStart, $lte: dayEnd }
     });
 
     if (existingLog) {
@@ -121,8 +128,9 @@ router.post('/:id/log-dose', protect, async (req, res) => {
       patient: req.user.id,
       prescription: req.params.id,
       medicineName: medicine.name,
+      medicineIndex,
       dosage: medicine.dosage,
-      scheduledDate: new Date(scheduledDate),
+      scheduledDate: sd,
       takenAt: new Date(),
       isTaken: true,
       notes: notes || ''
@@ -156,17 +164,17 @@ router.get('/adherence', protect, async (req, res) => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     
-    for (let i = 0; i < logs.length; i++) {
-      const logDate = new Date(logs[i].scheduledDate);
-      logDate.setHours(0, 0, 0, 0);
-      
-      if (logDate.getTime() === today.getTime() - (streak * 24 * 60 * 60 * 1000) && logs[i].isTaken) {
-        streak++;
-      } else if (logs[i].isTaken) {
-        streak = 1;
-      } else {
-        break;
-      }
+    const dayKey = d => {
+      const x = new Date(d); x.setHours(0,0,0,0); return x.getTime();
+    };
+    const takenDays = new Set(
+      logs.filter(l => l.isTaken).map(l => dayKey(l.scheduledDate))
+    );
+    let cursor = new Date(today);
+    while (takenDays.has(cursor.getTime())) {
+      streak++;
+      cursor.setDate(cursor.getDate() - 1);
+      cursor.setHours(0,0,0,0);
     }
 
     res.json({

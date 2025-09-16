@@ -15,7 +15,7 @@ function App() {
         <Navbar />
         <AnnouncementBanner />
 
-        <main id="main-content" className="flex-grow">
+        <main id="main-content" tabIndex="-1" className="flex-grow">
             <AnimatedRoutes />
         </main>
 

@@ -5,7 +5,6 @@ import { getSubscriptionStatus } from '../api';
 import EmptyState from "../components/EmptyState";
 import { Calendar } from "lucide-react";
 import CountUp from "react-countup";
-import FamilyBridgeCall from '../components/FamilyBridgeCall';
 
 const StatCard = ({ value, label, currency = "" }) => (
   <div className="bg-secondary-dark p-6 rounded-xl text-center shadow-lg">
@@ -145,19 +144,6 @@ const DoctorDashboard = () => {
                                 isActive={true}
                             />
                         </div>
-                    </div>
-                )}
-
-                {/* Family Bridge Call Section */}
-                {['doctor', 'nurse'].includes(user?.role) && (
-                    <div className="mb-8">
-                        <FamilyBridgeCall
-                            patientId={null} // This would be set when viewing a specific patient's profile
-                            onCallStarted={(call) => {
-                                console.log('Call started:', call);
-                                // Handle call started - could navigate to call interface or show notification
-                            }}
-                        />
                     </div>
                 )}
 

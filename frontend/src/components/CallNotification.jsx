@@ -1,7 +1,5 @@
 // components/CallNotification.jsx
 import React, { useState, useEffect } from 'react';
-import { joinVideoCall } from '../api';
-import toast from 'react-hot-toast';
 
 const CallNotification = ({ call, onJoin, onDismiss }) => {
   const [timeLeft, setTimeLeft] = useState(30); // 30 seconds to respond
@@ -15,14 +13,8 @@ const CallNotification = ({ call, onJoin, onDismiss }) => {
     }
   }, [timeLeft, onDismiss]);
 
-  const handleJoin = async () => {
-    try {
-      await joinVideoCall(call.callId);
-      onJoin(call.callId);
-    } catch (error) {
-      console.error('Error joining call:', error);
-      toast.error('Failed to join call');
-    }
+  const handleJoin = () => {
+    onJoin(call.callId);
   };
 
   return (

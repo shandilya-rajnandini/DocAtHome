@@ -84,7 +84,7 @@ const createDecagonPolygon = (lat, lng, radiusKm) => {
 const checkServiceAreaIntersection = (serviceArea, decagonPolygon) => {
   // For now, we'll check if the centroid of service area is within the decagon
   // This could be enhanced with more complex polygon intersection algorithms
-  if (!serviceArea || !serviceArea.coordinates || !serviceArea.coordinates[0]) {
+  if (!serviceArea || !serviceArea.coordinates || !serviceArea.coordinates[0] || !decagonPolygon) {
     return false;
   }
 
@@ -117,8 +117,8 @@ const isPointInPolygon = (lat, lng, polygon) => {
 
 // @desc    Get all verified doctors, with optional filters and pagination
 const getDoctors = asyncHandler(async (req, res) => {
-  // Pagination parameters
-  const page = parseInt(req.query.page) || 1;
+  // Pagination parameters with validation
+  const page = Math.max(1, parseInt(req.query.page) || 1);
   const limit = Math.min(parseInt(req.query.limit) || 10, 50); // Max 50 per page
   const skip = (page - 1) * limit;
 
@@ -217,11 +217,14 @@ const getDoctors = asyncHandler(async (req, res) => {
   }
 
   // Create 10-point decagon polygon around patient's location
-  const decagonPolygon = createDecagonPolygon(
-    latitude,
-    longitude,
-    parseFloat(radius)
-  );
+  let decagonPolygon = null;
+  if (latitude && longitude && !isNaN(latitude) && !isNaN(longitude)) {
+    decagonPolygon = createDecagonPolygon(
+      latitude,
+      longitude,
+      parseFloat(radius)
+    );
+  }
 
   // Store patient location in a format that could be saved to localStorage on frontend
   patientLocation = {
@@ -332,17 +335,6 @@ const getDoctors = asyncHandler(async (req, res) => {
   // Apply pagination to the sorted results
   totalDoctors = allDoctors.length;
   doctors = allDoctors.slice(skip, skip + limit);
-  totalDoctors = await User.countDocuments(baseQuery);
-  doctors = await User.find(baseQuery)
-    .sort(sortQuery)
-    .skip(skip)
-    .limit(limit);
-  totalDoctors = await User.countDocuments(baseQuery);
-  doctors = await User.find(baseQuery)
-    .select("-password")
-    .sort(sortQuery)
-    .skip(skip)
-    .limit(limit);
 
   // Calculate pagination metadata
   const totalPages = Math.ceil(totalDoctors / limit);
@@ -381,8 +373,8 @@ const getDoctorById = asyncHandler(async (req, res) => {
 });
 
 const searchDoctors = asyncHandler(async (req, res) => {
-  // Pagination parameters
-  const page = parseInt(req.query.page) || 1;
+  // Pagination parameters with validation
+  const page = Math.max(1, parseInt(req.query.page) || 1);
   const limit = Math.min(parseInt(req.query.limit) || 10, 50); // Max 50 per page
   const skip = (page - 1) * limit;
 

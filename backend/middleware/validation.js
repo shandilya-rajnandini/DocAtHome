@@ -422,7 +422,6 @@ const detectXSS = (req, res, next) => {
         if (pattern.test(obj)) {
           logger.error('XSS attempt detected', {
             pattern: pattern.toString(),
-            content: obj.substring(0, 100),
             path,
             ip: req.ip,
             userAgent: req.get('User-Agent'),

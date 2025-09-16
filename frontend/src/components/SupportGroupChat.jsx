@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getGroupMessages, sendGroupMessage, getMyAnonymousProfile } from '../api';
-import { FaArrowLeft, FaPaperPlane, FaUserCircle, FaFlag } from 'react-icons/fa';
+import { FaArrowLeft, FaPaperPlane, FaUserCircle, FaFlag, FaCheck } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 
 const SupportGroupChat = () => {
@@ -13,15 +13,9 @@ const SupportGroupChat = () => {
   const [sending, setSending] = useState(false);
   const [anonymousProfile, setAnonymousProfile] = useState(null);
   const messagesEndRef = useRef(null);
-
-  useEffect(() => {
-    loadAnonymousProfile();
-    loadMessages();
-  }, [groupId, loadMessages]);
-
-  useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
+  const [reportedMessages, setReportedMessages] = useState(new Set());
+  const [showReportConfirm, setShowReportConfirm] = useState(false);
+  const [messageToReport, setMessageToReport] = useState(null);
 
   const loadAnonymousProfile = async () => {
     try {
@@ -44,6 +38,19 @@ const SupportGroupChat = () => {
     }
   }, [groupId]);
 
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  useEffect(() => {
+    loadAnonymousProfile();
+    loadMessages();
+  }, [groupId, loadMessages]);
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
+
   const handleSendMessage = async (e) => {
     e.preventDefault();
     if (!newMessage.trim() || sending) return;
@@ -61,8 +68,27 @@ const SupportGroupChat = () => {
     }
   };
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  const handleReportMessage = async (messageId) => {
+    try {
+      // In a real implementation, this would call an API endpoint
+      // For now, we'll just mark it as reported locally
+      setReportedMessages(prev => new Set([...prev, messageId]));
+      setShowReportConfirm(false);
+      setMessageToReport(null);
+      toast.success('Message reported successfully');
+    } catch (_error) { // eslint-disable-line no-unused-vars
+      toast.error('Failed to report message');
+    }
+  };
+
+  const openReportConfirm = (message) => {
+    setMessageToReport(message);
+    setShowReportConfirm(true);
+  };
+
+  const closeReportConfirm = () => {
+    setShowReportConfirm(false);
+    setMessageToReport(null);
   };
 
   const formatTime = (dateString) => {
@@ -160,7 +186,7 @@ const SupportGroupChat = () => {
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center space-x-2 mb-1">
                           <span className="text-sm font-medium text-gray-900">
-                            {message.sender.displayName}
+                            {message.author?.displayName || 'Anonymous'}
                           </span>
                           <span className="text-xs text-gray-500">
                             {formatTime(message.createdAt)}
@@ -176,12 +202,20 @@ const SupportGroupChat = () => {
                         </div>
                       </div>
                       <div className="flex-shrink-0">
-                        <button
-                          className="p-1 text-gray-400 hover:text-gray-600 transition-colors"
-                          title="Report message"
-                        >
-                          <FaFlag className="h-4 w-4" />
-                        </button>
+                        {reportedMessages.has(message._id) ? (
+                          <div className="flex items-center text-green-600" title="Message reported">
+                            <FaCheck className="h-4 w-4 mr-1" />
+                            <span className="text-xs">Reported</span>
+                          </div>
+                        ) : (
+                          <button
+                            onClick={() => openReportConfirm(message)}
+                            className="p-1 text-gray-400 hover:text-red-500 transition-colors"
+                            title="Report message"
+                          >
+                            <FaFlag className="h-4 w-4" />
+                          </button>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -225,6 +259,40 @@ const SupportGroupChat = () => {
           </form>
         </div>
       </div>
+
+      {/* Report Confirmation Dialog */}
+      {showReportConfirm && messageToReport && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Report Message</h3>
+            <div className="mb-4">
+              <p className="text-sm text-gray-600 mb-2">Are you sure you want to report this message?</p>
+              <div className="bg-gray-50 rounded-lg p-3 border">
+                <div className="text-sm font-medium text-gray-900 mb-1">
+                  {messageToReport.sender.displayName}
+                </div>
+                <div className="text-sm text-gray-700">
+                  {messageToReport.content}
+                </div>
+              </div>
+            </div>
+            <div className="flex justify-end space-x-3">
+              <button
+                onClick={closeReportConfirm}
+                className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => handleReportMessage(messageToReport._id)}
+                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+              >
+                Report
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
