@@ -57,6 +57,15 @@ import TwoFactorAuthPage from "../pages/TwoFactorAuthPage.jsx";
 import NotFoundPage from "../pages/NotFoundPage.jsx";
 import ScrollToUp from "./ScrollToUp.jsx";
 
+// Support Community Pages
+import SupportCommunity from "../pages/SupportCommunity.jsx";
+import SupportGroupChat from "../components/SupportGroupChat.jsx";
+import NurseModerationDashboard from "../components/NurseModerationDashboard.jsx";
+
+// Second Opinion Pages
+import SecondOpinionRequest from "../pages/SecondOpinionRequest.jsx";
+import MySecondOpinions from "../pages/MySecondOpinions.jsx";
+import SpecialistSecondOpinions from "../pages/SpecialistSecondOpinions.jsx";
 
 const AnimatedRoutes = () => {
   const location = useLocation();
@@ -459,6 +468,76 @@ const AnimatedRoutes = () => {
           element={
             <AnimatedPage>
               <NotFoundPage />
+            </AnimatedPage>
+          }
+        />
+        <Route
+          path="/support-community"
+          element={
+            <AnimatedPage>
+              <ProtectedRoute>
+                <SupportCommunity />
+              </ProtectedRoute>
+            </AnimatedPage>
+          }
+        />
+        <Route
+          path="/support-community/:groupId"
+          element={
+            <AnimatedPage>
+              <ProtectedRoute>
+                <SupportGroupChat />
+              </ProtectedRoute>
+            </AnimatedPage>
+          }
+        />
+        <Route
+          path="/nurse/moderation"
+          element={
+            <AnimatedPage>
+              <ProtectedRoute>
+                <NurseModerationDashboard />
+              </ProtectedRoute>
+            </AnimatedPage>
+          }
+        />
+        <Route
+          path="/second-opinion-request"
+          element={
+            <AnimatedPage>
+              <ProtectedRoute>
+                <SecondOpinionRequest />
+              </ProtectedRoute>
+            </AnimatedPage>
+          }
+        />
+        <Route
+          path="/my-second-opinions"
+          element={
+            <AnimatedPage>
+              <ProtectedRoute>
+                <MySecondOpinions />
+              </ProtectedRoute>
+            </AnimatedPage>
+          }
+        />
+        <Route
+          path="/specialist-second-opinions"
+          element={
+            <AnimatedPage>
+              <ProtectedRoute>
+                <SpecialistSecondOpinions />
+              </ProtectedRoute>
+            </AnimatedPage>
+          }
+        />
+        <Route
+          path="/specialist/second-opinions"
+          element={
+            <AnimatedPage>
+              <ProtectedRoute>
+                <SpecialistSecondOpinions />
+              </ProtectedRoute>
             </AnimatedPage>
           }
         />

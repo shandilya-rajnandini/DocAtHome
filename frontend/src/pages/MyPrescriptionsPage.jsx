@@ -1,7 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import jsPDF from "jspdf";
 import { toast, Toaster } from "react-hot-toast";
-import { useEffect } from "react";
+import { getMyPrescriptions, takeDose, logMedicationDose, getAdherenceData } from "../api";
 // import { Slide, Zoom, Flip, Bounce, POSITION } from 'react-toastify';
 
 // --- Enhanced Mock Data with Smart Stock fields ---
@@ -203,80 +203,66 @@ return (
   );
 };
 
-// --- Main Page Component with Smart Stock Logic ---
+// --- Main Page Component with Smart Stock and Adherence Features ---
 const MyPrescriptionsPage = () => {
-  const [prescriptions, setPrescriptions] = useState(mockPrescriptions);
-  const [loading, setLoading] = useState(false);
+  const [prescriptions, setPrescriptions] = useState([]);
+  const [adherenceData, setAdherenceData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [todayLogs, setTodayLogs] = useState(new Set());
 
-  // Show alerts for any medicines already at/below threshold on page load
   useEffect(() => {
-    const alertedMeds = new Set(); // Track which meds already triggered alerts
+    fetchPrescriptions();
+    fetchAdherenceData();
+  }, []);
 
-    prescriptions.forEach((prescription) => {
-      prescription.medicines.forEach((med) => {
-        const uniqueKey = `${prescription._id}-${med.name}`;
-        if (
-          med.isSmartStockEnabled &&
-          med.pillCount <= med.threshold &&
-          !alertedMeds.has(uniqueKey)
-        ) {
-          alertedMeds.add(uniqueKey);
-          setTimeout(() => showRefillAlert(med.name, med.threshold), 500); // Delay is fine
-        }
-      });
-    });
-  }, [prescriptions]);
+  const fetchPrescriptions = async () => {
+    try {
+      const { data } = await getMyPrescriptions();
+      setPrescriptions(data);
+    } catch (error) {
+      console.error('Error fetching prescriptions:', error);
+      toast.error('Failed to load prescriptions');
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  const handleTakeDose = (prescriptionId, medIndex) => {
-    setLoading(true);
+  const fetchAdherenceData = async () => {
+    try {
+      const { data } = await getAdherenceData(30);
+      setAdherenceData(data);
+    } catch (error) {
+      console.error('Error fetching adherence data:', error);
+    }
+  };
 
-    setPrescriptions((prev) => {
-      const updated = prev.map((p) => {
-        if (p._id === prescriptionId) {
-          const updatedMeds = [...p.medicines];
-          const medicine = updatedMeds[medIndex];
+  const handleTakeDose = async (prescriptionId, medIndex) => {
+    try {
+      await takeDose(prescriptionId, medIndex);
+      await fetchPrescriptions(); // Refresh data
+      toast.success('Dose logged successfully!');
+    } catch (error) {
+      console.error('Error taking dose:', error);
+      toast.error('Failed to log dose');
+    }
+  };
 
-          if (medicine.pillCount > 0) {
-            const newCount = medicine.pillCount - 1;
-            updatedMeds[medIndex] = {
-              ...medicine,
-              pillCount: newCount,
-              lastTaken: new Date().toISOString(),
-            };
-
-            // Check if we've just reached the threshold
-            if (newCount === medicine.threshold) {
-              setTimeout(() => {
-                showRefillAlert(medicine.name, medicine.threshold);
-              }, 300);
-            }
-          }
-
-          return { ...p, medicines: updatedMeds };
-        }
-        return p;
-      });
-
-      return updated;
-    });
-
-    setLoading(false);
+  const handleLogAdherenceDose = async (prescriptionId, medIndex, medicine) => {
+    try {
+      const today = new Date().toISOString().split('T')[0];
+      await logMedicationDose(prescriptionId, medIndex, today, '');
+      setTodayLogs(prev => new Set([...prev, `${prescriptionId}-${medIndex}`]));
+      await fetchAdherenceData(); // Refresh adherence data
+      toast.success('Dose checked off!');
+    } catch (error) {
+      console.error('Error logging adherence dose:', error);
+      toast.error('Failed to check off dose');
+    }
   };
 
   const toggleSmartStock = (prescriptionId, medIndex, enable) => {
-    setPrescriptions((prev) =>
-      prev.map((p) => {
-        if (p._id === prescriptionId) {
-          const updatedMeds = [...p.medicines];
-          updatedMeds[medIndex] = {
-            ...updatedMeds[medIndex],
-            isSmartStockEnabled: enable,
-          };
-          return { ...p, medicines: updatedMeds };
-        }
-        return p;
-      })
-    );
+    // This would need a backend endpoint to update smart stock settings
+    toast.info('Smart stock settings would be updated here');
   };
 
   const showRefillAlert = (medName, threshold) => {
@@ -337,6 +323,61 @@ const MyPrescriptionsPage = () => {
       </div>
 
       <div className="container mx-auto p-8">
+        {/* Adherence Score Display */}
+        {adherenceData && (
+          <div className="bg-gradient-to-r from-blue-500 to-purple-600 text-white p-6 rounded-lg mb-8 shadow-lg">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-2xl font-bold mb-2">Medication Adherence</h2>
+                <p className="text-blue-100">Your 30-day adherence score</p>
+              </div>
+              <div className="text-right">
+                <div className="text-4xl font-bold">{adherenceData.adherenceScore}%</div>
+                <div className="text-sm text-blue-100">
+                  {adherenceData.streak > 0 && `🔥 ${adherenceData.streak} day streak!`}
+                </div>
+              </div>
+            </div>
+            <div className="mt-4 bg-white bg-opacity-20 rounded-full h-3">
+              <div 
+                className="bg-white h-3 rounded-full transition-all duration-500"
+                style={{ width: `${adherenceData.adherenceScore}%` }}
+              ></div>
+            </div>
+          </div>
+        )}
+
+        {/* Today's Medication Checklist */}
+        {prescriptions.length > 0 && (
+          <div className="bg-white dark:bg-secondary-dark p-6 rounded-lg mb-8 shadow-lg">
+            <h2 className="text-2xl font-bold mb-4 text-black dark:text-white">Today's Checklist</h2>
+            <div className="space-y-4">
+              {prescriptions.flatMap((prescription) =>
+                prescription.medicines.map((medicine, index) => (
+                  <div key={`${prescription._id}-${index}`} className="flex items-center justify-between p-4 bg-gray-50 dark:bg-primary-dark rounded-lg">
+                    <div>
+                      <h3 className="font-semibold text-black dark:text-white">{medicine.name}</h3>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">{medicine.dosage}</p>
+                    </div>
+                    <button
+                      onClick={() => handleLogAdherenceDose(prescription._id, index, medicine)}
+                      disabled={todayLogs.has(`${prescription._id}-${index}`)}
+                      className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                        todayLogs.has(`${prescription._id}-${index}`)
+                          ? 'bg-green-500 text-white cursor-not-allowed'
+                          : 'bg-blue-500 hover:bg-blue-600 text-white'
+                      }`}
+                    >
+                      {todayLogs.has(`${prescription._id}-${index}`) ? '✓ Taken' : 'Mark as Taken'}
+                    </button>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Prescriptions List */}
         {prescriptions.length > 0 ? (
           <div className="space-y-8 max-w-4xl mx-auto">
             {prescriptions.map((p) => (

@@ -294,12 +294,23 @@ const DoctorAppointmentsPage = () => {
                         </>
                       )}
                       {appt.status === "Confirmed" && (
-                        <button
-                          onClick={() => openNotesModal(appt._id)}
-                          className="bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold py-2 px-3 rounded"
-                        >
-                          Mark as Complete
-                        </button>
+                        <>
+                          <button
+                            onClick={() => openNotesModal(appt._id)}
+                            className="bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold py-2 px-3 rounded"
+                          >
+                            Mark as Complete
+                          </button>
+                          <a
+                            href={`/api/appointments/${appt._id}/intake-form`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="bg-green-600 hover:bg-green-700 text-white text-sm font-bold py-2 px-3 rounded"
+                            style={{marginTop: '0.5rem'}}
+                          >
+                            Download Intake Form
+                          </a>
+                        </>
                       )}
                       {appt.status === "Completed" && (
                         <button

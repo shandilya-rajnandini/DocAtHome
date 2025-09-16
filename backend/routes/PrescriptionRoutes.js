@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const Prescription = require('../models/Prescription');
+const MedicationLog = require('../models/MedicationLog');
 const { protect } = require('../middleware/authMiddleware');
 const { getMyPrescriptions } = require('../controllers/prescriptionController');
 
@@ -83,6 +84,100 @@ router.post('/:id/take-dose', protect, async (req, res) => { // ✅ FIXED
     res.json({ success: true, pillCount: medicine.pillCount, shouldNotify });
   } catch (_error) {
     res.status(500).json({ error: 'Failed to process dose' });
+  }
+});
+
+// POST log medication intake
+router.post('/:id/log-dose', protect, async (req, res) => {
+  try {
+    const { medicineIndex, scheduledDate, notes } = req.body;
+    
+    if (typeof medicineIndex !== 'number') {
+      return res.status(400).json({ error: 'Medicine index must be a number' });
+    }
+
+    const prescription = await Prescription.findOne({
+      _id: req.params.id,
+      patient: req.user.id
+    });
+    if (!prescription) return res.status(404).json({ error: 'Prescription not found' });
+
+    const medicine = prescription.medicines[medicineIndex];
+    if (!medicine) return res.status(400).json({ error: 'Invalid medicine index' });
+
+    // Check if log already exists for this date
+    const existingLog = await MedicationLog.findOne({
+      patient: req.user.id,
+      prescription: req.params.id,
+      medicineName: medicine.name,
+      scheduledDate: new Date(scheduledDate)
+    });
+
+    if (existingLog) {
+      return res.status(400).json({ error: 'Dose already logged for this date' });
+    }
+
+    const log = new MedicationLog({
+      patient: req.user.id,
+      prescription: req.params.id,
+      medicineName: medicine.name,
+      dosage: medicine.dosage,
+      scheduledDate: new Date(scheduledDate),
+      takenAt: new Date(),
+      isTaken: true,
+      notes: notes || ''
+    });
+
+    await log.save();
+    res.status(201).json({ success: true, log });
+  } catch (_error) {
+    res.status(500).json({ error: 'Failed to log dose' });
+  }
+});
+
+// GET medication adherence data
+router.get('/adherence', protect, async (req, res) => {
+  try {
+    const { days = 30 } = req.query;
+    const startDate = new Date();
+    startDate.setDate(startDate.getDate() - parseInt(days));
+
+    const logs = await MedicationLog.find({
+      patient: req.user.id,
+      scheduledDate: { $gte: startDate }
+    }).sort({ scheduledDate: 1 });
+
+    const totalScheduled = logs.length;
+    const totalTaken = logs.filter(log => log.isTaken).length;
+    const adherenceScore = totalScheduled > 0 ? Math.round((totalTaken / totalScheduled) * 100) : 0;
+
+    // Calculate streak
+    let streak = 0;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    for (let i = 0; i < logs.length; i++) {
+      const logDate = new Date(logs[i].scheduledDate);
+      logDate.setHours(0, 0, 0, 0);
+      
+      if (logDate.getTime() === today.getTime() - (streak * 24 * 60 * 60 * 1000) && logs[i].isTaken) {
+        streak++;
+      } else if (logs[i].isTaken) {
+        streak = 1;
+      } else {
+        break;
+      }
+    }
+
+    res.json({
+      adherenceScore,
+      totalTaken,
+      totalScheduled,
+      streak,
+      logs: logs.slice(-10) // Last 10 logs
+    });
+  } catch (_error) {
+    res.status(500).json({ error: 'Failed to fetch adherence data' });
   }
 });
 

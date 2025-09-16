@@ -5,6 +5,7 @@ import { getSubscriptionStatus } from '../api';
 import EmptyState from "../components/EmptyState";
 import { Calendar } from "lucide-react";
 import CountUp from "react-countup";
+import FamilyBridgeCall from '../components/FamilyBridgeCall';
 
 const StatCard = ({ value, label, currency = "" }) => (
   <div className="bg-secondary-dark p-6 rounded-xl text-center shadow-lg">
@@ -147,6 +148,19 @@ const DoctorDashboard = () => {
                     </div>
                 )}
 
+                {/* Family Bridge Call Section */}
+                {['doctor', 'nurse'].includes(user?.role) && (
+                    <div className="mb-8">
+                        <FamilyBridgeCall
+                            patientId={null} // This would be set when viewing a specific patient's profile
+                            onCallStarted={(call) => {
+                                console.log('Call started:', call);
+                                // Handle call started - could navigate to call interface or show notification
+                            }}
+                        />
+                    </div>
+                )}
+
                 {/* --- Stats Section --- */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
                     <StatCard
@@ -200,6 +214,12 @@ const DoctorDashboard = () => {
                                 className="block w-full text-left p-4 bg-gray-700 text-white rounded-lg font-bold hover:bg-gray-600 transition"
                             >
                                 Edit My Profile
+                            </Link>
+                            <Link
+                                to="/specialist/second-opinions"
+                                className="block w-full text-left p-4 bg-purple-600 text-white rounded-lg font-bold hover:bg-purple-700 transition"
+                            >
+                                🔍 Second Opinions
                             </Link>
                         </div>
                     </div>

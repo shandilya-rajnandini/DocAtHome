@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
 import VerifiedSkillsBadge from '../components/VerifiedSkillsBadge.jsx';
 import { getAvailability } from '../api';
+import axios from 'axios';
 
 // --- Mock Data ---
 const timeSlots = ["11:00 AM", "11:30 AM", "12:00 PM", "12:30 PM", "01:00 PM", "01:30 PM", "02:00 PM"];
@@ -23,6 +24,71 @@ const generateDates = () => {
     return dates;
 };
 const availableDates = generateDates();
+
+const DynamicTriageForm = ({ onSummary }) => {
+  const [symptom, setSymptom] = useState('');
+  const [answers, setAnswers] = useState([]);
+  const [question, setQuestion] = useState('');
+  const [summary, setSummary] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const fetchQuestion = async (symptomInput, answerList) => {
+    setLoading(true);
+    try {
+      const res = await axios.post('/api/triage/question', { symptom: symptomInput, answers: answerList });
+      if (res.data.question) setQuestion(res.data.question);
+      else if (res.data.summary) {
+        setSummary(res.data.summary);
+        onSummary(res.data.summary);
+      } else setQuestion('');
+    } catch (err) {
+      setQuestion('');
+      setSummary('');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSymptomChange = (e) => {
+    setSymptom(e.target.value);
+    setAnswers([]);
+    setSummary('');
+    if (e.target.value) fetchQuestion(e.target.value, []);
+    else setQuestion('');
+  };
+
+  const handleAnswer = (answer) => {
+    const newAnswers = [...answers, answer];
+    setAnswers(newAnswers);
+    fetchQuestion(symptom, newAnswers);
+  };
+
+  return (
+    <div className="bg-primary-dark p-4 rounded-lg mt-4">
+      <label className="block text-white font-bold mb-2">Describe your main symptom</label>
+      <input type="text" value={symptom} onChange={handleSymptomChange} placeholder="e.g. Severe headache" className="w-full p-3 mb-4 bg-secondary-dark rounded" />
+      {loading && <div className="text-secondary-text">Loading...</div>}
+      {question && !summary && (
+        <div className="mt-2">
+          <label className="block text-white font-semibold mb-2">Follow-up Question:</label>
+          <div className="flex gap-2">
+            <button onClick={() => handleAnswer('yes')} className="bg-accent-blue text-white px-4 py-2 rounded">Yes</button>
+            <button onClick={() => handleAnswer('no')} className="bg-gray-600 text-white px-4 py-2 rounded">No</button>
+            <button onClick={() => handleAnswer('one side')} className="bg-accent-blue text-white px-4 py-2 rounded">One Side</button>
+            <button onClick={() => handleAnswer('both sides')} className="bg-gray-600 text-white px-4 py-2 rounded">Both Sides</button>
+            <button onClick={() => handleAnswer('above 102')} className="bg-accent-blue text-white px-4 py-2 rounded">Above 102</button>
+            <button onClick={() => handleAnswer('below 102')} className="bg-gray-600 text-white px-4 py-2 rounded">Below 102</button>
+          </div>
+        </div>
+      )}
+      {summary && (
+        <div className="mt-4 p-3 bg-green-900 text-green-200 rounded">
+          <strong>Triage Summary:</strong> {summary}
+        </div>
+      )}
+    </div>
+  );
+};
 
 const DoctorProfilePage = () => {
     const { id } = useParams();
@@ -200,18 +266,18 @@ const DoctorProfilePage = () => {
                         </div>
                         <div className="mt-8 border-t border-gray-700 pt-6">
                             <h3 className="text-xl font-bold text-white mb-4">Tell us about your condition</h3>
-                            <div className="space-y-4">
-<textarea name="symptoms" value={bookingDetails.symptoms} onChange={handleBookingDetailChange} placeholder="Describe your symptoms or reason for visit..." rows="4" className="w-full p-3 bg-primary-dark rounded-md border-gray-700 text-white"></textarea>
-<input type="text" name="previousMeds" value={bookingDetails.previousMeds} onChange={handleBookingDetailChange} placeholder="List any previous medications (optional)" className="w-full p-3 bg-primary-dark rounded-md border-gray-700 text-white"/>
-                                <div>
-                                    <label className="block text-secondary-text mb-2">Upload previous report/photo (optional)</label>
-                                    <input type="file" name="reportImage" onChange={handleBookingDetailChange} className="w-full text-secondary-text file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-accent-blue file:text-white hover:file:bg-accent-blue-hover"/>
-                                </div>
+                            <DynamicTriageForm onSummary={setTriageSummary} />
+                            <textarea name="symptoms" value={triageSummary || bookingDetails.symptoms} onChange={handleBookingDetailChange} placeholder="Describe your symptoms or reason for visit..." rows="4" className="w-full p-3 bg-primary-dark rounded-md border-gray-700 text-white mt-4"></textarea>
+                            <input type="text" name="previousMeds" value={bookingDetails.previousMeds} onChange={handleBookingDetailChange} placeholder="List any previous medications (optional)" className="w-full p-3 bg-primary-dark rounded-md border-gray-700 text-white"/>
+                            <div>
+                                <label className="block text-secondary-text mb-2">Upload previous report/photo (optional)</label>
+                                <input type="file" name="reportImage" onChange={handleBookingDetailChange} className="w-full text-secondary-text file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-accent-blue file:text-white hover:file:bg-accent-blue-hover"/>
                             </div>
                         </div>
                     </div>
 
-                    <div className="lg:col-span-1 bg-secondary-dark p-6 rounded-lg shadow-lg h-fit">
+                    <div className="lg:col-span-1 sticky top-20">
+                        {/* Booking Summary card content */}
                         <h2 className="text-2xl font-bold text-white mb-4">Booking Summary</h2>
                         <div className="space-y-4 text-secondary-text">
                             <div className="flex justify-between"><span>Doctor:</span><span className="text-white">{doctor.name}</span></div>

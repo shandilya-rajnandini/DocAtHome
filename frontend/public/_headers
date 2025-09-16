@@ -1,0 +1,34 @@
+# Security Headers for Netlify
+/*
+  X-Frame-Options: DENY
+  X-XSS-Protection: 1; mode=block
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=()
+
+# API routes - allow CORS for API calls
+/api/*
+  Access-Control-Allow-Origin: *
+  Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS
+  Access-Control-Allow-Headers: Content-Type, Authorization
+
+# Static assets - cache aggressively
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# HTML files - cache for a shorter time
+/*.html
+  Cache-Control: public, max-age=3600
+
+# Service worker
+/sw.js
+  Cache-Control: no-cache
+
+# Security for sensitive routes
+/dashboard*
+  X-Frame-Options: DENY
+  X-Content-Type-Options: nosniff
+
+/admin*
+  X-Frame-Options: DENY
+  X-Content-Type-Options: nosniff

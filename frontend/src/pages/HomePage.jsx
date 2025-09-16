@@ -11,7 +11,7 @@ import Chatbot from '../components/Chatbot';
 
 const HomePage = () => {
   return (
-    <main role="main" className="home-page" tabIndex="-1">
+    <main role="main" id="main-content" className="home-page" tabIndex="-1">
       <h1 className="sr-only" id="homepage-title">DocAtHome - Your Healthcare Platform</h1>
       <Hero />
       <section aria-labelledby="start-section" className="bg-primary-dark text-center py-16 px-4">

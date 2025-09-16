@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { getAdherenceData } from '../api';
 
 // --- New Reusable Feature Card Component ---
 // This new card has a gradient background and a cleaner look.
@@ -19,14 +20,57 @@ const NewFeatureCard = ({ icon, title, description, link, color }) => (
 
 const PatientDashboard = () => {
   const { user } = useAuth();
+  const [adherenceData, setAdherenceData] = useState(null);
+
+  useEffect(() => {
+    const fetchAdherence = async () => {
+      try {
+        const { data } = await getAdherenceData(30);
+        setAdherenceData(data);
+      } catch (error) {
+        console.error('Error fetching adherence data:', error);
+      }
+    };
+    fetchAdherence();
+  }, []);
 
   return (
-    <main className="bg-amber-200 dark:bg-primary-dark min-h-full pt-24 pb-12 px-4">
+    <main className="bg-amber-200 dark:bg-primary-dark min-h-full pt-24 pb-12 px-4" id="main-content">
       <div className="container mx-auto">
         <header className="mb-12">
           <h1 className="text-4xl md:text-5xl font-bold text-black dark:text-white">Hello, {user?.name}!</h1>
           <p className="text-lg text-gray-800 dark:text-secondary-text mt-2">Your personal health command center.</p>
         </header>
+
+        {/* Medication Adherence Section */}
+        {adherenceData && (
+          <section className="mb-12 bg-gradient-to-r from-green-500 to-blue-600 text-white p-8 rounded-lg shadow-lg">
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h2 className="text-3xl font-bold">Medication Adherence</h2>
+                <p className="text-green-100">Track your medication routine</p>
+              </div>
+              <div className="text-right">
+                <div className="text-5xl font-bold">{adherenceData.adherenceScore}%</div>
+                <div className="text-lg text-green-100">
+                  {adherenceData.streak > 0 ? `🔥 ${adherenceData.streak} day streak!` : 'Keep it up!'}
+                </div>
+              </div>
+            </div>
+            <div className="bg-white bg-opacity-20 rounded-full h-4 mb-4">
+              <div 
+                className="bg-white h-4 rounded-full transition-all duration-1000"
+                style={{ width: `${adherenceData.adherenceScore}%` }}
+              ></div>
+            </div>
+            <Link
+              to="/my-prescriptions"
+              className="inline-block bg-white text-green-600 font-bold py-2 px-6 rounded-lg hover:bg-gray-100 transition-colors"
+            >
+              View Today's Checklist
+            </Link>
+          </section>
+        )}
 
         <section aria-labelledby="care-navigator-title" className="mb-12 bg-secondary-dark text-center py-12 px-4 rounded-lg">
           <h2 id="care-navigator-title" className="text-3xl font-bold text-white mb-4">Not Sure Where to Start?</h2>
@@ -118,6 +162,20 @@ const PatientDashboard = () => {
             description="Quick access to all your payment history."
             link="/payment-history"
             color="from-blue-600 to-blue-800"
+          />
+          <NewFeatureCard
+            icon="🤝"
+            title="Support Community"
+            description="Connect anonymously with others facing similar health challenges."
+            link="/support-community"
+            color="from-orange-600 to-orange-800"
+          />
+          <NewFeatureCard
+            icon="🔍"
+            title="Second Opinion"
+            description="Get expert analysis from top specialists within 48 hours."
+            link="/second-opinion-request"
+            color="from-purple-600 to-purple-800"
           />
         </section>
       </div>

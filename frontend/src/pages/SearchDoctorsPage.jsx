@@ -149,6 +149,21 @@ const SearchDoctorsPage = () => {
                     </div>
                     {/* ... other filters like city, experience, etc. */}
                     
+                    <div className="mb-6">
+                      <label className="block text-slate-700 dark:text-secondary-text mb-2 font-semibold">City</label>
+                      <div className="flex gap-2 items-center">
+                        <select name="city" value={filters.city} onChange={handleFilterChange} className="w-full p-3 bg-gray-200 dark:bg-primary-dark text-black dark:text-white rounded border-gray-700">
+                          <option value="">All Cities</option>
+                          {cities.map(city => <option key={city} value={city}>{city}</option>)}
+                        </select>
+                        <button type="button" className="bg-green-500 text-white px-3 py-2 rounded hover:bg-green-600 font-semibold" onClick={findNearbyDoctors} disabled={isGettingLocation}>
+                          {isGettingLocation ? "Locating..." : "Find Professionals Near Me"}
+                        </button>
+                        {userLocation && (
+                          <button type="button" className="ml-2 text-xs text-gray-600 underline" onClick={clearLocationFilter}>Clear Location</button>
+                        )}
+                      </div>
+                    </div>
                     {/* THIS IS THE CORRECTLY PLACED VERIFIED SKILLS FILTER */}
                     <div className="mb-4">
                       <label htmlFor="skillKeyword" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
