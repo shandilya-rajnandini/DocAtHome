@@ -1,4 +1,3 @@
-const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 const { faker } = require('@faker-js/faker');
 const { getUniquePasswordForUser } = require('./utils/passwordUtils');
@@ -11,15 +10,7 @@ const quests = require('./data/quests');
 
 dotenv.config();
 
-const connectDB = async () => {
-    try {
-        await mongoose.connect(process.env.MONGO_URI);
-        console.log('✅ MongoDB connected successfully.');
-    } catch (error) {
-        console.error('❌ MongoDB connection failed:', error.message);
-        process.exit(1);
-    }
-};
+const connectDB = require('./config/db');
 
 const importData = async () => {
     try {

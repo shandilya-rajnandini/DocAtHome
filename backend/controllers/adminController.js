@@ -27,43 +27,58 @@ exports.getIntakeFormLogs = asyncHandler(async (req, res) => {
   const page = parseInt(req.query.page, 10) || 1;
   const limit = Math.min(parseInt(req.query.limit, 10) || 20, 100);
   const skip = (page - 1) * limit;
-
   const { generatedBy, appointmentId, q, startDate, endDate } = req.query;
-
   const IntakeFormLog = require('../models/IntakeFormLog');
-  const filter = {};
-  if (generatedBy) filter.generatedBy = generatedBy;
-  if (appointmentId) filter.appointment = appointmentId;
+
+  const match = {};
+  if (generatedBy) match.generatedBy = require('mongoose').Types.ObjectId.isValid(generatedBy) ? require('mongoose').Types.ObjectId(generatedBy) : undefined;
+  if (appointmentId) match.appointment = require('mongoose').Types.ObjectId.isValid(appointmentId) ? require('mongoose').Types.ObjectId(appointmentId) : undefined;
   if (startDate || endDate) {
-    filter.createdAt = {};
-    if (startDate) filter.createdAt.$gte = new Date(startDate);
-    if (endDate) filter.createdAt.$lte = new Date(endDate);
+    match.createdAt = {};
+    if (startDate) match.createdAt.$gte = new Date(startDate);
+    if (endDate) match.createdAt.$lte = new Date(endDate);
   }
 
-  const total = await IntakeFormLog.countDocuments(filter);
-  let logs = await IntakeFormLog.find(filter)
-    .populate('appointment', 'appointmentDate appointmentTime')
-    .populate('generatedBy', 'name email')
-    .sort({ createdAt: -1 })
-    .skip(skip)
-    .limit(limit)
-    .lean();
+  const pipeline = [
+    { $match: match },
+    { $sort: { createdAt: -1 } },
+    { $lookup: { from: 'users', localField: 'generatedBy', foreignField: '_id', as: 'generatedBy' } },
+    { $unwind: { path: '$generatedBy', preserveNullAndEmptyArrays: true } },
+    { $lookup: { from: 'appointments', localField: 'appointment', foreignField: '_id', as: 'appointment' } },
+    { $unwind: { path: '$appointment', preserveNullAndEmptyArrays: true } },
+  ];
 
-  // simple text search across generatedBy.name/email and appointment id
   if (q) {
-    const ql = q.toLowerCase();
-    logs = logs.filter((l) => {
-      const name = (l.generatedBy && l.generatedBy.name) || '';
-      const email = (l.generatedBy && l.generatedBy.email) || '';
-      const apptId = (l.appointment && (l.appointment._id || '') ).toString();
-      return (
-        name.toLowerCase().includes(ql) ||
-        email.toLowerCase().includes(ql) ||
-        apptId.includes(ql) ||
-        (l.fileUrl || '').toLowerCase().includes(ql)
-      );
+    pipeline.push({
+      $match: {
+        $or: [
+          { 'generatedBy.name': { $regex: q, $options: 'i' } },
+          { 'generatedBy.email': { $regex: q, $options: 'i' } },
+          { 'fileUrl': { $regex: q, $options: 'i' } },
+          { 'appointment._id': { $regex: q, $options: 'i' } },
+        ]
+      }
     });
   }
+
+  pipeline.push({
+    $facet: {
+      data: [ { $skip: skip }, { $limit: limit } ],
+      meta: [ { $count: 'total' } ]
+    }
+  });
+
+  const [result] = await IntakeFormLog.aggregate(pipeline);
+  const total = (result.meta[0] && result.meta[0].total) || 0;
+  const logs = result.data.map(d => ({
+    _id: d._id,
+    createdAt: d.createdAt,
+    fileUrl: d.fileUrl,
+    ip: d.ip,
+    userAgent: d.userAgent,
+    generatedBy: d.generatedBy ? { _id: d.generatedBy._id, name: d.generatedBy.name, email: d.generatedBy.email } : null,
+    appointment: d.appointment ? { _id: d.appointment._id, appointmentDate: d.appointment.appointmentDate, appointmentTime: d.appointment.appointmentTime } : null,
+  }));
 
   res.json({ total, page, limit, data: logs });
 });
@@ -106,9 +121,13 @@ exports.exportIntakeFormLogs = asyncHandler(async (req, res) => {
   }
 
   // Build CSV
-  const headers = ['timestamp', 'generatedById', 'generatedByName', 'generatedByEmail', 'appointmentId', 'appointmentDate', 'appointmentTime', 'fileUrl', 'ip', 'userAgent'];
-  const escape = (v) => '"' + (v === undefined || v === null ? '' : String(v).replace(/"/g, '""')) + '"';
-  const rows = out.map((l) => [
+  const headers = ['timestamp','generatedById','generatedByName','generatedByEmail','appointmentId','appointmentDate','appointmentTime','fileUrl','ip','userAgent'];
+  const csvEscape = (val) => {
+    let v = (val === undefined || val === null) ? '' : String(val);
+    if (/^[=+\-@]/.test(v)) v = '\'' + v; // prevent CSV injection
+    return '"' + v.replace(/"/g, '""') + '"';
+  };
+  const rows = out.map(l => [
     l.createdAt,
     l.generatedBy?._id || '',
     l.generatedBy?.name || '',
@@ -119,9 +138,8 @@ exports.exportIntakeFormLogs = asyncHandler(async (req, res) => {
     l.fileUrl || '',
     l.ip || '',
     l.userAgent || ''
-  ].map(escape).join(','));
-
-  const csv = headers.map(escape).join(',') + '\n' + rows.join('\n');
+  ].map(csvEscape).join(','));
+  const csv = '\uFEFF' + headers.map(csvEscape).join(',') + '\n' + rows.join('\n');
 
   const filename = `intake-form-logs-${new Date().toISOString().slice(0,10)}.csv`;
   res.setHeader('Content-Type', 'text/csv');

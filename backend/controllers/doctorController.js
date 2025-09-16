@@ -189,12 +189,7 @@ const getDoctors = asyncHandler(async (req, res) => {
     const longitude = parseFloat(lng);
 
     if (!Number.isNaN(latitude) && !Number.isNaN(longitude)) {
-      // Create 10-point decagon polygon around patient's location
-      const decagonPolygon = createDecagonPolygon(
-        latitude,
-        longitude,
-        parseFloat(radius)
-      );
+      // (Removed unused initial decagonPolygon creation – we only need it if falling back to service area logic)
 
       // Store patient location in a format that could be saved to localStorage on frontend
       patientLocation = {
@@ -246,11 +241,10 @@ const getDoctors = asyncHandler(async (req, res) => {
         doctors = doctorsWithLocationDistance;
       } else {
         // Fall back to the existing service area logic for additional results
-        const remainingLimit = limit - doctorsWithLocationDistance.length;
-        const remainingSkip = Math.max(0, skip - doctorsWithLocationDistance.length);
+  // Removed unused remainingLimit / remainingSkip variables
 
         // Create 10-point decagon polygon around patient's location
-        const decagonPolygon = createDecagonPolygon(
+        const _decagonPolygon = createDecagonPolygon(
           latitude,
           longitude,
           parseFloat(radius)
@@ -275,10 +269,7 @@ const getDoctors = asyncHandler(async (req, res) => {
             doctor.serviceArea.coordinates &&
             doctor.serviceArea.coordinates[0]
           ) {
-            return checkServiceAreaIntersection(
-              doctor.serviceArea,
-              decagonPolygon
-            );
+            return checkServiceAreaIntersection(doctor.serviceArea, _decagonPolygon);
           }
           return false;
         }

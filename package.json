@@ -1,4 +1,10 @@
 {
+  "name": "docathome-root",
+  "private": true,
+  "scripts": {
+    "build": "npm --prefix frontend run build",
+    "postinstall": "npm --prefix frontend install"
+  },
   "dependencies": {
     "react-countup": "^6.5.3"
   }

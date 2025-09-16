@@ -278,15 +278,21 @@ const DoctorAppointmentsPage = () => {
                       {(appt.status === "Confirmed" || appt.status === "Completed") && (
                         <button
                           onClick={async () => {
+                            const newTab = window.open('', '_blank');
                             try {
                               const resp = await downloadIntakeForm(appt._id);
+                              if (resp.status === 401 || resp.status === 403) {
+                                newTab?.close();
+                                toast.error('Session expired. Please sign in again.');
+                                return;
+                              }
                               if (!resp.ok) throw new Error('Failed to fetch intake form');
                               const blob = await resp.blob();
                               const url = window.URL.createObjectURL(blob);
-                              window.open(url, '_blank');
-                              // optional: revoke after some time
+                              if (newTab) newTab.location.href = url; else window.open(url, '_blank');
                               setTimeout(() => window.URL.revokeObjectURL(url), 60000);
                             } catch (err) {
+                              newTab?.close();
                               console.error('Error opening intake form:', err);
                               toast.error('Could not open intake form.');
                             }

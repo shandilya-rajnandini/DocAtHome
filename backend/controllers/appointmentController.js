@@ -14,25 +14,25 @@ exports.createAppointment = asyncHandler(async (req, res) => {
     // Add the patient's ID from the authenticated user token
     req.body.patient = req.user.id;
 
-  const { doctor, fee, paymentMethod = "external", shareRelayNote } = req.body;
+  const { doctor, fee, paymentMethod = 'external', shareRelayNote } = req.body;
   const shareRelayNoteBool = !!shareRelayNote;
-  console.log("Received shareRelayNote:", shareRelayNote);
-  console.log("Received shareRelayNote:", shareRelayNoteBool);
+  console.log('Received shareRelayNote:', shareRelayNote);
+  console.log('Received shareRelayNote:', shareRelayNoteBool);
   // Check if the doctor being booked actually exists and has the role of 'doctor'
   const doctorExists = await User.findById(doctor);
   if (
     !doctorExists ||
-    (doctorExists.role !== "doctor" && doctorExists.role !== "nurse")
+    (doctorExists.role !== 'doctor' && doctorExists.role !== 'nurse')
   ) {
-    return res.status(404).json({ msg: "Professional not found" });
+    return res.status(404).json({ msg: 'Professional not found' });
   }
 
   // If patient wants to pay from care fund, check balance and deduct
-  if (paymentMethod === "careFund") {
+  if (paymentMethod === 'careFund') {
     const patient = await User.findById(req.user.id);
 
     if (!patient) {
-      return res.status(404).json({ msg: "Patient not found" });
+      return res.status(404).json({ msg: 'Patient not found' });
     }
 
     if (patient.careFundBalance < fee) {
@@ -47,15 +47,15 @@ exports.createAppointment = asyncHandler(async (req, res) => {
     });
 
     // Create a transaction record for care fund payment
-    const Transaction = require("../models/Transaction");
+    const Transaction = require('../models/Transaction');
     await Transaction.create({
       userId: req.user.id,
       razorpayOrderId: `care_fund_${Date.now()}`,
       razorpayPaymentId: `care_fund_payment_${Date.now()}`,
       amount: fee,
-      currency: "INR",
+      currency: 'INR',
       description: `Care Fund Payment for appointment with ${doctorExists.name}`,
-      status: "paid",
+      status: 'paid',
     });
   }
   // relay note stuff
@@ -63,23 +63,23 @@ exports.createAppointment = asyncHandler(async (req, res) => {
   if (shareRelayNote) {
     const prevAppointments = await Appointment.find({
       patient: req.user.id,
-      status: "Completed",
-      relayNote: { $exists: true, $ne: "" },
+      status: 'Completed',
+      relayNote: { $exists: true, $ne: '' },
     })
       .sort({ appointmentDate: -1, appointmentTime: -1 })
-      .populate("doctor", "name specialty");
+      .populate('doctor', 'name specialty');
 
     sharedRelayNotes = prevAppointments.map((appt) => ({
       note: appt.relayNote,
-      doctorName: appt.doctor?.name || "",
-      doctorDesignation: appt.doctor?.specialty || "",
+      doctorName: appt.doctor?.name || '',
+      doctorDesignation: appt.doctor?.specialty || '',
     }));
   }
   // Create the appointment in the database
-  console.log("shared relay notes found:", sharedRelayNotes);
+  console.log('shared relay notes found:', sharedRelayNotes);
   const appointment = await Appointment.create({
     ...req.body,
-    paymentMethod: paymentMethod || "external",
+    paymentMethod: paymentMethod || 'external',
     sharedRelayNotes, // <-- array of previous notes
     shareRelayNote: shareRelayNoteBool, // <-- always boolean
   });
@@ -89,9 +89,9 @@ exports.createAppointment = asyncHandler(async (req, res) => {
     success: true,
     data: appointment,
     message:
-      paymentMethod === "careFund"
+      paymentMethod === 'careFund'
         ? `Appointment booked successfully! ₹${fee} deducted from your care fund.`
-        : "Appointment booked successfully!",
+        : 'Appointment booked successfully!',
   });
 });
 
@@ -99,16 +99,16 @@ exports.createAppointment = asyncHandler(async (req, res) => {
 // @route   GET /api/appointments/:id/summary
 exports.getAppointmentSummary = asyncHandler(async (req, res) => {
   const appointment = await Appointment.findById(req.params.id).populate(
-    "patient"
+    'patient'
   );
 
   if (!appointment) {
-    return res.status(404).json({ msg: "Appointment not found" });
+    return res.status(404).json({ msg: 'Appointment not found' });
   }
 
   // Authorization: Only the assigned doctor can get the summary
   if (appointment.doctor.toString() !== req.user.id) {
-    return res.status(401).json({ msg: "User not authorized" });
+    return res.status(401).json({ msg: 'User not authorized' });
   }
 
   const patient = appointment.patient;
@@ -117,7 +117,7 @@ exports.getAppointmentSummary = asyncHandler(async (req, res) => {
   const pastAppointments = await Appointment.find({
     patient: patient._id,
     doctor: req.user.id,
-    status: "Completed",
+    status: 'Completed',
     _id: { $ne: appointment._id },
   })
     .sort({ appointmentDate: -1, appointmentTime: -1 })
@@ -131,7 +131,7 @@ exports.getAppointmentSummary = asyncHandler(async (req, res) => {
     chronicConditions: patient.chronicConditions || [],
     pastVisits: pastAppointments.map((appt) => ({
       date: appt.appointmentDate,
-      notes: appt.doctorNotes || "No notes recorded.",
+      notes: appt.doctorNotes || 'No notes recorded.',
     })),
   };
 
@@ -147,7 +147,7 @@ exports.getAppointmentSummary = asyncHandler(async (req, res) => {
 exports.getMyAppointments = asyncHandler(async (req, res) => {
   let query;
   // Check the role of the logged-in user to build the correct query
-  if (req.user.role === "doctor" || req.user.role === "nurse") {
+  if (req.user.role === 'doctor' || req.user.role === 'nurse') {
     query = { doctor: req.user.id };
   } else {
     query = { patient: req.user.id };
@@ -186,14 +186,14 @@ exports.updateAppointmentStatus = asyncHandler(async (req, res) => {
   let appointment = await Appointment.findById(req.params.id);
 
   if (!appointment) {
-    return res.status(404).json({ msg: "Appointment not found" });
+    return res.status(404).json({ msg: 'Appointment not found' });
   }
 
   // Authorization Check:
   // - For doctors/nurses: they can update any appointment assigned to them
   // - For patients: they can only cancel their own appointments
   if (
-    status === "Cancelled" &&
+    status === 'Cancelled' &&
     appointment.patient.toString() === req.user.id
   ) {
     // Patient canceling their own appointment
@@ -203,13 +203,13 @@ exports.updateAppointmentStatus = asyncHandler(async (req, res) => {
     const appointmentTimeStr = appointment.appointmentTime; // e.g., "01:00 PM"
 
     // Convert 12-hour format to 24-hour format for proper parsing
-    const [time, period] = appointmentTimeStr.split(" ");
-    const [hours, minutes] = time.split(":");
+    const [time, period] = appointmentTimeStr.split(' ');
+    const [hours, minutes] = time.split(':');
     let hour24 = parseInt(hours);
 
-    if (period === "PM" && hour24 !== 12) {
+    if (period === 'PM' && hour24 !== 12) {
       hour24 += 12;
-    } else if (period === "AM" && hour24 === 12) {
+    } else if (period === 'AM' && hour24 === 12) {
       hour24 = 0;
     }
 
@@ -222,14 +222,14 @@ exports.updateAppointmentStatus = asyncHandler(async (req, res) => {
 
     if (hoursUntilAppointment < 2) {
       return res.status(400).json({
-        msg: "Cannot cancel appointment within 2 hours of the scheduled time",
+        msg: 'Cannot cancel appointment within 2 hours of the scheduled time',
       });
     }
 
     // Check if appointment is in a cancellable state
-    if (!["Pending", "Confirmed"].includes(appointment.status)) {
+    if (!['Pending', 'Confirmed'].includes(appointment.status)) {
       return res.status(400).json({
-        msg: "This appointment cannot be cancelled",
+        msg: 'This appointment cannot be cancelled',
       });
     }
 
@@ -281,7 +281,7 @@ exports.saveVoiceNote = asyncHandler(async (req, res) => {
   if (!voiceUrl) {
     return res
       .status(400)
-      .json({ success: false, message: "Voice URL is required." });
+      .json({ success: false, message: 'Voice URL is required.' });
   }
 
   const appointment = await Appointment.findByIdAndUpdate(
@@ -293,7 +293,7 @@ exports.saveVoiceNote = asyncHandler(async (req, res) => {
   if (!appointment) {
     return res
       .status(404)
-      .json({ success: false, message: "Appointment not found." });
+      .json({ success: false, message: 'Appointment not found.' });
   }
 
   res.json({ success: true, data: appointment });
@@ -309,11 +309,11 @@ exports.updateRelayNote = async (req, res) => {
       { new: true }
     );
     if (!appointment) {
-      return res.status(404).json({ msg: "Appointment not found" });
+      return res.status(404).json({ msg: 'Appointment not found' });
     }
     res.json({ success: true, data: appointment });
   } catch (err) {
-    res.status(500).json({ msg: "Server error", error: err.message });
+    res.status(500).json({ msg: 'Server error', error: err.message });
   }
 };
 const sendEmail = require('../utils/sendEmail');
@@ -365,6 +365,8 @@ exports.scheduleFollowUp = asyncHandler(async (req, res) => {
 
 // @desc    Generate and return a Patient Intake Form PDF for an appointment
 // @route   GET /api/appointments/:id/intake-form
+const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
+
 exports.getIntakeForm = asyncHandler(async (req, res) => {
   const appointment = await Appointment.findById(req.params.id).populate(
     'patient doctor'
@@ -384,8 +386,8 @@ exports.getIntakeForm = asyncHandler(async (req, res) => {
     return res.status(401).json({ msg: 'User not authorized' });
   }
 
-  // Create PDF
-  const doc = new PDFDocument({ margin: 50 });
+  // Create PDF (bufferPages for safe footer switching)
+  const doc = new PDFDocument({ margin: 50, bufferPages: true });
 
   // Stream headers
   res.setHeader('Content-Type', 'application/pdf');
@@ -407,9 +409,9 @@ exports.getIntakeForm = asyncHandler(async (req, res) => {
     // Pipe PDF to both response and file
     doc.pipe(writeStream);
     doc.pipe(res);
-  } catch (e) {
+  } catch (_e) {
     // If file persistence fails, just pipe to response
-    try { doc.pipe(res); } catch (e2) { /* ignore */ }
+  try { doc.pipe(res); } catch (_e2) { /* ignore */ }
     filePath = null;
   }
   // Enhanced header with optional logo
@@ -426,7 +428,7 @@ exports.getIntakeForm = asyncHandler(async (req, res) => {
           const logoBuf = await logoRes.arrayBuffer();
           doc.image(Buffer.from(logoBuf), 50, headerY - 10, { width: 80 });
         }
-      } catch (e) {
+  } catch (_e) {
         // ignore logo fetch errors
       }
     }
@@ -444,7 +446,7 @@ exports.getIntakeForm = asyncHandler(async (req, res) => {
       const qrY = 160;
       doc.image(qrBuf, qrX, qrY, { width: 90 });
       doc.fontSize(9).font('Helvetica').fillColor('black').text('Scan to view appointment', qrX, qrY + 96, { width: 90, align: 'center' });
-    } catch (e) {
+  } catch (_e) {
       // ignore QR generation errors
     }
     doc.moveDown(2);
@@ -458,7 +460,7 @@ exports.getIntakeForm = asyncHandler(async (req, res) => {
           // place image to the right
           doc.image(Buffer.from(imgBuf), 430, 60, { width: 90, height: 90, fit: [90, 90] });
         }
-      } catch (e) {
+  } catch (_e) {
         // ignore image fetch errors
       }
     }
@@ -500,7 +502,7 @@ exports.getIntakeForm = asyncHandler(async (req, res) => {
           doc.fontSize(14).font('Helvetica-Bold').text('Attached Report', 50, 60);
           doc.image(Buffer.from(rptBuf), 50, 90, { fit: [500, 600], align: 'center' });
         }
-      } catch (e) {
+  } catch (_e) {
         // ignore report fetch errors
       }
     }
@@ -520,10 +522,10 @@ exports.getIntakeForm = asyncHandler(async (req, res) => {
     // Add footer to each page safely
     const addFooter = (pageIndex) => {
       try {
-        doc.switchToPage(pageIndex);
-        doc.fontSize(8).fillColor('gray').text(`Generated by DocAtHome`, 50, 760, { align: 'left' });
-        doc.text(`Page ${pageIndex + 1}`, -50, 760, { align: 'right' });
-      } catch (e) {
+    doc.switchToPage(pageIndex);
+    doc.fontSize(8).fillColor('gray').text(`Generated by DocAtHome`, 50, 760, { align: 'left' });
+    doc.text(`Page ${pageIndex + 1}`, -50, 760, { align: 'right' });
+  } catch (_e) {
         // ignore footer errors
       }
     };
@@ -551,11 +553,11 @@ exports.getIntakeForm = asyncHandler(async (req, res) => {
       const publicPath = `/uploads/intake-forms/${path.basename(filePath)}`;
       logData.fileUrl = publicPath;
     }
-    IntakeFormLog.create(logData).catch(e => {
-      // Log but don't fail the request
-      console.error('Failed to record intake form log:', e.message);
+  IntakeFormLog.create(logData).catch((_e) => {
+      // Log but don't fail the request (using generic message to avoid referencing undefined variable)
+      console.error('Failed to record intake form log');
     });
-  } catch (e) {
+  } catch (_e) {
     // ignore
   }
 

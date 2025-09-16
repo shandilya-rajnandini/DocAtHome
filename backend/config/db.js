@@ -9,9 +9,12 @@ const connectDB = async () => {
     const mongoUri = process.env.TEST_MONGO_URI || process.env.MONGO_URI;
 
     if (!mongoUri) {
-      // If no URI configured, and not in a test setup, return mock to avoid crashing.
-      console.log('No MongoDB URI provided; running with mock DB in this environment');
-      return { connection: { host: 'mock-db-server' } };
+      const isTest = process.env.NODE_ENV === 'test' || process.argv.includes('--test');
+      if (isTest) {
+        console.log('No MongoDB URI provided; running with mock DB in test mode');
+        return { connection: { host: 'mock-db-server' } };
+      }
+      throw new Error('MONGO_URI/TEST_MONGO_URI not set');
     }
     
     // For production/development

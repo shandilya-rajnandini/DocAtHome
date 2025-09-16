@@ -42,73 +42,74 @@ const DoctorProfilePage = () => {
         reportImage: null,
     });
 
+    // Effect 1: Fetch doctor + care fund (depends on id, user)
     useEffect(() => {
-        const fetchDoctor = async () => {
+        let cancelled = false;
+        const run = async () => {
             setLoading(true);
             try {
-                const { data } = await getDoctorById(id);
-                setDoctor(data);
-            } catch (error) {
-                console.error("Failed to fetch doctor details", error);
-                toast.error("Could not load doctor details.");
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        const fetchCareFundBalance = async () => {
-            if (user && user.role === "patient") {
-                try {
-                    const { data } = await getProfileById(user._id);
-                    setCareFundBalance(data.careFundBalance || 0);
-                } catch (error) {
-                    console.error('Error fetching care fund balance:', error);
+                const [{ data: doctorData }, careFundResp] = await Promise.all([
+                    getDoctorById(id),
+                    (user && user.role === 'patient') ? getProfileById(user._id) : Promise.resolve({ data: {} })
+                ]);
+                if (!cancelled) {
+                    setDoctor(doctorData);
+                    if (careFundResp?.data && user && user.role === 'patient') {
+                        setCareFundBalance(careFundResp.data.careFundBalance || 0);
+                    }
                 }
+            } catch (error) {
+                if (!cancelled) {
+                    console.error('Failed to fetch doctor details or care fund', error);
+                    toast.error('Could not load doctor details.');
+                }
+            } finally {
+                !cancelled && setLoading(false);
             }
         };
+        run();
+        return () => { cancelled = true; };
+    }, [id, user]);
 
-        const fetchAvailability = async () => {
+    // Effect 2: Fetch availability (depends on id)
+    useEffect(() => {
+        let cancelled = false;
+        const loadAvailability = async () => {
             try {
                 const { data } = await getAvailability(id);
+                if (cancelled) return;
                 const dates = data.availableDates?.map(d => ({
                     dayName: new Date(d.date).toLocaleDateString('en-US', { weekday: 'short' }).toUpperCase(),
                     day: new Date(d.date).getDate(),
                     fullDate: d.date
                 })) || [];
                 setAvailableDates(dates);
-                if (dates.length > 0 && !selectedDate) {
-                    setSelectedDate(dates[0].fullDate);
-                }
+                // Initialize selectedDate only if not already set (prevents double fetch loop)
+                setSelectedDate(prev => prev || (dates[0]?.fullDate || ''));
             } catch (error) {
-                setAvailableDates([]);
-                console.error('Error fetching availability:', error);
+                if (!cancelled) {
+                    setAvailableDates([]);
+                    console.error('Error fetching availability:', error);
+                }
             }
-        };
+        };    
+        loadAvailability();
+        return () => { cancelled = true; };
+    }, [id]);
 
-        fetchDoctor();
-        fetchCareFundBalance();
-        fetchAvailability();
-
-        // Handle URL parameters
+    // Effect 3: Handle URL parameters (depends on location.search)
+    useEffect(() => {
         const params = new URLSearchParams(location.search);
         const previousMeds = params.get('previousMeds');
         const symptoms = params.get('symptoms');
         const lastVisitTime = params.get('lastVisitTime');
         const followUpDate = params.get('followUpDate');
 
-        if (previousMeds) {
-            setBookingDetails(prev => ({ ...prev, previousMeds }));
-        }
-        if (symptoms) {
-            setBookingDetails(prev => ({ ...prev, symptoms }));
-        }
-        if (lastVisitTime) {
-            setSelectedTime(lastVisitTime);
-        }
-        if (followUpDate) {
-            setSelectedDate(new Date(followUpDate).toISOString().split('T')[0]);
-        }
-    }, [id, user, location.search, selectedDate]);
+        if (previousMeds) setBookingDetails(prev => ({ ...prev, previousMeds }));
+        if (symptoms) setBookingDetails(prev => ({ ...prev, symptoms }));
+        if (lastVisitTime) setSelectedTime(lastVisitTime);
+        if (followUpDate) setSelectedDate(new Date(followUpDate).toISOString().split('T')[0]);
+    }, [location.search]);
 
     const handleBookingDetailChange = (e) => {
         if (e.target.name === 'reportImage') {

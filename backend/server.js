@@ -14,8 +14,8 @@ const path = require('path');
 // --- THE DEFINITIVE CORS FIX ---
 // This setup is more explicit and handles the preflight request correctly.
 const allowedOrigins = [
-    "http://localhost:5173",
-    "https://docathome-rajnandini.netlify.app"
+    'http://localhost:5173',
+    'https://docathome-rajnandini.netlify.app'
 ];
 app.use(cors({
     origin: function (origin, callback) {
@@ -49,14 +49,14 @@ app.get('/health', (req, res) => res.status(200).send('OK'));
 
 // Error Handlers - use centralized global error handler
 const { globalErrorHandler } = require('./middleware/errorHandler');
-app.use((req, res, next) => {
+app.use((req, res) => {
   res.status(404).json({ message: 'API endpoint not found' });
 });
 app.use(globalErrorHandler);
 
 const server = http.createServer(app);
 const io = new Server(server, {
-  cors: { origin: allowedOrigins, methods: ["GET", "POST"] }
+  cors: { origin: allowedOrigins, methods: ['GET', 'POST'] }
 });
 io.on('connection', (socket) => { console.log(`Socket Connected: ${socket.id}`); });
 

@@ -15,6 +15,10 @@ const AdminIntakeLogsPage = () => {
   const [endDate, setEndDate] = useState('');
 
   const fetchLogs = useCallback(async (p = 1) => {
+    if (startDate && endDate && startDate > endDate) {
+      alert('End date must be on/after start date');
+      return;
+    }
     setLoading(true);
     try {
       const params = { page: p, limit: 20 };
@@ -25,7 +29,6 @@ const AdminIntakeLogsPage = () => {
       if (endDate) params.endDate = endDate;
       const { data } = await getIntakeFormLogsWithFilters(params);
       setLogs(data.data || []);
-      // setTotal(data.total || 0); // Commented out as total state is not currently used
       setPage(p);
     } catch (err) {
       console.error(err);
@@ -91,7 +94,7 @@ const AdminIntakeLogsPage = () => {
                       <td className="py-2">{log.appointment?.appointmentDate || log.appointment?._id}</td>
                       <td className="py-2">
                         {log.fileUrl ? (
-                          <a href={log.fileUrl} target="_blank" rel="noreferrer" className="text-blue-600">Download</a>
+                          <a href={log.fileUrl} target="_blank" rel="noopener noreferrer" className="text-blue-600">Download</a>
                         ) : (
                           '—'
                         )}

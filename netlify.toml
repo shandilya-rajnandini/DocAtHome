@@ -1,0 +1,39 @@
+[build]
+  command = "npm --prefix frontend run build"
+  publish = "frontend/dist"
+  environment = { NODE_VERSION = "20" }
+
+# SPA fallback also ensured via public/_redirects
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Permissions-Policy = "geolocation=(), microphone=(), camera=()"
+    Strict-Transport-Security = "max-age=63072000; includeSubDomains; preload"
+    Cache-Control = "public, max-age=600"
+    Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; font-src 'self' data:; connect-src 'self' https://docathome-rajnandini.netlify.app https://api.openai.com https://api.openai.com/v1 http://localhost:5000; frame-ancestors 'none'; base-uri 'self'; form-action 'self'"
+# Netlify configuration for DocAtHome
+# SPA redirect handled by /frontend/public/_redirects (/* /index.html 200)
+# Add essential security headers. Adjust CSP as needed for external resources actually in use.
+
+[build]
+  command = "npm run build --workspace=frontend"
+  publish = "frontend/dist"
+
+# If you build backend separately (e.g., serverless functions), configure here.
+# [functions]
+#   directory = "netlify/functions"
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Permissions-Policy = "geolocation=(), microphone=(), camera=()"
+    Strict-Transport-Security = "max-age=63072000; includeSubDomains; preload"
+    Cache-Control = "public, max-age=600"
+    Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; font-src 'self' data:; connect-src 'self' https://docathome-rajnandini.netlify.app https://api.openai.com http://localhost:5000; frame-ancestors 'none'; base-uri 'self'; form-action 'self'"
