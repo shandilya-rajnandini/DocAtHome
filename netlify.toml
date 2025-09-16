@@ -20,8 +20,6 @@
   NPM_CONFIG_NODE_VERSION = "20.0.0"
   # Additional Node version hints
   NETLIFY_NODE_VERSION = "20.0.0"
-  # Install devDependencies for build tools like Vite
-  NPM_FLAGS = "--include=dev"
 
 # Redirect rules for SPA
 [[redirects]]
