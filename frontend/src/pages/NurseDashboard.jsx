@@ -192,6 +192,9 @@ const NurseDashboard = () => {
                                         ⭐ Upgrade to Pro
                                     </Link>
                                 )}
+                                <Link to="/nurse/moderation" className="block w-full text-center bg-blue-600 text-white p-3 rounded font-bold hover:bg-blue-700 transition">
+                                    🤝 Community Moderation
+                                </Link>
                             </div>
                         </div>
                     </div>

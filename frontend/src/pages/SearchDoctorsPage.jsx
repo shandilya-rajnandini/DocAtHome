@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Link } from "react-router-dom";
 import { searchDoctors } from "../api"; // Assuming your AI call is separate for now
 import toast from "react-hot-toast";
@@ -27,7 +27,7 @@ const SearchDoctorsPage = () => {
     const [aiReasoning, setAIReasoning] = useState("");
     const [aiLoading, setAILoading] = useState(false);
 
-    const fetchDoctors = async (currentFilters, page = 1) => {
+    const fetchDoctors = useCallback(async (currentFilters, page = 1) => {
         setIsLoading(true);
         try {
             const queryParams = { ...currentFilters, page, limit: pagination.limit };
@@ -50,23 +50,17 @@ const SearchDoctorsPage = () => {
         } finally {
             setIsLoading(false);
         }
-    };
+    }, [pagination.limit]);
 
     useEffect(() => {
         fetchDoctors({}, 1);
-    }, []);
+    }, [fetchDoctors]);
 
     const handleFilterChange = (e) => setFilters({ ...filters, [e.target.name]: e.target.value });
     const handleApplyFilters = (e) => {
         e.preventDefault();
         setPagination(prev => ({ ...prev, currentPage: 1 }));
         fetchDoctors(filters, 1);
-    };
-
-    const handlePageChange = (newPage) => {
-        if (newPage >= 1 && newPage <= pagination.totalPages) {
-            fetchDoctors(filters, newPage);
-        }
     };
 
     const findNearbyDoctors = () => {
@@ -76,12 +70,13 @@ const SearchDoctorsPage = () => {
             (position) => {
                 const { latitude, longitude } = position.coords;
                 setUserLocation({ lat: latitude, lng: longitude });
-                const geoFilters = { ...filters, lat: latitude, lng: longitude, radius: filters.radius || "10" };
-                fetchDoctors(geoFilters, 1);
+                const newFilters = { ...filters, lat: latitude, lng: longitude, radius: filters.radius || "10" };
+                setFilters(newFilters);
+                fetchDoctors(newFilters, 1);
                 setIsGettingLocation(false);
-                toast.success(`Found doctors within ${filters.radius || "10"}km!`);
+                toast.success(`Found doctors within ${newFilters.radius}km!`);
             },
-            (error) => {
+            () => {
                 setIsGettingLocation(false);
                 toast.error("Unable to get your location. Please select a city manually.");
             }
@@ -93,6 +88,7 @@ const SearchDoctorsPage = () => {
         const clearedFilters = { ...filters };
         delete clearedFilters.lat;
         delete clearedFilters.lng;
+        delete clearedFilters.radius;
         setFilters(clearedFilters);
         fetchDoctors(clearedFilters, 1);
         toast.success("Location filter cleared");
@@ -116,7 +112,7 @@ const SearchDoctorsPage = () => {
             setAISuggestion(data.specialty);
             setAIReasoning(data.reasoning || "");
             setFilters(f => ({ ...f, specialty: data.specialty }));
-        } catch (err) {
+        } catch {
             toast.error("Could not get a suggestion. Try again.");
         } finally {
             setAILoading(false);
@@ -149,6 +145,21 @@ const SearchDoctorsPage = () => {
                     </div>
                     {/* ... other filters like city, experience, etc. */}
                     
+                    <div className="mb-6">
+                      <label className="block text-slate-700 dark:text-secondary-text mb-2 font-semibold">City</label>
+                      <div className="flex gap-2 items-center">
+                        <select name="city" value={filters.city} onChange={handleFilterChange} className="w-full p-3 bg-gray-200 dark:bg-primary-dark text-black dark:text-white rounded border-gray-700">
+                          <option value="">All Cities</option>
+                          {cities.map(city => <option key={city} value={city}>{city}</option>)}
+                        </select>
+                        <button type="button" className="bg-green-500 text-white px-3 py-2 rounded hover:bg-green-600 font-semibold" onClick={findNearbyDoctors} disabled={isGettingLocation}>
+                          {isGettingLocation ? "Locating..." : "Find Professionals Near Me"}
+                        </button>
+                        {userLocation && (
+                          <button type="button" className="ml-2 text-xs text-gray-600 underline" onClick={clearLocationFilter}>Clear Location</button>
+                        )}
+                      </div>
+                    </div>
                     {/* THIS IS THE CORRECTLY PLACED VERIFIED SKILLS FILTER */}
                     <div className="mb-4">
                       <label htmlFor="skillKeyword" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
