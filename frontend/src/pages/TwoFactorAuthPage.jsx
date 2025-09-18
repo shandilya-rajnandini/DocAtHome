@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import API from '../api';
+import { setupTwoFactorAuth, verifyTwoFactorAuth } from '../api/index.js';
+
 import toast from 'react-hot-toast';
 
 const TwoFactorAuthPage = () => {
@@ -13,7 +14,7 @@ const TwoFactorAuthPage = () => {
   useEffect(() => {
     const setup2FA = async () => {
       try {
-        const { data } = await API.post('/twofactor/setup');
+        const { data } = await setupTwoFactorAuth();
         setQrCodeUrl(data.qrCodeUrl);
         setSecret(data.secret);
       // eslint-disable-next-line no-unused-vars
@@ -34,12 +35,11 @@ const TwoFactorAuthPage = () => {
       return;
     }
     try {
-      await API.post('/twofactor/verify', { token });
+      await verifyTwoFactorAuth(token);
       setIsVerified(true);
       setError('');
       toast.success('2FA enabled successfully!');
-    // eslint-disable-next-line no-unused-vars
-    } catch (err) {
+    } catch {
       setError('Invalid token. Please try again.');
       toast.error('Invalid token. Please try again.');
     }

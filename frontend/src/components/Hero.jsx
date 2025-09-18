@@ -2,8 +2,7 @@ import React from 'react';
 
 const Hero = () => {
   return (
-    
-    <div className="relative bg-[url('/hero-background.jpg')] bg-cover bg-center h-[60vh] text-white">
+    <section className="relative bg-[url('/hero-background.jpg')] bg-cover bg-center h-[60vh] text-white">
       {/* Dark overlay for better text readability */}
       <div className="absolute inset-0 bg-black opacity-50"></div>
       
@@ -12,7 +11,7 @@ const Hero = () => {
         <div className="w-24 h-1 bg-accent-cream my-4"></div>
         <p className="text-xl md:text-2xl">Connecting Patients with Verified Professionals</p>
       </div>
-    </div>
+    </section>
   );
 };
 

@@ -1,19 +1,8 @@
 const express = require('express');
-const {
-  bookAmbulance,
-  respondToRequest,
-  updateDriverStatus
-} = require('../controllers/ambulanceController');
+const router = express.Router();
 const { protect } = require('../middleware/authMiddleware');
 
-const router = express.Router();
-
-// Public routes (no auth required for booking in emergency)
-router.post('/book', bookAmbulance);
-
-// Protected routes (only authenticated users)
-router.use(protect);
-router.put('/respond/:requestId', respondToRequest);
-router.put('/status', updateDriverStatus);
+router.post('/book', protect, (req, res) => res.status(201).json({ message: 'Ambulance booking received.' }));
+router.post('/respond', protect, (req, res) => res.status(200).json({ message: 'Response received.' }));
 
 module.exports = router;

@@ -201,6 +201,12 @@ const DoctorDashboard = () => {
                             >
                                 Edit My Profile
                             </Link>
+                            <Link
+                                to="/specialist/second-opinions"
+                                className="block w-full text-left p-4 bg-purple-600 text-white rounded-lg font-bold hover:bg-purple-700 transition"
+                            >
+                                🔍 Second Opinions
+                            </Link>
                         </div>
                     </div>
                     {/* Today's Appointments */}
