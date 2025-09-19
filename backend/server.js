@@ -5,6 +5,7 @@ const dotenv = require('dotenv');
 const cors = require('cors');
 const helmet = require('helmet');
 const connectDB = require('./config/db');
+const socketManager = require('./utils/socketManager');
 
 dotenv.config();
 const app = express();
@@ -34,6 +35,8 @@ app.use(helmet());
 app.use('/api/auth', require('./routes/authRoutes'));
 // ... (all your other app.use routes) ...
 app.use('/api/lab-tests', require('./routes/labTestRoutes'));
+app.use('/api/notifications', require('./routes/notificationRoutes'));
+
 
 // Health Check
 app.get('/health', (req, res) => res.status(200).send('OK'));
@@ -48,9 +51,35 @@ app.use((err, req, res, next) => {
 });
 
 const server = http.createServer(app);
-// ... (Socket.IO setup) ...
 
-const PORT = process.env.PORT || 5000;
+// Socket.IO Setup
+const io = new Server(server, {
+  cors: {
+    origin: allowedOrigins,
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    credentials: true,
+  }
+});
+
+// Initialize socketManager with io instance
+socketManager.initialize(io);
+
+// Handle client connections
+io.on('connection', (socket) => {
+  console.log('New client connected:', socket.id);
+
+  // Listen for client joining their personal room after authentication
+  socket.on('join_user_room', (userId) => {
+    socket.join(userId);
+    console.log(`Socket ${socket.id} joined room ${userId}`);
+  });
+
+  socket.on('disconnect', () => {
+    console.log('Client disconnected:', socket.id);
+  });
+});
+
+const PORT = process.env.PORT || 5001;
 
 const startServer = async () => {
   try {

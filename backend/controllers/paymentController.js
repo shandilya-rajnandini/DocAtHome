@@ -4,6 +4,8 @@ const Transaction = require('../models/Transaction');
 const Donation = require('../models/Donation');
 const User = require('../models/User');
 const asyncHandler = require('../middleware/asyncHandler');
+const Notification = require('../models/Notification');
+const socketManager = require('../utils/socketManager');
 
 // SECURITY: All payment amounts are fetched from Razorpay API to prevent
 // client-side manipulation. We never trust client-provided amounts.
@@ -253,7 +255,7 @@ exports.verifyPayment = asyncHandler(async (req, res) => {
       }
 
       // Create donation with canonical amount from Razorpay
-      await Donation.create({
+      const donation = await Donation.create({
         donorName,
         patientId,
         amount: canonicalAmount, // Use Razorpay amount in paise
@@ -262,6 +264,19 @@ exports.verifyPayment = asyncHandler(async (req, res) => {
 
       // Update patient's careFundBalance using canonical amount
       await User.findByIdAndUpdate(patientId, { $inc: { careFundBalance: canonicalAmount } });
+      
+      await Notification.create({
+        userId: patientId,
+        message: `You received a donation of ₹${(canonicalAmount / 100).toFixed(2)} from ${donorName}.`,
+        link: `/donations/${donation._id}`,
+        isRead: false,
+      });
+
+      // Emit real-time notification via Socket.IO
+      socketManager.emitToRoom(patientId.toString(), 'new_notification', {
+        message: `You received a donation of ₹${(canonicalAmount / 100).toFixed(2)} from ${donorName}.`,
+        link: `/donations/${donation._id}`
+      });
 
       return res.status(200).json({
         success: true,
@@ -349,6 +364,18 @@ exports.verifyPayment = asyncHandler(async (req, res) => {
       status: "success",
     });
     
+    await Notification.create({
+      userId: req.user.id,
+      message: `Payment of ₹${(canonicalAmount / 100).toFixed(2)} was successful.`,
+      link: `/payments/${savedTransaction._id}`,
+      isRead: false,
+    });
+    
+    // Emit real-time notification via Socket.IO
+    socketManager.emitToRoom(req.user.id.toString(), 'new_notification', {
+      message: `Payment of ₹${(canonicalAmount / 100).toFixed(2)} was successful.`,
+      link: `/payments/${savedTransaction._id}`
+    });
 
     return res.status(200).json({
       success: true,

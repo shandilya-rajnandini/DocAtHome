@@ -3,6 +3,7 @@ const User = require('../models/User');
 const AmbulanceRequest = require('../models/AmbulanceRequest');
 const socketManager = require('../utils/socketManager');
 const { validateCoordinates } = require('../utils/geoUtils');
+const Notification = require('../models/Notification');
 
 /**
  * @desc    Book an ambulance
@@ -156,15 +157,33 @@ exports.respondToRequest = asyncHandler(async (req, res) => {
       { requestId }
     );
 
-    // Notify patient that driver accepted
+    // Notify patient via Notification document
     if (request.patient) {
+      await Notification.create({
+        userId: request.patient,
+        message: `${req.user.name} has accepted your ambulance request. Estimated arrival: ~15 minutes.`,
+        link: `/ambulance/requests/${request._id}`,
+        isRead: false,
+      });
+
+      // Real-time notification to patient via Socket.IO
+    socketManager.emitToRoom(
+      request.patient.toString(),
+      'new_notification',
+      {
+        message: `${req.user.name} has accepted your ambulance request. Estimated arrival: ~15 minutes.`,
+        link: `/ambulance/requests/${request._id}`
+      }
+     );
+     
+      // Socket notification
       socketManager.emitToRoom(
         `user:${request.patient}`,
         'driver_accepted',
         {
           requestId,
           driverName: req.user.name,
-          estimatedArrival: '15 minutes' // This would be calculated based on distance
+          estimatedArrival: '15 minutes' // This would be dynamically calculated
         }
       );
     }
