@@ -6,7 +6,7 @@ import React, { useEffect, useState, useRef } from "react";
 import { io } from "socket.io-client";
 
 // Initialize socket connection once (adjust backend URL)
-const socket = io("http://localhost:5001");
+const socket = io("http://localhost:5000");
 
 const Navbar = () => {
   const { user, logout } = useAuth();
