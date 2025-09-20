@@ -46,7 +46,7 @@ const Navbar = () => {
               ? "/doctor/dashboard"
               : "/"
           }
-          className="text-2xl font-bold text-accent-blue tracking-wide hover:scale-105 transition-transform"
+          className="text-xl md:text-2xl font-bold text-accent-blue tracking-wide hover:scale-105 transition-transform"
         >
           Doc@Home
         </Link>
