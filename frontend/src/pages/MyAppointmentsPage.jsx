@@ -158,6 +158,20 @@ const AppointmentCard = ({ appointment, onAppointmentUpdate }) => {
           >
             {appointment.status}
           </div>
+          {/* Acuity Score Badge */}
+          {appointment.acuityScore && (
+            <div
+              className={`text-sm font-bold px-3 py-1 rounded-full h-fit ${
+                appointment.acuityScore <= 2
+                  ? "bg-green-900 text-green-300"
+                  : appointment.acuityScore <= 4
+                  ? "bg-orange-900 text-orange-300"
+                  : "bg-red-900 text-red-300"
+              }`}
+            >
+              Acuity: {appointment.acuityScore}
+            </div>
+          )}
           {canCancel() && (
             <button
               onClick={() => setShowCancelModal(true)}
