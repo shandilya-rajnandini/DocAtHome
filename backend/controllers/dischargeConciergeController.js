@@ -21,17 +21,36 @@ exports.createDischargeConcierge = asyncHandler(async (req, res) => {
     paymentMethod = 'Credit Card'
   } = req.body;
 
+  // Validate required fields
+  if (!nurse || !hospitalName || !hospitalAddress || !dischargeDate || !pickupTime || !patientAddress) {
+    return res.status(400).json({
+      success: false,
+      msg: 'Missing required fields'
+    });
+  }
+
   // Validate nurse exists and is a nurse
   const nurseExists = await User.findById(nurse);
   if (!nurseExists || nurseExists.role !== 'nurse') {
-    return res.status(404).json({ msg: 'Nurse not found' });
+    return res.status(404).json({
+      success: false,
+      msg: 'Nurse not found or invalid role'
+    });
   }
 
   // Check if patient has sufficient care fund balance if using care fund
   if (paymentMethod === 'careFund') {
     const patient = await User.findById(req.user.id);
+    if (!patient) {
+      return res.status(404).json({
+        success: false,
+        msg: 'Patient not found'
+      });
+    }
+
     if (patient.careFundBalance < 299) {
       return res.status(400).json({
+        success: false,
         msg: `Insufficient care fund balance. Available: ₹${patient.careFundBalance}, Required: ₹299`
       });
     }

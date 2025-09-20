@@ -221,42 +221,83 @@ const DischargeConcierge = () => {
 
       {/* Booking Form Modal - Mobile Optimized */}
       {showBookingForm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div
+          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="booking-modal-title"
+        >
           <div className="bg-white dark:bg-secondary-dark p-4 md:p-8 rounded-2xl max-w-md w-full max-h-[90vh] overflow-y-auto">
-            <h3 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white mb-4">
+            <h3
+              id="booking-modal-title"
+              className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white mb-4"
+            >
               Book Discharge Concierge
             </h3>
             <p className="text-sm md:text-base text-gray-600 dark:text-gray-300 mb-4 md:mb-6">
               Our team will contact you within 1 hour to coordinate your discharge concierge service.
             </p>
-            <div className="space-y-3 md:space-y-4">
-              <input
-                type="text"
-                placeholder="Patient Name"
-                className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-primary-dark text-gray-900 dark:text-white text-sm md:text-base"
-              />
-              <input
-                type="tel"
-                placeholder="Phone Number"
-                className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-primary-dark text-gray-900 dark:text-white text-sm md:text-base"
-              />
-              <input
-                type="text"
-                placeholder="Hospital Name"
-                className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-primary-dark text-gray-900 dark:text-white text-sm md:text-base"
-              />
-              <input
-                type="date"
-                placeholder="Discharge Date"
-                className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-primary-dark text-gray-900 dark:text-white text-sm md:text-base"
-              />
-              <button className="w-full bg-accent-blue text-white py-3 rounded-lg font-semibold hover:bg-accent-blue-hover transition-colors text-sm md:text-base">
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                // Handle form submission
+                console.log('Form submitted');
+                setShowBookingForm(false);
+              }}
+              className="space-y-3 md:space-y-4"
+            >
+              <div>
+                <label htmlFor="patient-name" className="sr-only">Patient Name</label>
+                <input
+                  id="patient-name"
+                  type="text"
+                  placeholder="Patient Name"
+                  required
+                  className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-primary-dark text-gray-900 dark:text-white text-sm md:text-base focus:ring-2 focus:ring-accent-blue focus:border-transparent"
+                />
+              </div>
+              <div>
+                <label htmlFor="phone-number" className="sr-only">Phone Number</label>
+                <input
+                  id="phone-number"
+                  type="tel"
+                  placeholder="Phone Number"
+                  required
+                  className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-primary-dark text-gray-900 dark:text-white text-sm md:text-base focus:ring-2 focus:ring-accent-blue focus:border-transparent"
+                />
+              </div>
+              <div>
+                <label htmlFor="hospital-name" className="sr-only">Hospital Name</label>
+                <input
+                  id="hospital-name"
+                  type="text"
+                  placeholder="Hospital Name"
+                  required
+                  className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-primary-dark text-gray-900 dark:text-white text-sm md:text-base focus:ring-2 focus:ring-accent-blue focus:border-transparent"
+                />
+              </div>
+              <div>
+                <label htmlFor="discharge-date" className="sr-only">Discharge Date</label>
+                <input
+                  id="discharge-date"
+                  type="date"
+                  placeholder="Discharge Date"
+                  required
+                  min={new Date().toISOString().split('T')[0]}
+                  className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-primary-dark text-gray-900 dark:text-white text-sm md:text-base focus:ring-2 focus:ring-accent-blue focus:border-transparent"
+                />
+              </div>
+              <button
+                type="submit"
+                className="w-full bg-accent-blue text-white py-3 rounded-lg font-semibold hover:bg-accent-blue-hover transition-colors text-sm md:text-base focus:ring-2 focus:ring-accent-blue focus:ring-offset-2"
+              >
                 Request Service
               </button>
-            </div>
+            </form>
             <button
               onClick={() => setShowBookingForm(false)}
-              className="mt-4 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 w-full text-center text-sm md:text-base"
+              className="mt-4 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 w-full text-center text-sm md:text-base focus:outline-none focus:ring-2 focus:ring-gray-500 rounded"
+              aria-label="Close booking form"
             >
               Close
             </button>
