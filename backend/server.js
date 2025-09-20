@@ -49,6 +49,7 @@ app.use('/api/lab-tests', require('./routes/labTestRoutes'));
 app.use('/api/video-calls', require('./routes/videoCallRoutes'));
 app.use('/api/support', require('./routes/supportRoutes'));
 app.use('/api/second-opinions', require('./routes/secondOpinionRoutes'));
+app.use('/api/discharge-concierge', require('./routes/dischargeConciergeRoutes'));
 
 // Health Check
 app.get('/health', (req, res) => res.status(200).send('OK'));
