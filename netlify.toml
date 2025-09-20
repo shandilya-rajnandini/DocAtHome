@@ -7,8 +7,8 @@
   command = "echo 'Node version:' $(node --version) && echo 'NPM version:' $(npm --version) && npm ci --include=dev && npm run build:direct"
 
 [build.environment]
-  # Multiple Node version specifications to ensure Netlify uses Node 20
-  NODE_VERSION = "20.0.0"
+  # Updated Node version to match current environment
+  NODE_VERSION = "22.14.0"
   NODE_ENV = "production"
   # Clear cache to force fresh build
   NETLIFY_USE_CACHE = "false"
@@ -17,9 +17,9 @@
   # Additional environment variables for crypto support
   VITE_CRYPTO_POLYFILL = "true"
   # Force specific Node version through npm
-  NPM_CONFIG_NODE_VERSION = "20.0.0"
+  NPM_CONFIG_NODE_VERSION = "22.14.0"
   # Additional Node version hints
-  NETLIFY_NODE_VERSION = "20.0.0"
+  NETLIFY_NODE_VERSION = "22.14.0"
 
 # Redirect rules for SPA
 [[redirects]]
