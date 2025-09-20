@@ -22,6 +22,7 @@ import About from "./About.jsx";
 import Services from "./Services.jsx";
 import Testimonials from "./Testimonials.jsx";
 import Contact from "./Contact.jsx";
+import DischargeConcierge from "./DischargeConcierge.jsx";
 
 // Protected Patient Pages
 import PatientDashboard from "../pages/PatientDashboard.jsx";
@@ -195,6 +196,14 @@ const AnimatedRoutes = () => {
           element={
             <AnimatedPage>
               <Services />
+            </AnimatedPage>
+          }
+        />
+        <Route
+          path="/discharge-concierge"
+          element={
+            <AnimatedPage>
+              <DischargeConcierge />
             </AnimatedPage>
           }
         />
