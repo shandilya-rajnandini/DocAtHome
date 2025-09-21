@@ -3,6 +3,9 @@ const User = require('../models/User');
 const FollowUp = require('../models/FollowUp');
 const { generateSummary } = require('../utils/aiService');
 const asyncHandler = require('../middleware/asyncHandler');
+const Notification = require('../models/Notification');
+const socketManager = require('../utils/socketManager');
+
 const PDFDocument = require('pdfkit');
 
 // @desc    Create a new appointment
@@ -81,7 +84,20 @@ exports.createAppointment = asyncHandler(async (req, res) => {
     sharedRelayNotes, // <-- array of previous notes
     shareRelayNote: shareRelayNoteBool, // <-- always boolean
   });
+  // Appointment creation notification
+  await Notification.create({
+  userId: doctor,  // notify the doctor/nurse
+  message: `New appointment booked by ${req.user.name || 'a patient'}.`,
+  link: `/appointments/${appointment._id}`,
+  isRead: false,
+  });
 
+  // Emit real-time notification to the doctor
+  socketManager.emitToRoom(doctor.toString(), 'new_notification', {
+    message: `New appointment booked by ${req.user.name || 'a patient'}.`,
+    link: `/appointments/${appointment._id}`
+  });
+ 
   // Send a success response back to the frontend
   res.status(201).json({
     success: true,
@@ -151,22 +167,10 @@ exports.getMyAppointments = asyncHandler(async (req, res) => {
     query = { patient: req.user.id };
   }
 
-        // Check the role of the logged-in user to build the correct query
-        if (req.user.role === 'doctor' || req.user.role === 'nurse') {
-            query = { doctor: req.user.id };
-        } else {
-            query = { patient: req.user.id };
-        }
-
-        const appointments = await Appointment.find(query)
-            .populate('doctor', 'name specialty')
-            .populate('patient', 'name allergies chronicConditions');
-
-        res.status(200).json({
-            success: true,
-            count: appointments.length,
-            data: appointments
-        });
+   
+  const appointments = await Appointment.find(query)
+    .populate('doctor', 'name specialty')
+    .populate('patient', 'name allergies chronicConditions');
 
   res.status(200).json({
     success: true,
@@ -265,6 +269,19 @@ exports.updateAppointmentStatus = asyncHandler(async (req, res) => {
   }
 
   await appointment.save();
+   // Create notification for the patient about status update
+  await Notification.create({
+    userId: appointment.patient,
+    message: `Your appointment on ${appointment.appointmentDate} is now '${appointment.status}'.`,
+    link: `/appointments/${appointment._id}`,
+    isRead: false,
+  });
+
+  // Emit real-time notification to the patient
+  socketManager.emitToRoom(appointment.patient.toString(), 'new_notification', {
+    message: `Your appointment on ${appointment.appointmentDate} is now '${appointment.status}'.`,
+    link: `/appointments/${appointment._id}`
+  });
 
   res.json(appointment);
 });

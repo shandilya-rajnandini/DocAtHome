@@ -2,6 +2,9 @@ const Razorpay = require('razorpay');
 const crypto = require('crypto');
 const User = require('../models/User');
 const Subscription = require('../models/Subscription');
+const Notification = require('../models/Notification');
+const socketManager = require('../utils/socketManager');
+
 const { 
   catchAsync, 
   AppError, 
@@ -159,6 +162,19 @@ exports.verifySubscription = catchAsync(async (req, res, next) => {
       nextBillingDate: endDate
     });
 
+    await Notification.create({
+      userId: req.user.id,
+      message: 'Your Pro subscription has been activated successfully! (Test Mode)',
+      link: '/subscription/status',
+      isRead: false,
+    });
+
+    // Emit Socket.IO real-time notification
+    socketManager.emitToRoom(req.user.id.toString(), 'new_notification', {
+      message: 'Your Pro subscription has been activated successfully! (Test Mode)',
+      link: '/subscription/status'
+    });
+
     res.status(200).json({
       success: true,
       message: 'Pro subscription activated successfully! (Test Mode)',
@@ -235,6 +251,19 @@ exports.verifySubscription = catchAsync(async (req, res, next) => {
       nextBillingDate: endDate
     });
 
+    await Notification.create({
+      userId: req.user.id,
+      message: 'Your Pro subscription has been activated successfully!',
+      link: '/subscription/status',
+      isRead: false,
+    });
+
+    // Emit real-time notification
+    socketManager.emitToRoom(req.user.id.toString(), 'new_notification', {
+      message: 'Your Pro subscription has been activated successfully!',
+      link: '/subscription/status'
+    });
+
     res.status(200).json({
       success: true,
       message: 'Pro subscription activated successfully!',
@@ -305,6 +334,20 @@ exports.cancelSubscription = catchAsync(async (req, res, next) => {
       { status: 'cancelled' }
     );
 
+    await Notification.create({
+      userId: user.id,
+      message: 'Your Pro subscription has been cancelled.',
+      link: '/subscription/status',
+      isRead: false,
+    });
+
+    // Emit real-time cancellation notification
+    socketManager.emitToRoom(user.id.toString(), 'new_notification', {
+      message: 'Your Pro subscription has been cancelled.',
+      link: '/subscription/status'
+    });
+
+
     return res.status(200).json({
       success: true,
       message: 'Subscription cancelled successfully (local cleanup only)',
@@ -328,6 +371,19 @@ exports.cancelSubscription = catchAsync(async (req, res, next) => {
       { status: 'cancelled' }
     );
 
+    await Notification.create({
+      userId: user.id,
+      message: 'Your Pro subscription has been cancelled.',
+      link: '/subscription/status',
+      isRead: false,
+    });
+
+    // Emit real-time cancellation notification
+    socketManager.emitToRoom(user.id.toString(), 'new_notification', {
+      message: 'Your Pro subscription has been cancelled.',
+      link: '/subscription/status'
+    });
+    
     res.status(200).json({
       success: true,
       message: 'Subscription cancelled successfully'

@@ -6,6 +6,7 @@ const cors = require('cors');
 const helmet = require('helmet');
 const path = require('path');
 const connectDB = require('./config/db');
+const socketManager = require('./utils/socketManager');
 const { startScheduler } = require('./utils/adherenceScheduler');
 const { protect } = require('./middleware/authMiddleware');
 
@@ -46,6 +47,8 @@ app.get('/uploads/:bucket/:file', protect, async (req, res) => {
 app.use('/api/auth', require('./routes/authRoutes'));
 // ... (all your other app.use routes) ...
 app.use('/api/lab-tests', require('./routes/labTestRoutes'));
+
+app.use('/api/notifications', require('./routes/notificationRoutes'));
 app.use('/api/video-calls', require('./routes/videoCallRoutes'));
 app.use('/api/support', require('./routes/supportRoutes'));
 app.use('/api/second-opinions', require('./routes/secondOpinionRoutes'));
@@ -65,24 +68,32 @@ app.use((err, req, res, _next) => {
 
 const server = http.createServer(app);
 
-// Socket.IO setup
+
+// Socket.IO Setup
 const io = new Server(server, {
   cors: {
     origin: allowedOrigins,
-    methods: ['GET', 'POST']
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    credentials: true,
   }
 });
 
-// Initialize socket manager
-const { initialize } = require('./utils/socketManager');
-initialize(io);
+// Initialize socketManager with io instance
+socketManager.initialize(io);
 
-// Socket.IO connection handling
+// Handle client connections
 io.on('connection', (socket) => {
-  console.log('User connected:', socket.id);
+  console.log('New client connected:', socket.id);
+
+  // Listen for client joining their personal room after authentication
+  socket.on('join_user_room', (userId) => {
+    socket.join(userId);
+    console.log(`Socket ${socket.id} joined room ${userId}`);
+  });
 
   socket.on('disconnect', () => {
-    console.log('User disconnected:', socket.id);
+    console.log('Client disconnected:', socket.id);
+
   });
 });
 
