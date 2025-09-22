@@ -41,6 +41,7 @@ import PublicDonationPage from "../pages/PublicDonationPage.jsx";
 // Protected Professional Pages
 import DoctorDashboard from "../pages/DoctorDashboard.jsx";
 import NurseDashboard from "../pages/NurseDashboard.jsx";
+import TechnicianDashboard from "../pages/TechnicianDashboard.jsx";
 import DriverDashboard from "../pages/DriverDashboard.jsx";
 import DoctorEditProfilePage from "../pages/DoctorEditProfilePage.jsx";
 import NurseEditProfilePage from "../pages/NurseEditProfilePage.jsx";
@@ -342,6 +343,16 @@ const AnimatedRoutes = () => {
             <AnimatedPage>
               <ProtectedRoute>
                 <NurseDashboard />
+              </ProtectedRoute>
+            </AnimatedPage>
+          }
+        />
+        <Route
+          path="/technician/dashboard"
+          element={
+            <AnimatedPage>
+              <ProtectedRoute>
+                <TechnicianDashboard />
               </ProtectedRoute>
             </AnimatedPage>
           }

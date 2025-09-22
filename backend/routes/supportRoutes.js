@@ -1,6 +1,7 @@
 // routes/supportRoutes.js
 const express = require('express');
 const router = express.Router();
+const { requireRole } = require('../middleware/roleMiddleware');
 const {
   getSupportGroups,
   getSupportGroup,
@@ -35,7 +36,7 @@ router.post('/groups/:id/messages/:messageId/like', toggleMessageLike);
 router.get('/memberships', getUserMemberships);
 
 // Admin routes (nurse only)
-router.use('/admin', authorize('nurse'));
+router.use('/admin', requireRole(['nurse']));
 router.post('/admin/groups', createSupportGroup);
 router.put('/admin/groups/:id/messages/:messageId/moderate', moderateMessage);
 

@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { bookLabTest } = require('../controllers/labTestController');
+const { bookLabTest, getTechnicianLabTests } = require('../controllers/labTestController');
 const { protect } = require('../middleware/authMiddleware');
 const { 
   validate, 
@@ -19,5 +19,9 @@ router.route('/')
     .post(protect, 
           validate(labTestSchemas.create), 
           bookLabTest);
+
+// GET /api/lab-tests/technician - Get lab tests assigned to technician
+router.route('/technician')
+    .get(protect, getTechnicianLabTests);
 
 module.exports = router;
