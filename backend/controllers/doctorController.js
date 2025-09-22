@@ -4,7 +4,7 @@ const SearchLog = require("../models/SearchLog");
 const asyncHandler = require("../middleware/asyncHandler");
 
 // Helper function to get approximate city coordinates
-const getCityCoordinates = (city) => {
+const _getCityCoordinates = (city) => {
   const cityLower = city.toLowerCase();
   const cityCoords = {
     mumbai: { lat: 19.076, lng: 72.8777 },
@@ -71,7 +71,7 @@ const calculatePolygonCentroid = (coordinates) => {
 };
 
 // Helper function to create a 10-point decagon polygon around a point
-const createDecagonPolygon = (lat, lng, radiusKm) => {
+const _createDecagonPolygon = (lat, lng, radiusKm) => {
   const points = [];
   const radiusInDegrees = radiusKm / 111; // Approximate conversion km to degrees
 
@@ -93,7 +93,7 @@ const createDecagonPolygon = (lat, lng, radiusKm) => {
 };
 
 // Helper function to check if doctor's service area intersects with decagon
-const checkServiceAreaIntersection = (serviceArea, decagonPolygon) => {
+const _checkServiceAreaIntersection = (serviceArea, decagonPolygon) => {
   // For now, we'll check if the centroid of service area is within the decagon
   // This could be enhanced with more complex polygon intersection algorithms
   if (!serviceArea || !serviceArea.coordinates || !serviceArea.coordinates[0] || !decagonPolygon) {
