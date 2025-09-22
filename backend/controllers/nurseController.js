@@ -1,4 +1,5 @@
 const User = require('../models/User');
+const SearchLog = require('../models/SearchLog');
 const asyncHandler = require('../middleware/asyncHandler');
 
 // Helper function to get approximate city coordinates
@@ -58,6 +59,21 @@ const calculatePolygonCentroid = (coordinates) => {
 // @desc    Search for verified nurses
 // @route   GET /api/nurses
 exports.getNurses = asyncHandler(async (req, res) => {
+    // Log the search for demand insights (anonymized)
+    const { specialty, city, area } = req.query;
+    if (city || area || specialty) {
+      try {
+        await SearchLog.create({
+          city: city || '',
+          area: area || '',
+          specialty: specialty || '',
+        });
+      } catch (error) {
+        console.error('Error logging search:', error);
+        // Don't fail the request if logging fails
+      }
+    }
+
     const baseQuery = { role: 'nurse', isVerified: true };
 
     if (req.query.specialty && req.query.specialty !== '') {

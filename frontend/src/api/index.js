@@ -93,6 +93,7 @@ export const createDonationOrder = (donationData) => API.post('/care-fund/donate
 
 // === Lab Test & Ambulance Routes ===
 export const bookLabTest = (testData) => API.post('/lab-tests', testData);
+export const getTechnicianLabTests = () => API.get('/lab-tests/technician');
 export const bookAmbulance = (bookingData) => API.post('/ambulance/book', bookingData);
 export const updateDriverStatus = (statusData) => API.put('/profile/me/driver-status', statusData);
 export const respondToAmbulanceRequest = (response) => API.post('/ambulance/respond', response);
@@ -166,3 +167,5 @@ export const verifySecondOpinionPayment = (id, paymentData) => API.post(`/second
 
 // === Profile Routes ===
 export const deleteMyProfile = () => API.delete('/profile/me');
+
+export { API };
