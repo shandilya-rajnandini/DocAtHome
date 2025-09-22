@@ -59,7 +59,7 @@ const SearchDoctorsPage = () => {
         } finally {
             setIsLoading(false);
         }
-    }, [pagination.limit]);
+    }, [pagination.limit, viewMode]);
 
     useEffect(() => {
         fetchDoctors({}, 1);
@@ -116,12 +116,12 @@ const SearchDoctorsPage = () => {
                     fetchDoctors(newFilters, 1);
                     setIsGettingLocation(false);
                     toast.success(`Found doctors within ${newFilters.radius}km!`);
-                } catch (error) {
+                } catch {
                     setIsGettingLocation(false);
                     toast.error("Failed to save location. Please try again.");
                 }
             },
-            (error) => {
+            () => {
                 setIsGettingLocation(false);
                 
                 // For localhost development, provide a Delhi fallback

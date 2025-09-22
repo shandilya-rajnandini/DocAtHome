@@ -136,7 +136,7 @@ const MapComponent = ({ doctors, userLocation, filteredByLocation = false }) => 
         try {
           const centroid = calculatePolygonCentroid(doctor.serviceArea.coordinates[0]);
           validDoctors.push({ lat: centroid.lat, lng: centroid.lng });
-        } catch (error) {
+        } catch {
           // Fallback to location coordinates
           if (doctor.location && doctor.location.coordinates && doctor.location.coordinates.length === 2) {
             validDoctors.push({ lat: doctor.location.coordinates[1], lng: doctor.location.coordinates[0] });
