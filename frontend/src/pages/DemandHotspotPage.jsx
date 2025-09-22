@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { Navigate } from 'react-router-dom';
 import L from 'leaflet';
@@ -13,11 +13,6 @@ const DemandHotspotPage = () => {
     const [heatmapData, setHeatmapData] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-
-    // Redirect if not Pro user
-    if (!user || user.subscriptionTier !== 'pro') {
-        return <Navigate to="/upgrade-pro" />;
-    }
 
     useEffect(() => {
         fetchDemandData();
@@ -37,13 +32,7 @@ const DemandHotspotPage = () => {
         }
     };
 
-    useEffect(() => {
-        if (!loading && !error && mapRef.current && heatmapData.length > 0) {
-            initializeMap();
-        }
-    }, [loading, error, heatmapData]);
-
-    const initializeMap = () => {
+    const initializeMap = useCallback(() => {
         if (!mapRef.current) return;
 
         // Default center on India
@@ -95,7 +84,18 @@ const DemandHotspotPage = () => {
             const bounds = L.latLngBounds(heatData.map(d => [d[0], d[1]]));
             map.fitBounds(bounds, { padding: [20, 20] });
         }
-    };
+    }, [heatmapData]);
+
+    useEffect(() => {
+        if (!loading && !error && mapRef.current && heatmapData.length > 0) {
+            initializeMap();
+        }
+    }, [loading, error, heatmapData, initializeMap]);
+
+    // Redirect if not Pro user
+    if (!user || user.subscriptionTier !== 'pro') {
+        return <Navigate to="/upgrade-pro" />;
+    }
 
     return (
         <div className="min-h-screen bg-accent-cream dark:bg-primary-dark py-12">
