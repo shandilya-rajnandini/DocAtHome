@@ -9,10 +9,29 @@ const connectDB = require('./config/db');
 dotenv.config();
 const app = express();
 
-// --- THE DEFINITIVE "ALLOW ALL" CORS FIX ---
-// This tells the server to accept requests from ANY origin.
-// This is the most effective way to solve stubborn CORS issues during development.
-app.use(cors());
+// --- THE DEFINITIVE PRODUCTION CORS FIX ---
+// This tells the server to ONLY accept requests from your Netlify frontend.
+// It is the most secure and reliable way to handle CORS on a live site.
+const allowedOrigins = [
+  'https://docathome-rajnandini.netlify.app',
+  'https://docathome-backend.onrender.com'
+];
+
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      // Allow requests with no origin (like mobile apps or curl requests)
+      if (!origin) return callback(null, true);
+      // Allow the origin if it is in our allowed list
+      if (allowedOrigins.indexOf(origin) === -1) {
+        const msg = 'The CORS policy for this site does not allow access from the specified Origin.';
+        return callback(new Error(msg), false);
+      }
+      return callback(null, true);
+    },
+    credentials: true,
+  })
+);
 // --- END OF FIX ---
 
 app.use(express.json());
@@ -41,7 +60,11 @@ app.use((err, req, res, next) => {
 
 const server = http.createServer(app);
 const io = new Server(server, {
-  cors: { origin: "*", methods: ["GET", "POST"] } // Also make socket.io permissive
+  cors: { 
+    origin: "https://docathome-rajnandini.netlify.app", 
+    methods: ["GET", "POST"],
+    credentials: true 
+  }
 });
 io.on('connection', (socket) => { console.log(`Socket Connected: ${socket.id}`); });
 
