@@ -9,7 +9,8 @@
     "dev": "nodemon server.js",
     "data:import": "node seeder.js",
     "data:destroy": "node seeder.js -d",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "build": "echo 'No build step required for backend'"
   },
   "keywords": [],
   "author": "",
