@@ -64,11 +64,11 @@ export const searchDoctors = (params) => API.get('/doctors', { params });
 export const getDoctorById = (id) => getProfessionalById(id);
 export const searchNurses = (params) => API.get('/nurses', { params });
 export const getNurseById = (id) => getProfessionalById(id);
-export const getProfileById = (id) => getProfessionalById(id); // Alias for components
+export const getProfileById = (id) => getProfessionalById(id); // Alias for components 
 
 // === Logged-in User Profile Routes ===
 export const getMyProfile = () => API.get('/profile/me');
-export const updateMyProfile = (profileData) => API.put('/profile/me', profileData);
+export const updateMyProfile = (profileData) => API.put('/profile/me', profileData); 
 export const updateProfile = updateMyProfile; // Alias for components
 
 // === Appointment Routes ===
@@ -93,6 +93,7 @@ export const createDonationOrder = (donationData) => API.post('/care-fund/donate
 
 // === Lab Test & Ambulance Routes ===
 export const bookLabTest = (testData) => API.post('/lab-tests', testData);
+export const getTechnicianLabTests = () => API.get('/lab-tests/technician');
 export const bookAmbulance = (bookingData) => API.post('/ambulance/book', bookingData);
 export const updateDriverStatus = (statusData) => API.put('/profile/me/driver-status', statusData);
 export const respondToAmbulanceRequest = (response) => API.post('/ambulance/respond', response);
@@ -166,3 +167,5 @@ export const verifySecondOpinionPayment = (id, paymentData) => API.post(`/second
 
 // === Profile Routes ===
 export const deleteMyProfile = () => API.delete('/profile/me');
+
+export { API };

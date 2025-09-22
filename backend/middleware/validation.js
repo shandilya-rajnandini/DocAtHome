@@ -290,6 +290,7 @@ const labTestSchemas = {
       .pattern(/^(0?[1-9]|1[0-2]):[0-5][0-9]\s(AM|PM)$/)
       .required(),
     patientAddress: secureString(10, 300).required(),
+    city: secureString(2, 50).required(),
     totalFee: Joi.number().min(0).max(50000).required(),
   }),
 };

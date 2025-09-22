@@ -42,6 +42,8 @@ const LoginPage = () => {
         } else if (userData.role === 'doctor' || userData.role === 'nurse') {
           // Redirect both doctors and nurses to the professional dashboard
           navigate('/doctor/dashboard');
+        } else if (userData.role === 'technician') {
+          navigate('/technician/dashboard');
         } else {
           // Default fallback to the homepage
           navigate('/');
@@ -71,6 +73,8 @@ const LoginPage = () => {
       } else if (userData.role === 'doctor' || userData.role === 'nurse') {
         // Redirect both doctors and nurses to the professional dashboard
         navigate('/doctor/dashboard');
+      } else if (userData.role === 'technician') {
+        navigate('/technician/dashboard');
       } else {
         // Default fallback to the homepage
         navigate('/');

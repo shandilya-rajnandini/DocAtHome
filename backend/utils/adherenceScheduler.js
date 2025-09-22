@@ -2,6 +2,7 @@
 const cron = require('node-cron');
 const MedicationLog = require('../models/MedicationLog');
 const User = require('../models/User');
+const aggregateDemandInsights = require('./aggregateDemandInsights');
 
 const calculateAdherenceScore = async () => {
   try {
@@ -67,6 +68,10 @@ const calculateAdherenceScore = async () => {
 const startScheduler = () => {
   cron.schedule('0 2 * * *', calculateAdherenceScore);
   console.log('Adherence scheduler started - runs daily at 2 AM');
+
+  // Run demand insights aggregation weekly on Monday at 3 AM
+  cron.schedule('0 3 * * 1', aggregateDemandInsights);
+  console.log('Demand insights scheduler started - runs weekly on Monday at 3 AM');
 };
 
 module.exports = { startScheduler, calculateAdherenceScore };

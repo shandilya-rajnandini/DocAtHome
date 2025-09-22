@@ -47,7 +47,7 @@ const UserSchema = new mongoose.Schema({
   city: {
     type: String,
     required: function () {
-      return this.role === 'doctor' || this.role === 'nurse';
+      return this.role === 'doctor' || this.role === 'nurse' || this.role === 'technician';
     },
   },
   experience: {

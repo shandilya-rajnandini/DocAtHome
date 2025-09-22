@@ -9,7 +9,8 @@
     "dev": "nodemon server.js",
     "data:import": "node seeder.js",
     "data:destroy": "node seeder.js -d",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "build": "echo 'No build step required for backend'"
   },
   "keywords": [],
   "author": "",
@@ -41,6 +42,7 @@
     "winston": "^3.17.0"
   },
   "devDependencies": {
+    "@types/node": "^24.5.2",
     "eslint": "^9.33.0",
     "jest": "^30.0.5",
     "mongodb-memory-server": "^10.2.0",

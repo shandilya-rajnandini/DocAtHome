@@ -1,5 +1,6 @@
 /* eslint-disable quotes */
 const User = require("../models/User");
+const SearchLog = require("../models/SearchLog");
 const asyncHandler = require("../middleware/asyncHandler");
 
 // Helper function to get approximate city coordinates
@@ -137,6 +138,7 @@ const getDoctors = asyncHandler(async (req, res) => {
   const {
     specialty,
     city,
+    area,
     minExperience,
     maxExperience,
     sortBy,
@@ -145,6 +147,20 @@ const getDoctors = asyncHandler(async (req, res) => {
     radius = 10,
     mapView,
   } = req.query;
+
+  // Log the search for demand insights (anonymized)
+  if (city || area || specialty) {
+    try {
+      await SearchLog.create({
+        city: city || '',
+        area: area || '',
+        specialty: specialty || '',
+      });
+    } catch (error) {
+      console.error('Error logging search:', error);
+      // Don't fail the request if logging fails
+    }
+  }
 
   const baseQuery = { role: "doctor", isVerified: true };
 
