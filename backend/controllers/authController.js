@@ -3,6 +3,7 @@ const User = require("../models/User");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
+const https = require("https");
 const sendEmail = require("../utils/sendEmail");
 const speakeasy = require("speakeasy");
 const { catchAsync } = require("../utils/controllerFactory");
@@ -255,6 +256,7 @@ const normalizeAndValidateProfessionalFields = (
   experience,
   licenseNumber,
   govId,
+  phone,
   role
 ) => {
   const errors = [];
@@ -264,6 +266,7 @@ const normalizeAndValidateProfessionalFields = (
   const normalizedCity = city ? city.trim() : "";
   const normalizedLicenseNumber = licenseNumber ? licenseNumber.trim() : "";
   const normalizedGovId = govId ? govId.trim() : "";
+  const normalizedPhone = phone ? phone.trim() : "";
 
   // Validate required fields for doctor/nurse roles
   if (role === "doctor" || role === "nurse") {
@@ -278,6 +281,9 @@ const normalizeAndValidateProfessionalFields = (
     }
     if (!normalizedGovId) {
       errors.push("Government ID is required for doctors and nurses");
+    }
+    if (!normalizedPhone) {
+      errors.push("Phone number is required for doctors and nurses");
     }
 
     // Coerce and validate experience
@@ -309,10 +315,44 @@ const normalizeAndValidateProfessionalFields = (
       experience: normalizedExperience,
       licenseNumber: normalizedLicenseNumber,
       govId: normalizedGovId,
+      phone: normalizedPhone,
     };
   }
 
   return null;
+};
+
+// Helper function to check if email is disposable
+const checkDisposableEmail = (email) => {
+  return new Promise((resolve, reject) => {
+    const domain = email.split('@')[1];
+    const url = `https://block-disposable-email.com/api/check/${domain}`;
+
+    https.get(url, (res) => {
+      let data = '';
+      res.on('data', (chunk) => {
+        data += chunk;
+      });
+      res.on('end', () => {
+        try {
+          const result = JSON.parse(data);
+          resolve(result.disposable === true);
+        } catch (error) {
+          reject(error);
+        }
+      });
+    }).on('error', (error) => {
+      reject(error);
+    });
+  });
+};
+
+// Helper function to validate license number (example for Indian Medical Council)
+const validateLicenseNumber = (licenseNumber) => {
+  // Example regex for Indian medical license: starts with state code, followed by numbers
+  // This is a placeholder; adjust based on actual format
+  const licenseRegex = /^[A-Z]{2}\d{6}$/; // e.g., MH123456
+  return licenseRegex.test(licenseNumber);
 };
 
 exports.register = catchAsync(async (req, res, next) => {
@@ -326,6 +366,7 @@ exports.register = catchAsync(async (req, res, next) => {
     experience,
     licenseNumber,
     govId,
+    phone,
   } = req.body;
 
   // Input validation
@@ -391,6 +432,7 @@ exports.register = catchAsync(async (req, res, next) => {
         experience,
         licenseNumber,
         govId,
+        phone,
         role
       );
 
@@ -420,6 +462,44 @@ exports.register = catchAsync(async (req, res, next) => {
   const newUser = new User(userData);
 
   await newUser.save();
+
+  // Perform fraud checks for professionals
+  if (role === 'doctor' || role === 'nurse') {
+    const flags = [];
+
+    // Duplicate Phone/ID Check
+    const duplicatePhone = await User.findOne({ phone: newUser.phone, _id: { $ne: newUser._id } });
+    if (duplicatePhone) {
+      flags.push('DUPLICATE_PHONE');
+    }
+
+    const duplicateGovId = await User.findOne({ govId: newUser.govId, _id: { $ne: newUser._id } });
+    if (duplicateGovId) {
+      flags.push('DUPLICATE_GOV_ID');
+    }
+
+    // Disposable Email Check
+    try {
+      const isDisposable = await checkDisposableEmail(newUser.email);
+      if (isDisposable) {
+        flags.push('DISPOSABLE_EMAIL');
+      }
+    } catch (error) {
+      logger.error('Error checking disposable email', { error: error.message, email: newUser.email });
+      // Don't flag if API fails
+    }
+
+    // License Number Validation
+    if (!validateLicenseNumber(newUser.licenseNumber)) {
+      flags.push('INVALID_LICENSE_FORMAT');
+    }
+
+    // Update flags if any
+    if (flags.length > 0) {
+      newUser.flags = flags;
+      await newUser.save();
+    }
+  }
 
   // Create JWT token
   const payload = {

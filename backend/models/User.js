@@ -74,6 +74,12 @@ const UserSchema = new mongoose.Schema({
       return this.role === 'doctor' || this.role === 'nurse';
     },
   },
+  phone: {
+    type: String,
+    required: function () {
+      return this.role === 'doctor' || this.role === 'nurse';
+    },
+  },
   certificationId: {
     type: String,
     required: function () {
@@ -153,6 +159,12 @@ const UserSchema = new mongoose.Schema({
   lastAdherenceUpdate: {
     type: Date,
     default: Date.now,
+  },
+
+  // --- Fraud Flags ---
+  flags: {
+    type: [String],
+    default: [],
   },
 
   createdAt: {
