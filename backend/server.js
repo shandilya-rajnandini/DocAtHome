@@ -17,13 +17,8 @@ const app = express();
 // This tells the server to ONLY accept requests from your Netlify frontend.
 // It is the most secure and reliable way to handle CORS on a live site.
 const allowedOrigins = [
-<<<<<<< HEAD
-  'https://docathome-rajnandini.netlify.app',
-  'https://docathome-backend.onrender.com'
-=======
-    'http://localhost:5173',
-    'https://docathome-rajnandini.netlify.app'
->>>>>>> 279064eb69d607fc5c0a9b13c6d4667ce0f16791
+  'http://localhost:5173', // For local development
+  'https://docathome-rajnandini.netlify.app' // For production on Netlify
 ];
 
 app.use(
@@ -46,9 +41,6 @@ app.use(
 app.use(express.json());
 app.use(helmet());
 
-<<<<<<< HEAD
-// API Routes (ensure these files exist and are spelled correctly)
-=======
 // Secure uploads access (auth required; add resource-level ACLs in controller)
 app.get('/uploads/:bucket/:file', protect, async (req, res) => {
   const { bucket, file } = req.params;
@@ -59,7 +51,6 @@ app.get('/uploads/:bucket/:file', protect, async (req, res) => {
 });
 
 // API Routes
->>>>>>> 279064eb69d607fc5c0a9b13c6d4667ce0f16791
 app.use('/api/auth', require('./routes/authRoutes'));
 app.use('/api/admin', require('./routes/adminRoutes'));
 app.use('/api/doctors', require('./routes/doctorRoutes'));
@@ -67,7 +58,6 @@ app.use('/api/nurses', require('./routes/nurseRoutes'));
 app.use('/api/profile', require('./routes/profileRoutes'));
 app.use('/api/appointments', require('./routes/appointmentRoutes'));
 app.use('/api/lab-tests', require('./routes/labTestRoutes'));
-
 app.use('/api/notifications', require('./routes/notificationRoutes'));
 app.use('/api/video-calls', require('./routes/videoCallRoutes'));
 app.use('/api/support', require('./routes/supportRoutes'));
@@ -88,17 +78,6 @@ app.use((err, req, res, _next) => {
 });
 
 const server = http.createServer(app);
-<<<<<<< HEAD
-const io = new Server(server, {
-  cors: { 
-    origin: "https://docathome-rajnandini.netlify.app", 
-    methods: ["GET", "POST"],
-    credentials: true 
-  }
-});
-io.on('connection', (socket) => { console.log(`Socket Connected: ${socket.id}`); });
-=======
-
 
 // Socket.IO Setup
 const io = new Server(server, {
@@ -124,10 +103,8 @@ io.on('connection', (socket) => {
 
   socket.on('disconnect', () => {
     console.log('Client disconnected:', socket.id);
-
   });
 });
->>>>>>> 279064eb69d607fc5c0a9b13c6d4667ce0f16791
 
 const PORT = process.env.PORT || 5000;
 
