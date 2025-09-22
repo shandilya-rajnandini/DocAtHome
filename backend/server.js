@@ -112,7 +112,7 @@ const startServer = async () => {
   try {
     await connectDB();
     startScheduler(); // Start the adherence scheduler
-    server.listen(PORT, () => {
+    server.listen(PORT, '0.0.0.0', () => {
       console.log(`Server is live on port ${PORT}`);
     });
   } catch (error) {
