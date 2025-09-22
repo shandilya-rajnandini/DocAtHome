@@ -24,7 +24,6 @@ try {
   
   // Add error handler
   app.use(globalErrorHandler);
-  
   console.log('✅ Error boundary protection setup complete');
   
   // Start server
