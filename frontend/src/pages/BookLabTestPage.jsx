@@ -11,7 +11,8 @@ const BookLabTestPage = () => {
         testName: '',
         collectionDate: new Date().toISOString().split('T')[0],
         collectionTime: '',
-        patientAddress: ''
+        patientAddress: '',
+        city: ''
     });
 
     const onChange = (e) => {
@@ -20,7 +21,7 @@ const BookLabTestPage = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        if (!bookingData.collectionTime || !bookingData.testName || !bookingData.patientAddress) {
+        if (!bookingData.collectionTime || !bookingData.testName || !bookingData.patientAddress || !bookingData.city) {
             return toast.error("Please fill out all required fields.");
         }
         try {
@@ -56,6 +57,10 @@ const BookLabTestPage = () => {
                             <div>
                                 <label className="block text-black dark:text-secondary-text mb-2 font-semibold">Collection Address*</label>
                                 <textarea name="patientAddress" value={bookingData.patientAddress} onChange={onChange} placeholder="Enter your full address for sample collection" rows="4" className="w-full p-3 bg-gray-200 dark:bg-primary-dark text-black dark:text-white rounded-md border-gray-700 "></textarea>
+                            </div>
+                            <div>
+                                <label className="block text-black dark:text-secondary-text mb-2 font-semibold">City*</label>
+                                <input type="text" name="city" value={bookingData.city} onChange={onChange} placeholder="Enter your city" className="w-full p-3 bg-gray-200 dark:bg-primary-dark text-black dark:text-white rounded-md border-gray-700 " />
                             </div>
                         </div>
 

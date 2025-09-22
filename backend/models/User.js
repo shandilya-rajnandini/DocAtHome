@@ -47,7 +47,7 @@ const UserSchema = new mongoose.Schema({
   city: {
     type: String,
     required: function () {
-      return this.role === 'doctor' || this.role === 'nurse';
+      return this.role === 'doctor' || this.role === 'nurse' || this.role === 'technician';
     },
   },
   experience: {
@@ -138,6 +138,23 @@ const UserSchema = new mongoose.Schema({
     type: [String],
     default: [],
   },
+
+  // --- Medication Adherence ---
+  medicationAdherenceScore: {
+    type: Number,
+    default: 0,
+    min: 0,
+    max: 100,
+  },
+  adherenceStreak: {
+    type: Number,
+    default: 0,
+  },
+  lastAdherenceUpdate: {
+    type: Date,
+    default: Date.now,
+  },
+
   createdAt: {
     type: Date,
     default: Date.now,
@@ -198,12 +215,32 @@ const UserSchema = new mongoose.Schema({
     type: {
       type: String,
       enum: ['Polygon'],
-      required: false,
     },
     coordinates: {
-      type: [[[Number]]],
-      required: false,
+      type: [[[Number]]], // Array of arrays of coordinates
     },
+  },
+  // --- Professional Location (GeoJSON Point) ---
+  location: {
+    type: {
+      type: String,
+      enum: ['Point'],
+      required: function () {
+        return this.role === 'doctor' || this.role === 'nurse';
+      },
+    },
+    coordinates: {
+      type: [Number], // [longitude, latitude]
+      required: function () {
+        return this.role === 'doctor' || this.role === 'nurse';
+      },
+      validate: {
+        validator: function(arr) {
+          return Array.isArray(arr) && arr.length === 2 && arr.every(num => typeof num === 'number');
+        },
+        message: 'Coordinates must be an array of two numbers [longitude, latitude]'
+      }
+    }
   },
 });
 
@@ -229,6 +266,7 @@ UserSchema.methods.matchPassword = async function (enteredPassword) {
 // --- Indexes ---
 // Geospatial index
 UserSchema.index({ serviceArea: '2dsphere' });
+UserSchema.index({ location: '2dsphere' });
 
 // Multi-field query index
 UserSchema.index({ role: 1, city: 1, specialty: 1 });

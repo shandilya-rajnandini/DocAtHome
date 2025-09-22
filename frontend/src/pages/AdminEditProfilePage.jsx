@@ -28,7 +28,7 @@ const AdminEditProfilePage = () => {
                     verifiedSkills: data.verifiedSkills || [],
                     role: data.role || ''
                 });
-            } catch (error) {
+            } catch {
                 toast.error("Could not load the profile.");
             } finally {
                 setLoading(false);
@@ -79,7 +79,7 @@ const AdminEditProfilePage = () => {
             } else {
                 throw new Error("Upload failed");
             }
-        } catch (err) {
+        } catch {
             toast.dismiss();
             toast.error("Image upload failed.");
         }
@@ -95,7 +95,7 @@ const AdminEditProfilePage = () => {
 
             await updateProfile(userId, profileData);
             toast.success("Profile updated successfully!");
-        } catch (error) {
+        } catch {
             toast.error("Failed to update profile.");
         }
     };

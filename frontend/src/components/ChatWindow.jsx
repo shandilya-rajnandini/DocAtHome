@@ -3,7 +3,9 @@ import io from 'socket.io-client';
 import { useAuth } from '../context/AuthContext';
 
 // Connect to the backend socket server
-const socket = io.connect("http://localhost:5000");
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+const socketURL = API_URL.replace('/api', ''); // Remove /api suffix for socket connection
+const socket = io.connect(socketURL);
 
 const ChatWindow = ({ room, onClose }) => {
     const { user } = useAuth();

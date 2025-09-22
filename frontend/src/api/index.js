@@ -1,20 +1,43 @@
 import axios from 'axios';
 
-// This hardcoded URL is the most reliable way to ensure the live frontend
-// talks to the live backend. Replace with your actual Render/Fly.io URL.
-const API_URL = 'https://docathome-backend.onrender.com/api';
+// Environment-aware API URL configuration
+const API_URL = import.meta.env.VITE_API_URL || 'https://docathome-backend.onrender.com/api';
 
 // Create a configured instance of Axios with the correct, full base URL
-const API = axios.create({ baseURL: API_URL });
-
-// This interceptor automatically adds the user's JWT token to every secure request.
-// It runs before any API call is sent.
-API.interceptors.request.use((req) => {
-  if (localStorage.getItem('token')) {
-    req.headers.Authorization = `Bearer ${localStorage.getItem('token')}`;
-  }
-  return req;
+const API = axios.create({
+  baseURL: API_URL,
+  timeout: 10000, // 10 second timeout
+  headers: {
+    'Content-Type': 'application/json',
+  },
 });
+
+// Request interceptor for adding auth token
+API.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
+// Response interceptor for handling common errors
+API.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      // Token expired or invalid
+      localStorage.removeItem('token');
+      window.location.href = '/login';
+    }
+    return Promise.reject(error);
+  }
+);
 
 
 // --- API Function Exports (Consolidated from ALL Features) ---
@@ -65,10 +88,12 @@ export const updateAvailability = (availabilityData) => API.post('/availability'
 export const getMyCareCircle = () => API.get('/profile/my-care-circle');
 export const inviteToCareCircle = (inviteData) => API.post('/profile/my-care-circle/invite', inviteData);
 export const getMyCareFund = () => API.get('/care-fund/my-fund');
+export const getCareFundPublic = (slugOrId) => API.get(`/care-fund/public/${slugOrId}`);
 export const createDonationOrder = (donationData) => API.post('/care-fund/donate', donationData);
 
 // === Lab Test & Ambulance Routes ===
 export const bookLabTest = (testData) => API.post('/lab-tests', testData);
+export const getTechnicianLabTests = () => API.get('/lab-tests/technician');
 export const bookAmbulance = (bookingData) => API.post('/ambulance/book', bookingData);
 export const updateDriverStatus = (statusData) => API.put('/profile/me/driver-status', statusData);
 export const respondToAmbulanceRequest = (response) => API.post('/ambulance/respond', response);
@@ -86,10 +111,66 @@ export const verifySubscription = (paymentData) => API.post('/subscription/verif
 export const getActiveAnnouncements = () => API.get('/announcements/active');
 export const getAnnouncements = () => API.get('/announcements');
 export const createAnnouncement = (announcementData) => API.post('/announcements', announcementData);
+export const updateAnnouncement = (id, announcementData) => API.put(`/announcements/${id}`, announcementData);
 export const deleteAnnouncement = (id) => API.delete(`/announcements/${id}`);
+
+// === Video Call Routes ===
+export const startFamilyBridgeCall = (callData) => API.post('/video-calls/start-family-bridge', callData);
+export const joinVideoCall = (callId) => API.post(`/video-calls/${callId}/join`);
+export const endVideoCall = (callId) => API.post(`/video-calls/${callId}/end`);
+export const getCallHistory = (patientId, params) => API.get(`/video-calls/history/${patientId}`, { params });
+export const getActiveCall = (patientId) => API.get(`/video-calls/active/${patientId}`);
+
+// === Prescription Routes ===
+export const getMyPrescriptions = () => API.get('/prescriptions/my-prescriptions');
+export const getPrescriptions = () => API.get('/prescriptions');
+export const createPrescription = (prescriptionData) => API.post('/prescriptions', prescriptionData);
+export const takeDose = (prescriptionId, medicineIndex) => API.post(`/prescriptions/${prescriptionId}/take-dose`, { medicineIndex });
+export const logMedicationDose = (prescriptionId, medicineIndex, scheduledDate, notes) => API.post(`/prescriptions/${prescriptionId}/log-dose`, { medicineIndex, scheduledDate, notes });
+export const getAdherenceData = (days) => API.get('/prescriptions/adherence', { params: { days } });
+
+// === Support Community Routes ===
+export const getSupportGroups = (params) => API.get('/support/groups', { params });
+export const getMySupportGroups = () => API.get('/support/my-groups');
+export const joinSupportGroup = (groupId) => API.post(`/support/groups/${groupId}/join`);
+export const leaveSupportGroup = (groupId) => API.post(`/support/groups/${groupId}/leave`);
+export const getGroupMessages = (groupId, params) => API.get(`/support/groups/${groupId}/messages`, { params });
+export const sendGroupMessage = (groupId, messageData) => API.post(`/support/groups/${groupId}/messages`, messageData);
+export const getMyAnonymousProfile = () => API.get('/support/my-profile');
+export const updateAnonymousProfile = (profileData) => API.put('/support/my-profile', profileData);
+
+// === Nurse Moderation Routes ===
+export const getAllSupportGroups = () => API.get('/support/admin/groups');
+export const createSupportGroup = (groupData) => API.post('/support/admin/groups', groupData);
+export const updateSupportGroup = (groupId, groupData) => API.put(`/support/admin/groups/${groupId}`, groupData);
+export const deleteSupportGroup = (groupId) => API.delete(`/support/admin/groups/${groupId}`);
+export const getGroupMembers = (groupId) => API.get(`/support/admin/groups/${groupId}/members`);
+export const removeGroupMember = (groupId, memberId) => API.delete(`/support/admin/groups/${groupId}/members/${memberId}`);
+export const getFlaggedMessages = () => API.get('/support/admin/flagged-messages');
+export const moderateMessage = (groupId, messageId, action) => API.put(`/support/admin/groups/${groupId}/messages/${messageId}/moderate`, { action });
 
 // === Quest Routes ===
 export const getQuests = () => API.get('/quests');
 export const acceptQuest = (questId) => API.post(`/quests/${questId}/accept`);
+<<<<<<< HEAD
 export const logQuestProgress = (userQuestId) => API.post(`/quests/${userQuestId}/log`);
 
+=======
+export const logQuestProgress = (questId, progressData) => API.post(`/quests/${questId}/progress`, progressData);
+
+// === Second Opinion Routes ===
+export const createSecondOpinion = (data) => API.post('/second-opinions', data);
+export const getMySecondOpinions = (params) => API.get('/second-opinions/my-requests', { params });
+export const getAvailableSecondOpinions = (params) => API.get('/second-opinions/available', { params });
+export const assignSecondOpinion = (id) => API.put(`/second-opinions/${id}/assign`);
+export const uploadSecondOpinionFile = (id, fileData) =>
+  API.post(`/second-opinions/${id}/upload`, fileData);
+export const getSecondOpinionFiles = (id) => API.get(`/second-opinions/${id}/files`);
+export const createSecondOpinionPayment = (id) => API.post(`/second-opinions/${id}/payment`);
+export const verifySecondOpinionPayment = (id, paymentData) => API.post(`/second-opinions/${id}/payment/verify`, paymentData);
+
+// === Profile Routes ===
+export const deleteMyProfile = () => API.delete('/profile/me');
+
+export { API };
+>>>>>>> 279064eb69d607fc5c0a9b13c6d4667ce0f16791
