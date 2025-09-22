@@ -64,11 +64,11 @@ export const searchDoctors = (params) => API.get('/doctors', { params });
 export const getDoctorById = (id) => getProfessionalById(id);
 export const searchNurses = (params) => API.get('/nurses', { params });
 export const getNurseById = (id) => getProfessionalById(id);
-export const getProfileById = (id) => getProfessionalById(id); // Alias for components
+export const getProfileById = (id) => getProfessionalById(id); // Alias for components 
 
 // === Logged-in User Profile Routes ===
 export const getMyProfile = () => API.get('/profile/me');
-export const updateMyProfile = (profileData) => API.put('/profile/me', profileData);
+export const updateMyProfile = (profileData) => API.put('/profile/me', profileData); 
 export const updateProfile = updateMyProfile; // Alias for components
 
 // === Appointment Routes ===

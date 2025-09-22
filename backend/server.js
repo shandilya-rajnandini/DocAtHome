@@ -13,22 +13,29 @@ const { protect } = require('./middleware/authMiddleware');
 dotenv.config();
 const app = express();
 
-// --- THE DEFINITIVE CORS FIX ---
-// This configuration explicitly allows your Netlify domain.
+// --- THE DEFINITIVE PRODUCTION CORS FIX ---
+// This tells the server to ONLY accept requests from your Netlify frontend.
+// It is the most secure and reliable way to handle CORS on a live site.
 const allowedOrigins = [
-    'http://localhost:5173',
-    'https://docathome-rajnandini.netlify.app'
+  'http://localhost:5173', // For local development
+  'https://docathome-rajnandini.netlify.app' // For production on Netlify
 ];
 
-app.use(cors({
+app.use(
+  cors({
     origin: function (origin, callback) {
-        if (!origin || allowedOrigins.indexOf(origin) !== -1) {
-            callback(null, true);
-        } else {
-            callback(new Error('This origin is not allowed by our CORS policy.'));
-        }
-    }
-}));
+      // Allow requests with no origin (like mobile apps or curl requests)
+      if (!origin) return callback(null, true);
+      // Allow the origin if it is in our allowed list
+      if (allowedOrigins.indexOf(origin) === -1) {
+        const msg = 'The CORS policy for this site does not allow access from the specified Origin.';
+        return callback(new Error(msg), false);
+      }
+      return callback(null, true);
+    },
+    credentials: true,
+  })
+);
 // --- END OF FIX ---
 
 app.use(express.json());
@@ -45,9 +52,12 @@ app.get('/uploads/:bucket/:file', protect, async (req, res) => {
 
 // API Routes
 app.use('/api/auth', require('./routes/authRoutes'));
-// ... (all your other app.use routes) ...
+app.use('/api/admin', require('./routes/adminRoutes'));
+app.use('/api/doctors', require('./routes/doctorRoutes'));
+app.use('/api/nurses', require('./routes/nurseRoutes'));
+app.use('/api/profile', require('./routes/profileRoutes'));
+app.use('/api/appointments', require('./routes/appointmentRoutes'));
 app.use('/api/lab-tests', require('./routes/labTestRoutes'));
-
 app.use('/api/notifications', require('./routes/notificationRoutes'));
 app.use('/api/video-calls', require('./routes/videoCallRoutes'));
 app.use('/api/support', require('./routes/supportRoutes'));
@@ -68,7 +78,6 @@ app.use((err, req, res, _next) => {
 });
 
 const server = http.createServer(app);
-
 
 // Socket.IO Setup
 const io = new Server(server, {
@@ -94,7 +103,6 @@ io.on('connection', (socket) => {
 
   socket.on('disconnect', () => {
     console.log('Client disconnected:', socket.id);
-
   });
 });
 
@@ -104,7 +112,7 @@ const startServer = async () => {
   try {
     await connectDB();
     startScheduler(); // Start the adherence scheduler
-    server.listen(PORT, () => {
+    server.listen(PORT, '0.0.0.0', () => {
       console.log(`Server is live on port ${PORT}`);
     });
   } catch (error) {
