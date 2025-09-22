@@ -53,6 +53,7 @@ app.use('/api/video-calls', require('./routes/videoCallRoutes'));
 app.use('/api/support', require('./routes/supportRoutes'));
 app.use('/api/second-opinions', require('./routes/secondOpinionRoutes'));
 app.use('/api/discharge-concierge', require('./routes/dischargeConciergeRoutes'));
+app.use('/api/demand-insights', require('./routes/demandInsightsRoutes'));
 
 // Health Check
 app.get('/health', (req, res) => res.status(200).send('OK'));

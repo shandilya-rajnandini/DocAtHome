@@ -167,3 +167,5 @@ export const verifySecondOpinionPayment = (id, paymentData) => API.post(`/second
 
 // === Profile Routes ===
 export const deleteMyProfile = () => API.delete('/profile/me');
+
+export { API };
