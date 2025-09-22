@@ -1,7 +1,6 @@
 // routes/supportRoutes.js
 const express = require('express');
 const router = express.Router();
-const { requireRole } = require('../middleware/roleMiddleware');
 const {
   getSupportGroups,
   getSupportGroup,

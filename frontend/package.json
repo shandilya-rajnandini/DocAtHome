@@ -2,7 +2,7 @@
   "name": "frontend",
   "private": true,
   "version": "0.0.0",
-   "proxy": "https://docathome-backend.onrender.com", 
+  "proxy": "https://docathome-backend.onrender.com",
   "type": "module",
   "engines": {
     "node": ">=20.0.0",
