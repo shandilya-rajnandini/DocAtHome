@@ -264,8 +264,6 @@ const getDoctors = asyncHandler(async (req, res) => {
         }
       }
       
-      console.log(`${doctorsWithinRadius.length} doctors within ${radius}km radius`);
-      
       // Sort by subscription tier first
       doctorsWithinRadius.sort((a, b) => {
         // Pro users get higher priority
