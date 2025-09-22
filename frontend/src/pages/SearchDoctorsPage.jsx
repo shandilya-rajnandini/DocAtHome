@@ -4,6 +4,7 @@ import { searchDoctors } from "../api"; // Assuming your AI call is separate for
 import toast from "react-hot-toast";
 import DoctorCardSkeleton from "../components/DoctorCardSkeleton";
 import Modal from "../components/Modal";
+import MapComponent from "../components/MapComponent";
 import axios from "axios"; // Keep for the separate AI call
 
 const doctorSpecialties = ["Cardiologist", "Dermatologist", "Gynecologist", "Dentist", "Pediatrician", "General Physician", "Neurologist"];
@@ -15,11 +16,13 @@ const SearchDoctorsPage = () => {
     });
     const [doctors, setDoctors] = useState([]);
     const [pagination, setPagination] = useState({
-        currentPage: 1, totalPages: 1, totalDoctors: 0, limit: 10, hasNextPage: false, hasPrevPage: false,
+        currentPage: 1, totalPages: 1, totalDoctors: 0, limit: 6, hasNextPage: false, hasPrevPage: false,
     });
     const [isLoading, setIsLoading] = useState(true);
     const [isGettingLocation, setIsGettingLocation] = useState(false);
     const [userLocation, setUserLocation] = useState(null);
+    const [viewMode, setViewMode] = useState('list'); // 'list' or 'map'
+    const [locationFilterEnabled, setLocationFilterEnabled] = useState(false);
 
     const [showAIModal, setShowAIModal] = useState(false);
     const [symptomsInput, setSymptomsInput] = useState("");
@@ -31,6 +34,12 @@ const SearchDoctorsPage = () => {
         setIsLoading(true);
         try {
             const queryParams = { ...currentFilters, page, limit: pagination.limit };
+            
+            // Add mapView parameter when in map mode
+            if (viewMode === 'map') {
+                queryParams.mapView = 'true';
+            }
+            
             Object.keys(queryParams).forEach(key => {
                 if (queryParams[key] === "" || queryParams[key] == null) delete queryParams[key];
             });
@@ -42,7 +51,7 @@ const SearchDoctorsPage = () => {
                 setPagination(data.pagination);
             } else {
                 setDoctors(data.doctors || data);
-                setPagination({ currentPage: 1, totalPages: 1, totalDoctors: data.doctors ? data.doctors.length : data.length, limit: 10, hasNextPage: false, hasPrevPage: false });
+                setPagination({ currentPage: 1, totalPages: 1, totalDoctors: data.doctors ? data.doctors.length : data.length, limit: pagination.limit, hasNextPage: false, hasPrevPage: false });
             }
         } catch (error) {
             toast.error("Failed to fetch doctors. Is the server running?");
@@ -56,7 +65,16 @@ const SearchDoctorsPage = () => {
         fetchDoctors({}, 1);
     }, [fetchDoctors]);
 
-    const handleFilterChange = (e) => setFilters({ ...filters, [e.target.name]: e.target.value });
+    const handleFilterChange = (e) => {
+        const newFilters = { ...filters, [e.target.name]: e.target.value };
+        setFilters(newFilters);
+        
+        // If radius changes and location filter is enabled, update search immediately
+        if (e.target.name === 'radius' && locationFilterEnabled && userLocation) {
+            const updatedFilters = { ...newFilters, lat: userLocation.lat, lng: userLocation.lng };
+            fetchDoctors(updatedFilters, 1);
+        }
+    };
     const handleApplyFilters = (e) => {
         e.preventDefault();
         setPagination(prev => ({ ...prev, currentPage: 1 }));
@@ -67,24 +85,69 @@ const SearchDoctorsPage = () => {
         if (!navigator.geolocation) return toast.error("Geolocation is not supported.");
         setIsGettingLocation(true);
         navigator.geolocation.getCurrentPosition(
-            (position) => {
+            async (position) => {
                 const { latitude, longitude } = position.coords;
-                setUserLocation({ lat: latitude, lng: longitude });
-                const newFilters = { ...filters, lat: latitude, lng: longitude, radius: filters.radius || "10" };
-                setFilters(newFilters);
-                fetchDoctors(newFilters, 1);
-                setIsGettingLocation(false);
-                toast.success(`Found doctors within ${newFilters.radius}km!`);
+                
+                // Check if coordinates seem valid (not default fallback locations)
+                const isValidLocation = latitude !== 0 && longitude !== 0;
+                
+                if (!isValidLocation) {
+                    setIsGettingLocation(false);
+                    toast.error("Location detection returned invalid coordinates. Please try again or select a city manually.");
+                    return;
+                }
+
+                try {
+                    // Store location in user's profile
+                    const token = localStorage.getItem('token');
+                    await fetch('/api/profile/location', {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: JSON.stringify({ latitude, longitude })
+                    });
+
+                    setUserLocation({ lat: latitude, lng: longitude });
+                    setLocationFilterEnabled(true);
+                    const newFilters = { ...filters, lat: latitude, lng: longitude, radius: filters.radius || "10" };
+                    setFilters(newFilters);
+                    fetchDoctors(newFilters, 1);
+                    setIsGettingLocation(false);
+                    toast.success(`Found doctors within ${newFilters.radius}km!`);
+                } catch (error) {
+                    setIsGettingLocation(false);
+                    toast.error("Failed to save location. Please try again.");
+                }
             },
-            () => {
+            (error) => {
                 setIsGettingLocation(false);
-                toast.error("Unable to get your location. Please select a city manually.");
+                
+                // For localhost development, provide a Delhi fallback
+                if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+                    const delhiCoords = { lat: 28.7041, lng: 77.1025 };
+                    setUserLocation(delhiCoords);
+                    setLocationFilterEnabled(true);
+                    const newFilters = { ...filters, lat: delhiCoords.lat, lng: delhiCoords.lng, radius: filters.radius || "10" };
+                    setFilters(newFilters);
+                    fetchDoctors(newFilters, 1);
+                    toast.info("Using Delhi coordinates for localhost development");
+                } else {
+                    toast.error("Unable to get your location. Please select a city manually.");
+                }
+            },
+            {
+                enableHighAccuracy: true,
+                timeout: 10000,
+                maximumAge: 300000 // 5 minutes
             }
         );
     };
 
     const clearLocationFilter = () => {
         setUserLocation(null);
+        setLocationFilterEnabled(false);
         const clearedFilters = { ...filters };
         delete clearedFilters.lat;
         delete clearedFilters.lng;
@@ -147,16 +210,45 @@ const SearchDoctorsPage = () => {
                     
                     <div className="mb-6">
                       <label className="block text-slate-700 dark:text-secondary-text mb-2 font-semibold">City</label>
-                      <div className="flex gap-2 items-center">
+                      <div className="space-y-3">
                         <select name="city" value={filters.city} onChange={handleFilterChange} className="w-full p-3 bg-gray-200 dark:bg-primary-dark text-black dark:text-white rounded border-gray-700">
                           <option value="">All Cities</option>
                           {cities.map(city => <option key={city} value={city}>{city}</option>)}
                         </select>
-                        <button type="button" className="bg-green-500 text-white px-3 py-2 rounded hover:bg-green-600 font-semibold" onClick={findNearbyDoctors} disabled={isGettingLocation}>
-                          {isGettingLocation ? "Locating..." : "Find Professionals Near Me"}
+                        
+                        {/* Enable Location Filter Button */}
+                        <button 
+                          type="button" 
+                          className={`w-full p-3 rounded font-semibold transition-colors ${
+                            locationFilterEnabled 
+                              ? 'bg-green-600 text-white hover:bg-green-700' 
+                              : 'bg-blue-500 text-white hover:bg-blue-600'
+                          }`}
+                          onClick={locationFilterEnabled ? clearLocationFilter : findNearbyDoctors} 
+                          disabled={isGettingLocation}
+                        >
+                          {isGettingLocation ? "Getting Location..." : 
+                           locationFilterEnabled ? "🌍 Location Filter ON - Click to Disable" : 
+                           "📍 Enable Location Filter"}
                         </button>
-                        {userLocation && (
-                          <button type="button" className="ml-2 text-xs text-gray-600 underline" onClick={clearLocationFilter}>Clear Location</button>
+                        
+                        {/* Radius Dropdown - Only show when location filter is enabled */}
+                        {locationFilterEnabled && userLocation && (
+                          <div>
+                            <label className="block text-slate-700 dark:text-secondary-text mb-1 text-sm font-semibold">
+                              Search Radius
+                            </label>
+                            <select 
+                              name="radius" 
+                              value={filters.radius} 
+                              onChange={handleFilterChange} 
+                              className="w-full p-2 bg-gray-200 dark:bg-primary-dark text-black dark:text-white rounded border-gray-700"
+                            >
+                              <option value="2">Within 2km</option>
+                              <option value="5">Within 5km</option>
+                              <option value="10">Within 10km</option>
+                            </select>
+                          </div>
                         )}
                       </div>
                     </div>
@@ -182,19 +274,100 @@ const SearchDoctorsPage = () => {
                 </form>
 
                 <main className="lg:col-span-3">
-                    {/* Results Summary and Pagination */}
-                    {/* ... */}
+                    {/* View Mode Toggle */}
+                    <div className="mb-6 flex justify-between items-center">
+                        <div className="flex items-center space-x-4">
+                            <h2 className="text-xl font-bold text-slate-800 dark:text-white">
+                                {pagination.totalDoctors} Doctor{pagination.totalDoctors !== 1 ? 's' : ''} Found
+                                {locationFilterEnabled && userLocation && (
+                                    <span className="text-green-600 text-sm font-normal ml-2">
+                                        (within {filters.radius}km of your location)
+                                    </span>
+                                )}
+                            </h2>
+                        </div>
+                        <div className="flex bg-gray-200 dark:bg-primary-dark rounded-lg p-1">
+                            <button
+                                onClick={() => {
+                                    setViewMode('list');
+                                    // Re-fetch doctors for list view (with pagination)
+                                    setTimeout(() => fetchDoctors(filters, pagination.currentPage), 0);
+                                }}
+                                className={`px-4 py-2 rounded-md font-semibold transition-colors ${
+                                    viewMode === 'list'
+                                        ? 'bg-accent-blue text-white'
+                                        : 'text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-white'
+                                }`}
+                            >
+                                📋 List View
+                            </button>
+                            <button
+                                onClick={() => {
+                                    setViewMode('map');
+                                    // Re-fetch doctors for map view (without pagination)
+                                    setTimeout(() => fetchDoctors(filters, 1), 0);
+                                }}
+                                className={`px-4 py-2 rounded-md font-semibold transition-colors ${
+                                    viewMode === 'map'
+                                        ? 'bg-accent-blue text-white'
+                                        : 'text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-white'
+                                }`}
+                            >
+                                🗺️ Map View
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* Results Display */}
                     {isLoading ? (
                         <div className="space-y-6">
                             {[...Array(3)].map((_, idx) => <DoctorCardSkeleton key={idx} />)}
                         </div>
                     ) : doctors.length > 0 ? (
-                        <div className="space-y-6">
-                            {doctors.map(doctor => <DoctorCard key={doctor._id} doctor={doctor} />)}
+                        <div>
+                            {viewMode === 'list' ? (
+                                <div className="space-y-6">
+                                    {doctors.map(doctor => <DoctorCard key={doctor._id} doctor={doctor} />)}
+                                </div>
+                            ) : (
+                                <MapComponent 
+                                    doctors={doctors} 
+                                    userLocation={userLocation}
+                                    filteredByLocation={locationFilterEnabled}
+                                />
+                            )}
+                            
+                            {/* Pagination - Only show in list view */}
+                            {viewMode === 'list' && pagination.totalPages > 1 && (
+                                <div className="flex justify-center items-center space-x-4 mt-8">
+                                    <button
+                                        onClick={() => fetchDoctors(filters, pagination.currentPage - 1)}
+                                        disabled={!pagination.hasPrevPage}
+                                        className="px-4 py-2 bg-accent-blue text-white rounded disabled:opacity-50 disabled:cursor-not-allowed"
+                                    >
+                                        Previous
+                                    </button>
+                                    <span className="text-gray-600 dark:text-gray-300">
+                                        Page {pagination.currentPage} of {pagination.totalPages}
+                                    </span>
+                                    <button
+                                        onClick={() => fetchDoctors(filters, pagination.currentPage + 1)}
+                                        disabled={!pagination.hasNextPage}
+                                        className="px-4 py-2 bg-accent-blue text-white rounded disabled:opacity-50 disabled:cursor-not-allowed"
+                                    >
+                                        Next
+                                    </button>
+                                </div>
+                            )}
                         </div>
                     ) : (
                         <div className="text-center bg-white dark:bg-secondary-dark p-10 rounded-lg">
                             <p className="text-black dark:text-secondary-text text-xl">No doctors found matching your criteria.</p>
+                            {locationFilterEnabled && (
+                                <p className="text-gray-600 dark:text-gray-400 text-sm mt-2">
+                                    Try increasing your search radius or disabling location filter.
+                                </p>
+                            )}
                         </div>
                     )}
                 </main>

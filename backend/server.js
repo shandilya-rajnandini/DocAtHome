@@ -45,14 +45,26 @@ app.get('/uploads/:bucket/:file', protect, async (req, res) => {
 
 // API Routes
 app.use('/api/auth', require('./routes/authRoutes'));
-// ... (all your other app.use routes) ...
+app.use('/api/admin', require('./routes/adminRoutes'));
+app.use('/api/announcements', require('./routes/announcementRoutes'));
+app.use('/api/appointments', require('./routes/appointmentRoutes'));
+app.use('/api/availability', require('./routes/availabilityRoutes'));
+app.use('/api/care-circle', require('./routes/careCircle'));
+app.use('/api/doctors', require('./routes/doctorRoutes'));
 app.use('/api/lab-tests', require('./routes/labTestRoutes'));
-
+app.use('/api/nurses', require('./routes/nurseRoutes'));
 app.use('/api/notifications', require('./routes/notificationRoutes'));
-app.use('/api/video-calls', require('./routes/videoCallRoutes'));
+app.use('/api/payment', require('./routes/paymentRoutes'));
+app.use('/api/prescriptions', require('./routes/PrescriptionRoutes'));
+app.use('/api/profile', require('./routes/profileRoutes'));
+app.use('/api/quests', require('./routes/questRoutes'));
+app.use('/api/reviews', require('./routes/reviewRoutes'));
+app.use('/api/subscriptions', require('./routes/subscriptionRoutes'));
 app.use('/api/support', require('./routes/supportRoutes'));
 app.use('/api/second-opinions', require('./routes/secondOpinionRoutes'));
 app.use('/api/discharge-concierge', require('./routes/dischargeConciergeRoutes'));
+app.use('/api/video-calls', require('./routes/videoCallRoutes'));
+app.use('/api/two-factor-auth', require('./routes/twoFactorAuthRoutes'));
 
 // Health Check
 app.get('/health', (req, res) => res.status(200).send('OK'));

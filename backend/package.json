@@ -19,6 +19,7 @@
     "@faker-js/faker": "^9.9.0",
     "@google/generative-ai": "^0.24.1",
     "@sendgrid/mail": "^8.1.5",
+    "axios": "^1.12.2",
     "bcryptjs": "^3.0.2",
     "cors": "^2.8.5",
     "dotenv": "^17.0.0",
@@ -32,12 +33,12 @@
     "multer": "^2.0.2",
     "node-cron": "^4.2.1",
     "nodemailer": "^7.0.5",
+    "pdfkit": "^0.13.0",
     "qrcode": "^1.5.4",
     "razorpay": "^2.9.6",
     "socket.io": "^4.8.1",
     "speakeasy": "^2.0.0",
-    "winston": "^3.17.0",
-    "pdfkit": "^0.13.0"
+    "winston": "^3.17.0"
   },
   "devDependencies": {
     "eslint": "^9.33.0",
