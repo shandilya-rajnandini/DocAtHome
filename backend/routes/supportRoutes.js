@@ -14,7 +14,7 @@ const {
   moderateMessage,
   getUserMemberships
 } = require('../controllers/supportController');
-const { protect, authorize } = require('../middleware/authMiddleware');
+const { protect } = require('../middleware/authMiddleware');
 
 // Public routes (no auth required)
 router.get('/groups', getSupportGroups);

@@ -18,7 +18,6 @@ const VerticalStatCard = ({ value, label, currency = '', icon }) => (
 const TechnicianDashboard = () => {
     const { user } = useAuth();
     const [labTests, setLabTests] = useState([]);
-    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const fetchLabTests = async () => {
@@ -27,8 +26,6 @@ const TechnicianDashboard = () => {
                 setLabTests(data.data);
             } catch (error) {
                 console.error('Error fetching lab tests:', error);
-            } finally {
-                setLoading(false);
             }
         };
 
