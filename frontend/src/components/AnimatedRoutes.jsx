@@ -69,13 +69,18 @@ import SecondOpinionRequest from "../pages/SecondOpinionRequest.jsx";
 import MySecondOpinions from "../pages/MySecondOpinions.jsx";
 import SpecialistSecondOpinions from "../pages/SpecialistSecondOpinions.jsx";
 
+// Forum Pages
+import ForumPage from "../pages/ForumPage.jsx";
+import AskQuestionPage from "../pages/AskQuestionPage.jsx";
+import QuestionDetailPage from "../pages/QuestionDetailPage.jsx";
+
 const AnimatedRoutes = () => {
   const location = useLocation();
 
   return (
     <AnimatePresence mode="wait" initial={false}>
       {/* scroll to top on every navigation */}
-     <ScrollToUp/>
+      <ScrollToUp />
       <Routes location={location} key={location.pathname}>
         {/* --- Public Routes --- */}
         <Route
@@ -515,7 +520,7 @@ const AnimatedRoutes = () => {
           path="/nurse/moderation"
           element={
             <AnimatedPage>
-              <ProtectedRoute roles={['nurse', 'admin']}>
+              <ProtectedRoute roles={["nurse", "admin"]}>
                 <NurseModerationDashboard />
               </ProtectedRoute>
             </AnimatedPage>
@@ -561,8 +566,35 @@ const AnimatedRoutes = () => {
             </AnimatedPage>
           }
         />
-      </Routes>
 
+        {/* --- Forum Routes --- */}
+        <Route
+          path="/forum"
+          element={
+            <AnimatedPage>
+              <ForumPage />
+            </AnimatedPage>
+          }
+        />
+        <Route
+          path="/forum/ask"
+          element={
+            <AnimatedPage>
+              <ProtectedRoute>
+                <AskQuestionPage />
+              </ProtectedRoute>
+            </AnimatedPage>
+          }
+        />
+        <Route
+          path="/forum/question/:questionId"
+          element={
+            <AnimatedPage>
+              <QuestionDetailPage />
+            </AnimatedPage>
+          }
+        />
+      </Routes>
     </AnimatePresence>
   );
 };

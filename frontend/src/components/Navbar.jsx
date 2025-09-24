@@ -32,7 +32,7 @@ const Navbar = () => {
       setHasNewNotification(true);
       fetchNotifications();
     });
-  
+
     // Initial fetch of unread notifications
     fetchNotifications();
 
@@ -64,13 +64,16 @@ const Navbar = () => {
   // Mark a notification as read and navigate
   const handleNotificationClick = async (notification) => {
     try {
-      const res = await fetch(`/api/notifications/${notification._id}/mark-read`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`, // adjust accordingly
-        },
-      });
+      const res = await fetch(
+        `/api/notifications/${notification._id}/mark-read`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`, // adjust accordingly
+          },
+        }
+      );
       if (res.ok) {
         // Remove from unread list
         setNotifications((prev) =>
@@ -98,10 +101,7 @@ const Navbar = () => {
   // Close dropdown if clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(event.target)
-      ) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         setDropdownOpen(false);
       }
     };
@@ -110,7 +110,6 @@ const Navbar = () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
-
 
   useEffect(() => {
     const html = document.documentElement;
@@ -132,7 +131,6 @@ const Navbar = () => {
   const toggleMenu = () => {
     setIsOpen(!isOpen);
   };
-
 
   return (
     <nav className="fixed top-0 left-0 w-full z-50 backdrop-blur-lg bg-[#0d172a]/70 dark:bg-secondary-dark/70 shadow-lg transition-colors mb-20">
@@ -167,6 +165,13 @@ const Navbar = () => {
             Ambulance
             <span className="absolute left-0 bottom-0 w-0 h-[2px] bg-accent-blue transition-all duration-300 group-hover:w-full"></span>
           </Link>
+          <Link
+            to="/forum"
+            className="hover:text-accent-blue relative group transition"
+          >
+            Health Forum
+            <span className="absolute left-0 bottom-0 w-0 h-[2px] bg-accent-blue transition-all duration-300 group-hover:w-full"></span>
+          </Link>
           {user && user.role === "patient" && (
             <Link
               to="/health-quests"
@@ -178,7 +183,7 @@ const Navbar = () => {
           )}
           {user ? (
             <>
-            <span className="text-white">Welcome, {user.name}</span>
+              <span className="text-white">Welcome, {user.name}</span>
               <button
                 onClick={handleLogout}
                 className="bg-red-600 px-4 py-2 rounded hover:bg-red-700 transition-colors text-white dark:text-black"
@@ -271,7 +276,7 @@ const Navbar = () => {
             )}
           </div>
         )}
-        
+
         {/* Mobile Hamburger */}
         <div className="md:hidden ml-auto">
           <button
@@ -308,6 +313,7 @@ const Navbar = () => {
           {[
             { to: "/search", label: "Search Doctors" },
             { to: "/book-ambulance", label: "Ambulance" },
+            { to: "/forum", label: "Health Forum" },
             ...(user && user.role === "patient"
               ? [{ to: "/health-quests", label: "Health Quests" }]
               : []),
