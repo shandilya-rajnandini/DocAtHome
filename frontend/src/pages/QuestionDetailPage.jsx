@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import {
@@ -8,7 +8,7 @@ import {
   voteOnAnswer,
   acceptAnswer,
 } from "../api";
-import { motion } from "framer-motion";
+import { motion } from "framer-motion"; // eslint-disable-line no-unused-vars
 import {
   ArrowLeftIcon,
   HandThumbUpIcon,
@@ -41,11 +41,7 @@ const QuestionDetailPage = () => {
   const [answerText, setAnswerText] = useState("");
   const [submittingAnswer, setSubmittingAnswer] = useState(false);
 
-  useEffect(() => {
-    fetchQuestion();
-  }, [questionId]);
-
-  const fetchQuestion = async () => {
+  const fetchQuestion = useCallback(async () => {
     try {
       setLoading(true);
       const response = await getForumQuestion(questionId);
@@ -65,7 +61,11 @@ const QuestionDetailPage = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [questionId, navigate]);
+
+  useEffect(() => {
+    fetchQuestion();
+  }, [fetchQuestion]);
 
   const handleVoteQuestion = async (voteType) => {
     if (!user) {

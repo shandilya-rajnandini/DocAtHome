@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from "react";
-import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import React, { useState, useEffect, useCallback } from "react";
+import { Link, useSearchParams } from "react-router-dom";
 import { getForumQuestions } from "../api";
 import {
   PlusIcon,
@@ -13,16 +13,15 @@ import {
   TrophyIcon,
   QuestionMarkCircleIcon,
 } from "@heroicons/react/24/outline";
-import { motion } from "framer-motion";
+import { motion } from "framer-motion"; // eslint-disable-line no-unused-vars
 
 const ForumPage = () => {
   const [questions, setQuestions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [pagination, setPagination] = useState({});
-  const [filters, setFilters] = useState({});
+  const [filters, setFilters] = useState({}); // eslint-disable-line no-unused-vars
   const [searchParams, setSearchParams] = useSearchParams();
-  const navigate = useNavigate();
 
   // Get current filters from URL parameters
   const currentPage = parseInt(searchParams.get("page")) || 1;
@@ -82,11 +81,7 @@ const ForumPage = () => {
     { value: "closed", label: "Closed" },
   ];
 
-  useEffect(() => {
-    fetchQuestions();
-  }, [searchParams]);
-
-  const fetchQuestions = async () => {
+  const fetchQuestions = useCallback(async () => {
     try {
       setLoading(true);
       const params = {
@@ -120,7 +115,11 @@ const ForumPage = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [currentPage, currentCategory, currentStatus, currentSortBy, currentSearch, currentTags]);
+
+  useEffect(() => {
+    fetchQuestions();
+  }, [fetchQuestions]);
 
   const updateFilters = (newFilters) => {
     const params = new URLSearchParams(searchParams);
