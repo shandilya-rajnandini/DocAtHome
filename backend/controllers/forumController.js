@@ -1,17 +1,15 @@
-const Question = require("../models/Question");
-const Answer = require("../models/Answer");
-const User = require("../models/User");
-const Notification = require("../models/Notification");
-const socketManager = require("../utils/socketManager");
+const Question = require('../models/Question');
+const Answer = require('../models/Answer');
+const User = require('../models/User');
+const Notification = require('../models/Notification');
+const socketManager = require('../utils/socketManager');
 
 const {
   catchAsync,
   AppError,
   ValidationError,
   NotFoundError,
-  ConflictError,
-} = require("../middleware/errorHandler");
-const asyncHandler = require("../middleware/asyncHandler");
+} = require('../middleware/errorHandler');
 
 // @desc    Get all questions with pagination and filtering
 // @route   GET /api/forum/questions
@@ -22,7 +20,7 @@ exports.getQuestions = catchAsync(async (req, res, next) => {
     limit = 10,
     category,
     status,
-    sortBy = "recent",
+    sortBy = 'recent',
     search,
     tags,
   } = req.query;
@@ -30,16 +28,16 @@ exports.getQuestions = catchAsync(async (req, res, next) => {
   // Build filter object
   const filter = { isVisible: true };
 
-  if (category && category !== "all") {
+  if (category && category !== 'all') {
     filter.category = category;
   }
 
-  if (status && status !== "all") {
+  if (status && status !== 'all') {
     filter.status = status;
   }
 
   if (tags) {
-    const tagArray = Array.isArray(tags) ? tags : tags.split(",");
+    const tagArray = Array.isArray(tags) ? tags : tags.split(',');
     filter.tags = { $in: tagArray.map((tag) => tag.trim().toLowerCase()) };
   }
 
@@ -51,19 +49,19 @@ exports.getQuestions = catchAsync(async (req, res, next) => {
   // Build sort object
   let sortOptions = {};
   switch (sortBy) {
-    case "recent":
+    case 'recent':
       sortOptions = { lastActivity: -1 };
       break;
-    case "oldest":
+    case 'oldest':
       sortOptions = { createdAt: 1 };
       break;
-    case "most-viewed":
+    case 'most-viewed':
       sortOptions = { views: -1 };
       break;
-    case "most-answers":
+    case 'most-answers':
       sortOptions = { answerCount: -1 };
       break;
-    case "unanswered":
+    case 'unanswered':
       filter.answerCount = 0;
       sortOptions = { createdAt: -1 };
       break;
@@ -79,8 +77,8 @@ exports.getQuestions = catchAsync(async (req, res, next) => {
     // Execute queries in parallel for better performance
     const [questions, totalCount] = await Promise.all([
       Question.find(filter)
-        .populate("author", "name role isVerified profilePictureUrl specialty")
-        .select("-upvotes -downvotes") // Exclude vote details for list view
+        .populate('author', 'name role isVerified profilePictureUrl specialty')
+        .select('-upvotes -downvotes') // Exclude vote details for list view
         .sort(sortOptions)
         .skip(skip)
         .limit(pageLimit)
@@ -113,18 +111,18 @@ exports.getQuestions = catchAsync(async (req, res, next) => {
           limit: pageLimit,
         },
         filters: {
-          category: category || "all",
-          status: status || "all",
+          category: category || 'all',
+          status: status || 'all',
           sortBy,
-          search: search || "",
+          search: search || '',
           tags: tags || [],
         },
       },
-      message: `Found ${totalCount} question${totalCount !== 1 ? "s" : ""}`,
+      message: `Found ${totalCount} question${totalCount !== 1 ? 's' : ''}`,
     });
   } catch (error) {
-    console.error("Error fetching questions:", error);
-    return next(new AppError("Failed to fetch questions", 500));
+    console.error('Error fetching questions:', error);
+    return next(new AppError('Failed to fetch questions', 500));
   }
 });
 
@@ -139,13 +137,13 @@ exports.getQuestion = catchAsync(async (req, res, next) => {
     // Find the question and increment views
     const question = await Question.findById(questionId)
       .populate(
-        "author",
-        "name role isVerified profilePictureUrl specialty experience city"
+        'author',
+        'name role isVerified profilePictureUrl specialty experience city'
       )
       .lean();
 
     if (!question || !question.isVisible) {
-      return next(new NotFoundError("Question not found"));
+      return next(new NotFoundError('Question not found'));
     }
 
     // Increment view count (fire and forget)
@@ -157,8 +155,8 @@ exports.getQuestion = catchAsync(async (req, res, next) => {
       isVisible: true,
     })
       .populate(
-        "author",
-        "name role isVerified profilePictureUrl specialty experience city"
+        'author',
+        'name role isVerified profilePictureUrl specialty experience city'
       )
       .sort({ isAccepted: -1, createdAt: -1 }) // Accepted answers first, then by creation time
       .lean();
@@ -174,7 +172,7 @@ exports.getQuestion = catchAsync(async (req, res, next) => {
       canDelete:
         userId &&
         (question.author._id.toString() === userId ||
-          req.user?.role === "admin"),
+          req.user?.role === 'admin'),
     };
 
     const enrichedAnswers = answers.map((answer) => ({
@@ -185,7 +183,7 @@ exports.getQuestion = catchAsync(async (req, res, next) => {
       canEdit: userId && answer.author._id.toString() === userId,
       canDelete:
         userId &&
-        (answer.author._id.toString() === userId || req.user?.role === "admin"),
+        (answer.author._id.toString() === userId || req.user?.role === 'admin'),
       canAccept:
         userId &&
         question.author._id.toString() === userId &&
@@ -205,8 +203,8 @@ exports.getQuestion = catchAsync(async (req, res, next) => {
       },
     });
   } catch (error) {
-    console.error("Error fetching question:", error);
-    return next(new AppError("Failed to fetch question", 500));
+    console.error('Error fetching question:', error);
+    return next(new AppError('Failed to fetch question', 500));
   }
 });
 
@@ -224,19 +222,19 @@ exports.createQuestion = catchAsync(async (req, res, next) => {
       body: body.trim(),
       author: userId,
       tags: tags ? tags.map((tag) => tag.trim().toLowerCase()) : [],
-      category: category || "general",
+      category: category || 'general',
     });
 
     // Populate author details for response
     const populatedQuestion = await Question.findById(question._id)
-      .populate("author", "name role isVerified profilePictureUrl specialty")
+      .populate('author', 'name role isVerified profilePictureUrl specialty')
       .lean();
 
     // Send notification to verified professionals in relevant specialty (async)
-    if (category !== "general") {
+    if (category !== 'general') {
       notifyRelevantProfessionals(question._id, category, title).catch(
         (error) => {
-          console.error("Error sending notifications to professionals:", error);
+          console.error('Error sending notifications to professionals:', error);
         }
       );
     }
@@ -249,11 +247,11 @@ exports.createQuestion = catchAsync(async (req, res, next) => {
         score: 0,
         userVote: null,
       },
-      message: "Question posted successfully",
+      message: 'Question posted successfully',
     });
   } catch (error) {
-    console.error("Error creating question:", error);
-    return next(new AppError("Failed to create question", 500));
+    console.error('Error creating question:', error);
+    return next(new AppError('Failed to create question', 500));
   }
 });
 
@@ -268,16 +266,16 @@ exports.createAnswer = catchAsync(async (req, res, next) => {
   try {
     // Check if question exists and is open
     const question = await Question.findById(questionId).select(
-      "status author title isVisible"
+      'status author title isVisible'
     );
 
     if (!question || !question.isVisible) {
-      return next(new NotFoundError("Question not found"));
+      return next(new NotFoundError('Question not found'));
     }
 
-    if (question.status === "closed") {
+    if (question.status === 'closed') {
       return next(
-        new ValidationError("This question is closed for new answers")
+        new ValidationError('This question is closed for new answers')
       );
     }
 
@@ -291,15 +289,13 @@ exports.createAnswer = catchAsync(async (req, res, next) => {
     // Populate author details for response
     const populatedAnswer = await Answer.findById(answer._id)
       .populate(
-        "author",
-        "name role isVerified profilePictureUrl specialty experience city"
+        'author',
+        'name role isVerified profilePictureUrl specialty experience city'
       )
       .lean();
 
     // Send notification to question author (async)
     if (question.author.toString() !== userId) {
-      const authorUser = await User.findById(question.author).select("name");
-
       await Notification.create({
         userId: question.author,
         message: `${req.user.name} answered your question "${question.title}"`,
@@ -308,7 +304,7 @@ exports.createAnswer = catchAsync(async (req, res, next) => {
       });
 
       // Emit real-time notification
-      socketManager.emitToRoom(question.author.toString(), "new_notification", {
+      socketManager.emitToRoom(question.author.toString(), 'new_notification', {
         message: `${req.user.name} answered your question "${question.title}"`,
         link: `/forum/question/${questionId}`,
       });
@@ -325,11 +321,11 @@ exports.createAnswer = catchAsync(async (req, res, next) => {
         canDelete: true,
         canAccept: false,
       },
-      message: "Answer posted successfully",
+      message: 'Answer posted successfully',
     });
   } catch (error) {
-    console.error("Error creating answer:", error);
-    return next(new AppError("Failed to create answer", 500));
+    console.error('Error creating answer:', error);
+    return next(new AppError('Failed to create answer', 500));
   }
 });
 
@@ -345,24 +341,24 @@ exports.voteQuestion = catchAsync(async (req, res, next) => {
     const question = await Question.findById(questionId);
 
     if (!question || !question.isVisible) {
-      return next(new NotFoundError("Question not found"));
+      return next(new NotFoundError('Question not found'));
     }
 
     // Prevent users from voting on their own questions
     if (question.author.toString() === userId) {
-      return next(new ValidationError("You cannot vote on your own question"));
+      return next(new ValidationError('You cannot vote on your own question'));
     }
 
     // Apply the vote
-    if (voteType === "upvote") {
+    if (voteType === 'upvote') {
       await question.addUpvote(userId);
-    } else if (voteType === "downvote") {
+    } else if (voteType === 'downvote') {
       await question.addDownvote(userId);
     }
 
     // Refresh question data
     const updatedQuestion = await Question.findById(questionId)
-      .select("upvotes downvotes")
+      .select('upvotes downvotes')
       .lean();
 
     const score =
@@ -378,8 +374,8 @@ exports.voteQuestion = catchAsync(async (req, res, next) => {
       message: `Question ${voteType}d successfully`,
     });
   } catch (error) {
-    console.error("Error voting on question:", error);
-    return next(new AppError("Failed to vote on question", 500));
+    console.error('Error voting on question:', error);
+    return next(new AppError('Failed to vote on question', 500));
   }
 });
 
@@ -395,24 +391,24 @@ exports.voteAnswer = catchAsync(async (req, res, next) => {
     const answer = await Answer.findById(answerId);
 
     if (!answer || !answer.isVisible) {
-      return next(new NotFoundError("Answer not found"));
+      return next(new NotFoundError('Answer not found'));
     }
 
     // Prevent users from voting on their own answers
     if (answer.author.toString() === userId) {
-      return next(new ValidationError("You cannot vote on your own answer"));
+      return next(new ValidationError('You cannot vote on your own answer'));
     }
 
     // Apply the vote
-    if (voteType === "upvote") {
+    if (voteType === 'upvote') {
       await answer.addUpvote(userId);
-    } else if (voteType === "downvote") {
+    } else if (voteType === 'downvote') {
       await answer.addDownvote(userId);
     }
 
     // Refresh answer data
     const updatedAnswer = await Answer.findById(answerId)
-      .select("upvotes downvotes")
+      .select('upvotes downvotes')
       .lean();
 
     const score = updatedAnswer.upvotes.length - updatedAnswer.downvotes.length;
@@ -427,8 +423,8 @@ exports.voteAnswer = catchAsync(async (req, res, next) => {
       message: `Answer ${voteType}d successfully`,
     });
   } catch (error) {
-    console.error("Error voting on answer:", error);
-    return next(new AppError("Failed to vote on answer", 500));
+    console.error('Error voting on answer:', error);
+    return next(new AppError('Failed to vote on answer', 500));
   }
 });
 
@@ -441,23 +437,23 @@ exports.acceptAnswer = catchAsync(async (req, res, next) => {
 
   try {
     const answer = await Answer.findById(answerId)
-      .populate("question", "author status")
-      .populate("author", "name");
+      .populate('question', 'author status')
+      .populate('author', 'name');
 
     if (!answer || !answer.isVisible) {
-      return next(new NotFoundError("Answer not found"));
+      return next(new NotFoundError('Answer not found'));
     }
 
     // Only question author can accept answers
     if (answer.question.author.toString() !== userId) {
       return next(
-        new ValidationError("Only the question author can accept answers")
+        new ValidationError('Only the question author can accept answers')
       );
     }
 
     // Check if question is still open for acceptance
-    if (answer.question.status === "closed") {
-      return next(new ValidationError("This question is closed"));
+    if (answer.question.status === 'closed') {
+      return next(new ValidationError('This question is closed'));
     }
 
     // Unaccept any previously accepted answers for this question
@@ -471,7 +467,7 @@ exports.acceptAnswer = catchAsync(async (req, res, next) => {
 
     // Update question status to answered
     await Question.findByIdAndUpdate(answer.question._id, {
-      status: "answered",
+      status: 'answered',
       lastActivity: new Date(),
     });
 
@@ -487,7 +483,7 @@ exports.acceptAnswer = catchAsync(async (req, res, next) => {
       // Emit real-time notification
       socketManager.emitToRoom(
         answer.author._id.toString(),
-        "new_notification",
+        'new_notification',
         {
           message: `Your answer has been accepted by ${req.user.name}`,
           link: `/forum/question/${answer.question._id}`,
@@ -501,11 +497,11 @@ exports.acceptAnswer = catchAsync(async (req, res, next) => {
         isAccepted: true,
         acceptedAt: answer.acceptedAt,
       },
-      message: "Answer accepted successfully",
+      message: 'Answer accepted successfully',
     });
   } catch (error) {
-    console.error("Error accepting answer:", error);
-    return next(new AppError("Failed to accept answer", 500));
+    console.error('Error accepting answer:', error);
+    return next(new AppError('Failed to accept answer', 500));
   }
 });
 
@@ -518,13 +514,13 @@ function getTimeAgo(date) {
   const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
 
   if (diffMinutes < 1) {
-    return "just now";
+    return 'just now';
   } else if (diffMinutes < 60) {
-    return `${diffMinutes} minute${diffMinutes !== 1 ? "s" : ""} ago`;
+    return `${diffMinutes} minute${diffMinutes !== 1 ? 's' : ''} ago`;
   } else if (diffHours < 24) {
-    return `${diffHours} hour${diffHours !== 1 ? "s" : ""} ago`;
+    return `${diffHours} hour${diffHours !== 1 ? 's' : ''} ago`;
   } else if (diffDays < 30) {
-    return `${diffDays} day${diffDays !== 1 ? "s" : ""} ago`;
+    return `${diffDays} day${diffDays !== 1 ? 's' : ''} ago`;
   } else {
     return new Date(date).toLocaleDateString();
   }
@@ -541,8 +537,8 @@ function getUserVote(item, userId) {
     (vote) => vote.user.toString() === userId
   );
 
-  if (hasUpvoted) return "upvote";
-  if (hasDownvoted) return "downvote";
+  if (hasUpvoted) return 'upvote';
+  if (hasDownvoted) return 'downvote';
   return null;
 }
 
@@ -551,12 +547,12 @@ async function notifyRelevantProfessionals(questionId, category, title) {
   try {
     // Map categories to specialties
     const categorySpecialtyMap = {
-      nutrition: ["Nutritionist", "Dietitian"],
-      "mental-health": ["Psychiatrist", "Psychologist"],
-      "chronic-conditions": ["Internal Medicine", "Family Medicine"],
-      "women-health": ["Gynecologist", "Obstetrician"],
-      pediatrics: ["Pediatrician"],
-      "elderly-care": ["Geriatrician", "Family Medicine"],
+      nutrition: ['Nutritionist', 'Dietitian'],
+      'mental-health': ['Psychiatrist', 'Psychologist'],
+      'chronic-conditions': ['Internal Medicine', 'Family Medicine'],
+      'women-health': ['Gynecologist', 'Obstetrician'],
+      pediatrics: ['Pediatrician'],
+      'elderly-care': ['Geriatrician', 'Family Medicine'],
     };
 
     const relevantSpecialties = categorySpecialtyMap[category] || [];
@@ -564,11 +560,11 @@ async function notifyRelevantProfessionals(questionId, category, title) {
     if (relevantSpecialties.length > 0) {
       // Find verified professionals with relevant specialties
       const professionals = await User.find({
-        role: { $in: ["doctor", "nurse"] },
+        role: { $in: ['doctor', 'nurse'] },
         isVerified: true,
         specialty: { $in: relevantSpecialties },
       })
-        .select("_id name")
+        .select('_id name')
         .limit(10); // Limit to avoid spam
 
       // Create notifications for each professional
@@ -584,7 +580,7 @@ async function notifyRelevantProfessionals(questionId, category, title) {
 
         // Send real-time notifications
         professionals.forEach((prof) => {
-          socketManager.emitToRoom(prof._id.toString(), "new_notification", {
+          socketManager.emitToRoom(prof._id.toString(), 'new_notification', {
             message: `New question in ${category}: "${title}"`,
             link: `/forum/question/${questionId}`,
           });
@@ -592,6 +588,6 @@ async function notifyRelevantProfessionals(questionId, category, title) {
       }
     }
   } catch (error) {
-    console.error("Error notifying professionals:", error);
+    console.error('Error notifying professionals:', error);
   }
 }

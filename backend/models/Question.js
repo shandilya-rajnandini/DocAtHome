@@ -1,24 +1,24 @@
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
 
 const QuestionSchema = new mongoose.Schema(
   {
     title: {
       type: String,
-      required: [true, "Please provide a title for your question"],
+      required: [true, 'Please provide a title for your question'],
       trim: true,
-      maxlength: [200, "Title cannot exceed 200 characters"],
-      minlength: [10, "Title must be at least 10 characters long"],
+      maxlength: [200, 'Title cannot exceed 200 characters'],
+      minlength: [10, 'Title must be at least 10 characters long'],
     },
     body: {
       type: String,
-      required: [true, "Please provide a description for your question"],
+      required: [true, 'Please provide a description for your question'],
       trim: true,
-      maxlength: [2000, "Question body cannot exceed 2000 characters"],
-      minlength: [20, "Question body must be at least 20 characters long"],
+      maxlength: [2000, 'Question body cannot exceed 2000 characters'],
+      minlength: [20, 'Question body must be at least 20 characters long'],
     },
     author: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
+      ref: 'User',
       required: true,
     },
     tags: [
@@ -26,30 +26,30 @@ const QuestionSchema = new mongoose.Schema(
         type: String,
         trim: true,
         lowercase: true,
-        maxlength: [30, "Each tag cannot exceed 30 characters"],
+        maxlength: [30, 'Each tag cannot exceed 30 characters'],
       },
     ],
     category: {
       type: String,
       enum: [
-        "general",
-        "nutrition",
-        "fitness",
-        "mental-health",
-        "chronic-conditions",
-        "women-health",
-        "pediatrics",
-        "elderly-care",
-        "medication",
-        "symptoms",
-        "prevention",
+        'general',
+        'nutrition',
+        'fitness',
+        'mental-health',
+        'chronic-conditions',
+        'women-health',
+        'pediatrics',
+        'elderly-care',
+        'medication',
+        'symptoms',
+        'prevention',
       ],
-      default: "general",
+      default: 'general',
     },
     status: {
       type: String,
-      enum: ["open", "answered", "closed"],
-      default: "open",
+      enum: ['open', 'answered', 'closed'],
+      default: 'open',
     },
     views: {
       type: Number,
@@ -59,7 +59,7 @@ const QuestionSchema = new mongoose.Schema(
       {
         user: {
           type: mongoose.Schema.Types.ObjectId,
-          ref: "User",
+          ref: 'User',
         },
         upvotedAt: {
           type: Date,
@@ -71,7 +71,7 @@ const QuestionSchema = new mongoose.Schema(
       {
         user: {
           type: mongoose.Schema.Types.ObjectId,
-          ref: "User",
+          ref: 'User',
         },
         downvotedAt: {
           type: Date,
@@ -93,11 +93,11 @@ const QuestionSchema = new mongoose.Schema(
     },
     moderatedBy: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
+      ref: 'User',
     },
     moderationReason: {
       type: String,
-      maxlength: [500, "Moderation reason cannot exceed 500 characters"],
+      maxlength: [500, 'Moderation reason cannot exceed 500 characters'],
     },
     isVisible: {
       type: Boolean,
@@ -112,15 +112,15 @@ const QuestionSchema = new mongoose.Schema(
 );
 
 // Virtual for net votes (upvotes - downvotes)
-QuestionSchema.virtual("score").get(function () {
+QuestionSchema.virtual('score').get(function () {
   return this.upvotes.length - this.downvotes.length;
 });
 
 // Virtual to populate answers count
-QuestionSchema.virtual("answers", {
-  ref: "Answer",
-  localField: "_id",
-  foreignField: "question",
+QuestionSchema.virtual('answers', {
+  ref: 'Answer',
+  localField: '_id',
+  foreignField: 'question',
   count: true,
 });
 
@@ -132,15 +132,15 @@ QuestionSchema.index({ lastActivity: -1 });
 QuestionSchema.index({ views: -1 });
 QuestionSchema.index({ createdAt: -1 });
 QuestionSchema.index({ tags: 1 });
-QuestionSchema.index({ "upvotes.user": 1 });
-QuestionSchema.index({ "downvotes.user": 1 });
+QuestionSchema.index({ 'upvotes.user': 1 });
+QuestionSchema.index({ 'downvotes.user': 1 });
 
 // Text index for search functionality
 QuestionSchema.index(
   {
-    title: "text",
-    body: "text",
-    tags: "text",
+    title: 'text',
+    body: 'text',
+    tags: 'text',
   },
   {
     weights: {
@@ -152,7 +152,7 @@ QuestionSchema.index(
 );
 
 // Middleware to update lastActivity when question is modified
-QuestionSchema.pre("save", function (next) {
+QuestionSchema.pre('save', function (next) {
   if (this.isModified() && !this.isNew) {
     this.lastActivity = new Date();
   }
@@ -215,4 +215,4 @@ QuestionSchema.methods.addDownvote = function (userId) {
   return this.save();
 };
 
-module.exports = mongoose.model("Question", QuestionSchema);
+module.exports = mongoose.model('Question', QuestionSchema);

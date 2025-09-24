@@ -1,5 +1,5 @@
-const Joi = require("joi");
-const { ValidationError, logger } = require("./errorHandler");
+const Joi = require('joi');
+const { ValidationError, logger } = require('./errorHandler');
 
 /**
  * CRITICAL SECURITY ISSUE #8: API INPUT VALIDATION
@@ -46,9 +46,9 @@ const secureString = (min = 1, max = 255) =>
     .pattern(/^[^<>{}]*$/) // Prevent basic XSS patterns
     .trim()
     .messages({
-      "string.pattern.base": "Input contains potentially dangerous characters",
-      "string.min": `Must be at least ${min} characters long`,
-      "string.max": `Must not exceed ${max} characters`,
+      'string.pattern.base': 'Input contains potentially dangerous characters',
+      'string.min': `Must be at least ${min} characters long`,
+      'string.max': `Must not exceed ${max} characters`,
     });
 
 /**
@@ -60,8 +60,8 @@ const secureText = (max = 2000) =>
     .pattern(/^[^<>{}]*$/)
     .trim()
     .messages({
-      "string.pattern.base": "Text contains potentially dangerous characters",
-      "string.max": `Text must not exceed ${max} characters`,
+      'string.pattern.base': 'Text contains potentially dangerous characters',
+      'string.max': `Text must not exceed ${max} characters`,
     });
 
 /**
@@ -69,7 +69,7 @@ const secureText = (max = 2000) =>
  */
 const objectId = () =>
   Joi.string().pattern(patterns.objectId).messages({
-    "string.pattern.base": "Invalid ID format",
+    'string.pattern.base': 'Invalid ID format',
   });
 
 /**
@@ -84,7 +84,7 @@ const authSchemas = {
       .lowercase()
       .required()
       .messages({
-        "string.email": "Please provide a valid email address",
+        'string.email': 'Please provide a valid email address',
       }),
     password: Joi.string()
       .min(8)
@@ -92,20 +92,20 @@ const authSchemas = {
       .pattern(patterns.strongPassword)
       .required()
       .messages({
-        "string.min": "Password must be at least 8 characters long",
-        "string.pattern.base":
-          "Password must contain at least one uppercase letter, lowercase letter, number, and special character",
+        'string.min': 'Password must be at least 8 characters long',
+        'string.pattern.base':
+          'Password must contain at least one uppercase letter, lowercase letter, number, and special character',
       }),
-    role: Joi.string().valid("patient", "doctor", "nurse").default("patient"),
+    role: Joi.string().valid('patient', 'doctor', 'nurse').default('patient'),
     specialty: Joi.string()
       .max(100)
-      .when("role", {
-        is: Joi.valid("doctor", "nurse"),
+      .when('role', {
+        is: Joi.valid('doctor', 'nurse'),
         then: Joi.required(),
         otherwise: Joi.forbidden(),
       }),
-    city: secureString(2, 50).when("role", {
-      is: Joi.valid("doctor", "nurse"),
+    city: secureString(2, 50).when('role', {
+      is: Joi.valid('doctor', 'nurse'),
       then: Joi.required(),
       otherwise: Joi.optional(),
     }),
@@ -113,24 +113,24 @@ const authSchemas = {
       .integer()
       .min(1)
       .max(50)
-      .when("role", {
-        is: Joi.valid("doctor", "nurse"),
+      .when('role', {
+        is: Joi.valid('doctor', 'nurse'),
         then: Joi.required(),
         otherwise: Joi.forbidden(),
       })
       .messages({
-        "number.base": "Experience must be a number",
-        "number.integer": "Experience must be a whole number",
-        "number.min": "Experience must be at least 1 year",
-        "number.max": "Experience cannot exceed 50 years",
+        'number.base': 'Experience must be a number',
+        'number.integer': 'Experience must be a whole number',
+        'number.min': 'Experience must be at least 1 year',
+        'number.max': 'Experience cannot exceed 50 years',
       }),
-    licenseNumber: secureString(5, 50).when("role", {
-      is: Joi.valid("doctor", "nurse"),
+    licenseNumber: secureString(5, 50).when('role', {
+      is: Joi.valid('doctor', 'nurse'),
       then: Joi.required(),
       otherwise: Joi.forbidden(),
     }),
-    govId: secureString(5, 50).when("role", {
-      is: Joi.valid("doctor", "nurse"),
+    govId: secureString(5, 50).when('role', {
+      is: Joi.valid('doctor', 'nurse'),
       then: Joi.required(),
       otherwise: Joi.forbidden(),
     }),
@@ -158,9 +158,9 @@ const authSchemas = {
       .pattern(patterns.strongPassword)
       .required()
       .messages({
-        "string.min": "Password must be at least 8 characters long",
-        "string.pattern.base":
-          "Password must contain at least one uppercase letter, lowercase letter, number, and special character",
+        'string.min': 'Password must be at least 8 characters long',
+        'string.pattern.base':
+          'Password must contain at least one uppercase letter, lowercase letter, number, and special character',
       }),
   }),
 
@@ -171,8 +171,8 @@ const authSchemas = {
       .pattern(/^\d{6}$/)
       .required()
       .messages({
-        "string.length": "2FA token must be exactly 6 digits",
-        "string.pattern.base": "2FA token must contain only numbers",
+        'string.length': '2FA token must be exactly 6 digits',
+        'string.pattern.base': '2FA token must contain only numbers',
       }),
   }),
 };
@@ -187,33 +187,33 @@ const appointmentSchemas = {
       .pattern(/^\d{4}-\d{2}-\d{2}$/)
       .required()
       .messages({
-        "string.pattern.base": "Date must be in YYYY-MM-DD format",
+        'string.pattern.base': 'Date must be in YYYY-MM-DD format',
       }),
     appointmentTime: Joi.string()
       .pattern(/^(0?[1-9]|1[0-2]):[0-5][0-9]\s(AM|PM)$/)
       .required()
       .messages({
-        "string.pattern.base": "Time must be in HH:MM AM/PM format",
+        'string.pattern.base': 'Time must be in HH:MM AM/PM format',
       }),
     bookingType: Joi.string()
-      .valid("In-Home Visit", "Video Consultation", "Nurse Assignment")
+      .valid('In-Home Visit', 'Video Consultation', 'Nurse Assignment')
       .required(),
     symptoms: secureText(1000).required(),
-    previousMeds: secureText(500).allow("").optional(),
+    previousMeds: secureText(500).allow('').optional(),
     patientLocation: secureString(5, 200).optional(),
     reportImage: Joi.string().optional(),
     fee: Joi.number().min(0).required(),
     paymentMethod: Joi.string()
-      .valid("careFund", "external", "pending")
-      .default("external")
+      .valid('careFund', 'external', 'pending')
+      .default('external')
       .optional(),
     shareRelayNote: Joi.boolean().default(false),
     sharedRelayNotes: Joi.array()
       .items(
         Joi.object({
-          note: Joi.string().allow(""),
-          doctorName: Joi.string().allow(""),
-          doctorDesignation: Joi.string().allow(""),
+          note: Joi.string().allow(''),
+          doctorName: Joi.string().allow(''),
+          doctorDesignation: Joi.string().allow(''),
         })
       )
       .optional(),
@@ -221,9 +221,9 @@ const appointmentSchemas = {
 
   updateStatus: Joi.object({
     status: Joi.string()
-      .valid("Pending", "Confirmed", "Completed", "Cancelled")
+      .valid('Pending', 'Confirmed', 'Completed', 'Cancelled')
       .required(),
-    doctorNotes: secureText(1000).allow("").optional(),
+    doctorNotes: secureText(1000).allow('').optional(),
   }),
 
   scheduleFollowUp: Joi.object({
@@ -231,9 +231,9 @@ const appointmentSchemas = {
       .pattern(/^\d{4}-\d{2}-\d{2}$/)
       .required()
       .messages({
-        "string.pattern.base": "Date must be in YYYY-MM-DD format",
+        'string.pattern.base': 'Date must be in YYYY-MM-DD format',
       }),
-    note: secureText(1000).allow("").optional(),
+    note: secureText(1000).allow('').optional(),
   }),
 };
 
@@ -247,8 +247,8 @@ const questSchemas = {
     points: Joi.number().integer().min(1).max(1000).required(),
     durationDays: Joi.number().integer().min(1).max(365).required(),
     category: Joi.string()
-      .valid("fitness", "nutrition", "mental-health", "medication", "general")
-      .default("general"),
+      .valid('fitness', 'nutrition', 'mental-health', 'medication', 'general')
+      .default('general'),
   }),
 
   progress: Joi.object({
@@ -269,7 +269,7 @@ const profileSchemas = {
       .pattern(patterns.phoneNumber)
       .optional()
       .messages({
-        "string.pattern.base": "Please provide a valid phone number",
+        'string.pattern.base': 'Please provide a valid phone number',
       }),
   }),
 };
@@ -313,19 +313,19 @@ const forumSchemas = {
     tags: Joi.array().items(secureString(1, 30)).max(5).default([]),
     category: Joi.string()
       .valid(
-        "general",
-        "nutrition",
-        "fitness",
-        "mental-health",
-        "chronic-conditions",
-        "women-health",
-        "pediatrics",
-        "elderly-care",
-        "medication",
-        "symptoms",
-        "prevention"
+        'general',
+        'nutrition',
+        'fitness',
+        'mental-health',
+        'chronic-conditions',
+        'women-health',
+        'pediatrics',
+        'elderly-care',
+        'medication',
+        'symptoms',
+        'prevention'
       )
-      .default("general"),
+      .default('general'),
   }),
 
   createAnswer: Joi.object({
@@ -333,11 +333,11 @@ const forumSchemas = {
   }),
 
   voteQuestion: Joi.object({
-    voteType: Joi.string().valid("upvote", "downvote").required(),
+    voteType: Joi.string().valid('upvote', 'downvote').required(),
   }),
 
   voteAnswer: Joi.object({
-    voteType: Joi.string().valid("upvote", "downvote").required(),
+    voteType: Joi.string().valid('upvote', 'downvote').required(),
   }),
 };
 
@@ -349,17 +349,17 @@ const forumSchemas = {
  * @param {string} source - Source of data ('body', 'params', 'query')
  * @returns {Function} Express middleware function
  */
-const validate = (schema, source = "body") => {
+const validate = (schema, source = 'body') => {
   return (req, res, next) => {
     const data = req[source];
 
     // Log validation attempt for security monitoring
-    logger.info("Input validation started", {
+    logger.info('Input validation started', {
       endpoint: req.route?.path || req.path,
       method: req.method,
       source,
       ip: req.ip,
-      userAgent: req.get("User-Agent"),
+      userAgent: req.get('User-Agent'),
     });
 
     const { error, value } = schema.validate(data, {
@@ -372,23 +372,23 @@ const validate = (schema, source = "body") => {
       const errorMessages = error.details.map((detail) => detail.message);
 
       // Log validation failure for security monitoring
-      logger.warn("Input validation failed", {
+      logger.warn('Input validation failed', {
         endpoint: req.route?.path || req.path,
         method: req.method,
         errors: errorMessages,
         ip: req.ip,
-        userAgent: req.get("User-Agent"),
+        userAgent: req.get('User-Agent'),
       });
 
       return next(
-        new ValidationError(`Validation Error: ${errorMessages.join(", ")}`)
+        new ValidationError(`Validation Error: ${errorMessages.join(', ')}`)
       );
     }
 
     // Replace request data with validated and sanitized data
     req[source] = value;
 
-    logger.info("Input validation successful", {
+    logger.info('Input validation successful', {
       endpoint: req.route?.path || req.path,
       method: req.method,
       source,
@@ -403,12 +403,12 @@ const validate = (schema, source = "body") => {
 /**
  * Validate MongoDB ObjectId in URL parameters
  */
-const validateObjectId = (paramName = "id") => {
+const validateObjectId = (paramName = 'id') => {
   const schema = Joi.object({
     [paramName]: objectId().required(),
   });
 
-  return validate(schema, "params");
+  return validate(schema, 'params');
 };
 
 // --- REQUEST SIZE LIMITING ---
@@ -420,17 +420,17 @@ const limitRequestSize = (req, res, next) => {
   const maxSize = 10 * 1024 * 1024; // 10MB limit
 
   if (
-    req.headers["content-length"] &&
-    parseInt(req.headers["content-length"]) > maxSize
+    req.headers['content-length'] &&
+    parseInt(req.headers['content-length']) > maxSize
   ) {
-    logger.warn("Request size exceeded limit", {
-      size: req.headers["content-length"],
+    logger.warn('Request size exceeded limit', {
+      size: req.headers['content-length'],
       maxSize,
       ip: req.ip,
       endpoint: req.path,
     });
 
-    return next(new ValidationError("Request payload too large"));
+    return next(new ValidationError('Request payload too large'));
   }
 
   next();
@@ -452,21 +452,21 @@ const detectXSS = (req, res, next) => {
     /expression\s*\(/gi,
   ];
 
-  const checkForXSS = (obj, path = "") => {
-    if (typeof obj === "string") {
+  const checkForXSS = (obj, path = '') => {
+    if (typeof obj === 'string') {
       for (const pattern of xssPatterns) {
         if (pattern.test(obj)) {
-          logger.error("XSS attempt detected", {
+          logger.error('XSS attempt detected', {
             pattern: pattern.toString(),
             path,
             ip: req.ip,
-            userAgent: req.get("User-Agent"),
+            userAgent: req.get('User-Agent'),
           });
 
-          throw new ValidationError("Potentially malicious content detected");
+          throw new ValidationError('Potentially malicious content detected');
         }
       }
-    } else if (typeof obj === "object" && obj !== null) {
+    } else if (typeof obj === 'object' && obj !== null) {
       for (const [key, value] of Object.entries(obj)) {
         checkForXSS(value, `${path}.${key}`);
       }
@@ -474,9 +474,9 @@ const detectXSS = (req, res, next) => {
   };
 
   try {
-    checkForXSS(req.body, "body");
-    checkForXSS(req.query, "query");
-    checkForXSS(req.params, "params");
+    checkForXSS(req.body, 'body');
+    checkForXSS(req.query, 'query');
+    checkForXSS(req.params, 'params');
     next();
   } catch (error) {
     next(error);

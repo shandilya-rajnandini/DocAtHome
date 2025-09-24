@@ -115,7 +115,14 @@ const ForumPage = () => {
     } finally {
       setLoading(false);
     }
-  }, [currentPage, currentCategory, currentStatus, currentSortBy, currentSearch, currentTags]);
+  }, [
+    currentPage,
+    currentCategory,
+    currentStatus,
+    currentSortBy,
+    currentSearch,
+    currentTags,
+  ]);
 
   useEffect(() => {
     fetchQuestions();
