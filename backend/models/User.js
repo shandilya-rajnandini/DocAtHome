@@ -26,6 +26,13 @@ const UserSchema = new mongoose.Schema({
     minlength: 6,
     select: false,
   },
+  phone: {
+    type: String,
+    required: function () {
+      return this.role === 'doctor' || this.role === 'nurse' || this.role === 'technician' || this.role === 'ambulance';
+    },
+    match: [/^\+?[\d\s\-\(\)]{10,15}$/, 'Please add a valid phone number'],
+  },
   role: {
     type: String,
   enum: ['patient', 'doctor', 'nurse', 'admin', 'technician', 'ambulance'],
@@ -173,6 +180,19 @@ const UserSchema = new mongoose.Schema({
   loginAttempts: {
     type: Number,
     default: 0,
+  },
+
+  // --- Fraud Detection Flags ---
+  flags: {
+    type: [String],
+    default: [],
+    enum: [
+      'DUPLICATE_GOV_ID',
+      'DUPLICATE_PHONE',
+      'DISPOSABLE_EMAIL',
+      'INVALID_LICENSE_FORMAT',
+      'SUSPICIOUS_ACTIVITY'
+    ]
   },
 
   // --- Gamification Fields ---
