@@ -8,6 +8,9 @@ const User = require('../models/User');
 
 // Check for duplicate government ID
 const checkDuplicateGovId = async (govId, excludeUserId = null) => {
+  if (!govId) {
+    return false;
+  }
   const query = { govId };
   if (excludeUserId) {
     query._id = { $ne: excludeUserId };
@@ -19,6 +22,10 @@ const checkDuplicateGovId = async (govId, excludeUserId = null) => {
 
 // Check for duplicate phone number
 const checkDuplicatePhone = async (phone, excludeUserId = null) => {
+  if (!phone) {
+    return false;
+  }
+
   const query = { phone };
   if (excludeUserId) {
     query._id = { $ne: excludeUserId };
@@ -45,8 +52,7 @@ const checkDisposableEmail = async (email) => {
   }
 };
 
-// Validate license number format (Indian Medical Council format)
-// This is a basic regex - in production, you might want more sophisticated validation
+// Validate license format based on role
 const validateLicenseFormat = (licenseNumber, role) => {
   if (!licenseNumber) return false;
 
@@ -54,7 +60,7 @@ const validateLicenseFormat = (licenseNumber, role) => {
   const patterns = {
     doctor: {
       // MCI registration format: e.g., "MCI-12345" or "TNMC-12345" or just numbers
-      mci: /^[A-Z]{2,4}-\d{4,6}$/,
+      council: /^[A-Z]{2,4}-\d{4,6}$/,
       numeric: /^\d{4,6}$/
     },
     nurse: {
@@ -67,16 +73,12 @@ const validateLicenseFormat = (licenseNumber, role) => {
   const rolePatterns = patterns[role];
   if (!rolePatterns) return true; // Skip validation for unsupported roles
 
-  return rolePatterns.mci.test(licenseNumber) ||
-         rolePatterns.numeric.test(licenseNumber) ||
-         rolePatterns.council.test(licenseNumber);
+  return rolePatterns.council.test(licenseNumber) ||
+         rolePatterns.numeric.test(licenseNumber);
 };
 
-/**
- * Main fraud detection function
- * Runs all checks and returns an array of flags
- */
-const performFraudChecks = async (userData) => {
+// Main fraud detection function
+const performFraudChecks = async (userData, excludeUserId = null) => {
   const flags = [];
 
   try {
@@ -89,8 +91,8 @@ const performFraudChecks = async (userData) => {
     // Run checks in parallel for better performance
     const checks = await Promise.allSettled([
       // Duplicate checks
-      checkDuplicateGovId(userData.govId),
-      checkDuplicatePhone(userData.phone),
+      checkDuplicateGovId(userData.govId, excludeUserId),
+      checkDuplicatePhone(userData.phone, excludeUserId),
 
       // Email check
       checkDisposableEmail(userData.email)

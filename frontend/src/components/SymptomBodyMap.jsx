@@ -58,26 +58,15 @@ const SymptomBodyMap = ({ onSymptomsSelected }) => {
         Click on the body part where you're experiencing symptoms
       </p>
 
-      {selectedSymptoms.length > 0 && (
-        <div className="mb-6 p-4 bg-blue-50 dark:bg-blue-900 rounded-lg">
-          <h3 className="font-semibold text-blue-800 dark:text-blue-200 mb-2">Selected Symptoms:</h3>
-          <div className="flex flex-wrap gap-2">
-            {selectedSymptoms.map(symptom => (
-              <span key={symptom} className="bg-blue-200 dark:bg-blue-800 text-blue-800 dark:text-blue-200 px-3 py-1 rounded-full text-sm">
-                {symptom}
-              </span>
-            ))}
-          </div>
-        </div>
-      )}
-
-      <div className="flex flex-col lg:flex-row gap-8">
-        {/* Human Body Diagram */}
-        <div className="flex-1 flex justify-center">
+      <div className="flex flex-col lg:flex-row gap-8 items-start">
+        {/* Body Diagram */}
+        <div className="flex-shrink-0">
           <svg
             viewBox="0 0 200 400"
             className="w-full max-w-xs h-auto border rounded-lg bg-gray-50 dark:bg-gray-800 p-4"
             xmlns="http://www.w3.org/2000/svg"
+            role="img"
+            aria-label="Interactive human body diagram for symptom selection"
           >
             {/* Head */}
             <ellipse
@@ -90,6 +79,10 @@ const SymptomBodyMap = ({ onSymptomsSelected }) => {
               strokeWidth="2"
               className="cursor-pointer hover:fill-blue-200 transition-colors"
               onClick={() => handleBodyPartClick('head')}
+              tabIndex="0"
+              role="button"
+              aria-label="Select head area for symptoms"
+              onKeyDown={(e) => e.key === 'Enter' && handleBodyPartClick('head')}
             />
             <text x="100" y="45" textAnchor="middle" className="text-xs fill-gray-700 pointer-events-none">Head</text>
 
@@ -100,98 +93,106 @@ const SymptomBodyMap = ({ onSymptomsSelected }) => {
               width="50"
               height="80"
               rx="10"
-              fill="#E5E7EB"
-              stroke="#374151"
-              strokeWidth="2"
-            />
-
-            {/* Chest area */}
-            <rect
-              x="75"
-              y="70"
-              width="50"
-              height="40"
-              rx="10"
-              fill={selectedBodyPart === 'chest' ? '#3B82F6' : '#E5E7EB'}
+              fill={selectedBodyPart === 'chest' ? '#3B82F6' : '#F3F4F6'}
               stroke="#374151"
               strokeWidth="2"
               className="cursor-pointer hover:fill-blue-200 transition-colors"
               onClick={() => handleBodyPartClick('chest')}
+              tabIndex="0"
+              role="button"
+              aria-label="Select chest area for symptoms"
+              onKeyDown={(e) => e.key === 'Enter' && handleBodyPartClick('chest')}
             />
-            <text x="100" y="90" textAnchor="middle" className="text-xs fill-gray-700 pointer-events-none">Chest</text>
+            <text x="100" y="115" textAnchor="middle" className="text-xs fill-gray-700 pointer-events-none">Chest</text>
 
-            {/* Abdomen area */}
+            {/* Abdomen */}
             <rect
               x="75"
-              y="110"
+              y="155"
               width="50"
-              height="40"
+              height="60"
               rx="10"
-              fill={selectedBodyPart === 'abdomen' ? '#3B82F6' : '#E5E7EB'}
+              fill={selectedBodyPart === 'abdomen' ? '#3B82F6' : '#F3F4F6'}
               stroke="#374151"
               strokeWidth="2"
               className="cursor-pointer hover:fill-blue-200 transition-colors"
               onClick={() => handleBodyPartClick('abdomen')}
+              tabIndex="0"
+              role="button"
+              aria-label="Select abdomen area for symptoms"
+              onKeyDown={(e) => e.key === 'Enter' && handleBodyPartClick('abdomen')}
             />
-            <text x="100" y="130" textAnchor="middle" className="text-xs fill-gray-700 pointer-events-none">Abdomen</text>
+            <text x="100" y="185" textAnchor="middle" className="text-xs fill-gray-700 pointer-events-none">Abdomen</text>
 
-            {/* Left Arm */}
+            {/* Arms */}
             <rect
-              x="50"
-              y="80"
+              x="40"
+              y="100"
               width="25"
-              height="60"
-              rx="12"
-              fill={selectedBodyPart === 'arms' ? '#3B82F6' : '#E5E7EB'}
-              stroke="#374151"
-              strokeWidth="2"
-              className="cursor-pointer hover:fill-blue-200 transition-colors"
-              onClick={() => handleBodyPartClick('arms')}
-            />
-            <text x="62" y="110" textAnchor="middle" className="text-xs fill-gray-700 pointer-events-none">Arms</text>
-
-            {/* Right Arm */}
-            <rect
-              x="125"
-              y="80"
-              width="25"
-              height="60"
-              rx="12"
-              fill={selectedBodyPart === 'arms' ? '#3B82F6' : '#E5E7EB'}
-              stroke="#374151"
-              strokeWidth="2"
-              className="cursor-pointer hover:fill-blue-200 transition-colors"
-              onClick={() => handleBodyPartClick('arms')}
-            />
-
-            {/* Left Leg */}
-            <rect
-              x="80"
-              y="150"
-              width="20"
               height="80"
-              rx="10"
-              fill={selectedBodyPart === 'legs' ? '#3B82F6' : '#E5E7EB'}
+              rx="12"
+              fill={selectedBodyPart === 'arms' ? '#3B82F6' : '#F3F4F6'}
+              stroke="#374151"
+              strokeWidth="2"
+              className="cursor-pointer hover:fill-blue-200 transition-colors"
+              onClick={() => handleBodyPartClick('arms')}
+              tabIndex="0"
+              role="button"
+              aria-label="Select arms area for symptoms"
+              onKeyDown={(e) => e.key === 'Enter' && handleBodyPartClick('arms')}
+            />
+            <rect
+              x="135"
+              y="100"
+              width="25"
+              height="80"
+              rx="12"
+              fill={selectedBodyPart === 'arms' ? '#3B82F6' : '#F3F4F6'}
+              stroke="#374151"
+              strokeWidth="2"
+              className="cursor-pointer hover:fill-blue-200 transition-colors"
+              onClick={() => handleBodyPartClick('arms')}
+              tabIndex="0"
+              role="button"
+              aria-label="Select arms area for symptoms"
+              onKeyDown={(e) => e.key === 'Enter' && handleBodyPartClick('arms')}
+            />
+            <text x="52" y="150" textAnchor="middle" className="text-xs fill-gray-700 pointer-events-none">Arms</text>
+
+            {/* Legs */}
+            <rect
+              x="85"
+              y="220"
+              width="15"
+              height="100"
+              rx="7"
+              fill={selectedBodyPart === 'legs' ? '#3B82F6' : '#F3F4F6'}
               stroke="#374151"
               strokeWidth="2"
               className="cursor-pointer hover:fill-blue-200 transition-colors"
               onClick={() => handleBodyPartClick('legs')}
+              tabIndex="0"
+              role="button"
+              aria-label="Select legs area for symptoms"
+              onKeyDown={(e) => e.key === 'Enter' && handleBodyPartClick('legs')}
             />
-            <text x="90" y="190" textAnchor="middle" className="text-xs fill-gray-700 pointer-events-none">Legs</text>
-
-            {/* Right Leg */}
             <rect
               x="100"
-              y="150"
-              width="20"
-              height="80"
-              rx="10"
-              fill={selectedBodyPart === 'legs' ? '#3B82F6' : '#E5E7EB'}
+              y="220"
+              width="15"
+              height="100"
+              rx="7"
+              fill={selectedBodyPart === 'legs' ? '#3B82F6' : '#F3F4F6'}
               stroke="#374151"
               strokeWidth="2"
               className="cursor-pointer hover:fill-blue-200 transition-colors"
               onClick={() => handleBodyPartClick('legs')}
+              tabIndex="0"
+              role="button"
+              aria-label="Select legs area for symptoms"
+              onKeyDown={(e) => e.key === 'Enter' && handleBodyPartClick('legs')}
             />
+            <text x="107" y="285" textAnchor="middle" className="text-xs fill-gray-700 pointer-events-none">Legs</text>
 
             {/* Back area */}
             <rect
@@ -200,10 +201,16 @@ const SymptomBodyMap = ({ onSymptomsSelected }) => {
               width="50"
               height="80"
               rx="10"
-              fill="transparent"
-              stroke="transparent"
-              className="cursor-pointer"
+              fill={selectedBodyPart === 'back' ? '#3B82F6' : '#F3F4F6'}
+              stroke="#374151"
+              strokeWidth="1"
+              strokeDasharray="3,3"
+              className="cursor-pointer hover:fill-blue-200 transition-colors"
               onClick={() => handleBodyPartClick('back')}
+              tabIndex="0"
+              role="button"
+              aria-label="Select back area for symptoms"
+              onKeyDown={(e) => e.key === 'Enter' && handleBodyPartClick('back')}
             />
             <text x="100" y="110" textAnchor="middle" className="text-xs fill-gray-700 pointer-events-none opacity-50">Back</text>
           </svg>

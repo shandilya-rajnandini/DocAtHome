@@ -29,11 +29,13 @@ const UserSchema = new mongoose.Schema({
   phone: {
     type: String,
     required: function () {
-      return this.role === 'doctor' || this.role === 'nurse' || this.role === 'technician' || this.role === 'ambulance';
+      return this.role === 'doctor' ||
+             this.role === 'nurse' ||
+             this.role === 'technician' ||
+             this.role === 'ambulance';
     },
-    match: [/^\+?[\d\s\-\(\)]{10,15}$/, 'Please add a valid phone number'],
-  },
-  role: {
+   match: [/^\+?[1-9]\d{1,14}$/, 'Please add a valid phone number'],
+  },  role: {
     type: String,
   enum: ['patient', 'doctor', 'nurse', 'admin', 'technician', 'ambulance'],
     default: 'patient',

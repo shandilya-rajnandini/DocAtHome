@@ -73,8 +73,7 @@ const AdminDashboard = () => {
                                                 <div className="flex items-center gap-2 mb-2">
                                                     <p className="font-bold text-lg text-gray-900 dark:text-white">{user.name} ({user.role})</p>
                                                     {user.flags && user.flags.length > 0 && (
-                                                        <AlertTriangle className="w-5 h-5 text-red-600 dark:text-red-400" />
-                                                    )}
+                                                        <AlertTriangle className="w-5 h-5 text-red-600 dark:text-red-400" aria-label="Fraud detection flags present" />                                                    )}
                                                 </div>
                                                 <p className="text-gray-600 dark:text-gray-300 mb-2">{user.email} | {user.specialty} | {user.city}</p>
                                                 {user.flags && user.flags.length > 0 && (
