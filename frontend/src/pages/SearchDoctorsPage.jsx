@@ -4,7 +4,10 @@ import { searchDoctors } from "../api"; // Assuming your AI call is separate for
 import toast from "react-hot-toast";
 import DoctorCardSkeleton from "../components/DoctorCardSkeleton";
 import Modal from "../components/Modal";
+
 import MapComponent from "../components/MapComponent";
+
+import SymptomBodyMap from "../components/SymptomBodyMap";
 import axios from "axios"; // Keep for the separate AI call
 
 const doctorSpecialties = ["Cardiologist", "Dermatologist", "Gynecologist", "Dentist", "Pediatrician", "General Physician", "Neurologist"];
@@ -25,7 +28,6 @@ const SearchDoctorsPage = () => {
     const [locationFilterEnabled, setLocationFilterEnabled] = useState(false);
 
     const [showAIModal, setShowAIModal] = useState(false);
-    const [symptomsInput, setSymptomsInput] = useState("");
     const [aiSuggestion, setAISuggestion] = useState("");
     const [aiReasoning, setAIReasoning] = useState("");
     const [aiLoading, setAILoading] = useState(false);
@@ -160,21 +162,21 @@ const SearchDoctorsPage = () => {
     const handleAIModalOpen = () => setShowAIModal(true);
     const handleAIModalClose = () => {
         setShowAIModal(false);
-        setSymptomsInput("");
         setAISuggestion("");
         setAIReasoning("");
     };
 
-    const handleAISubmit = async () => {
-        if (!symptomsInput.trim()) return toast.error("Please enter your symptoms.");
+    const handleAISubmit = async (symptoms) => {
+        if (!symptoms.trim()) return toast.error("Please select your symptoms.");
         setAILoading(true);
         try {
             // NOTE: This assumes your backend has an /api/ai/suggest-specialty route
             // And you have set up a proxy in vite.config.js or are using the full URL
-            const { data } = await axios.post("https://docathome-backend.onrender.com/api/ai/suggest-specialty", { symptoms: symptomsInput });
+            const { data } = await axios.post("https://docathome-backend.onrender.com/api/ai/suggest-specialty", { symptoms });
             setAISuggestion(data.specialty);
             setAIReasoning(data.reasoning || "");
             setFilters(f => ({ ...f, specialty: data.specialty }));
+            toast.success(`AI recommends: ${data.specialty}`);
         } catch {
             toast.error("Could not get a suggestion. Try again.");
         } finally {
@@ -374,12 +376,45 @@ const SearchDoctorsPage = () => {
             </div>
             
             {/* AI Modal */}
-            <Modal isOpen={showAIModal} onClose={handleAIModalClose}>
-                {/* ... Modal content ... */}
-                <h2 className="text-xl font-bold">Describe your Symptoms</h2>
-                <textarea value={symptomsInput} onChange={(e) => setSymptomsInput(e.target.value)} rows={4} className="w-full p-2 border rounded mt-4" placeholder="e.g., 'I have a persistent headache...'"></textarea>
-                <button onClick={handleAISubmit} disabled={aiLoading} className="w-full bg-blue-600 text-white p-3 rounded mt-4">{aiLoading ? 'Analyzing...' : 'Get AI Recommendation'}</button>
-                {aiSuggestion && <div><p>We recommend seeing a <strong>{aiSuggestion}</strong>.</p><p>{aiReasoning}</p></div>}
+            <Modal isOpen={showAIModal} onClose={handleAIModalClose} size="xl">
+                <div className="max-h-[80vh] overflow-y-auto">
+                    {!aiSuggestion ? (
+                        <SymptomBodyMap onSymptomsSelected={handleAISubmit} />
+                    ) : (
+                        <div className="text-center">
+                            <h2 className="text-2xl font-bold mb-4 text-gray-800 dark:text-white">AI Recommendation</h2>
+                            <div className="bg-blue-50 dark:bg-blue-900 p-6 rounded-lg mb-6">
+                                <p className="text-lg mb-2">
+                                    We recommend seeing a <strong className="text-blue-600">{aiSuggestion}</strong>.
+                                </p>
+                                {aiReasoning && <p className="text-gray-600 dark:text-gray-300">{aiReasoning}</p>}
+                            </div>
+                            <div className="flex gap-4 justify-center">
+                                <button
+                                    onClick={() => {
+                                        handleApplyFilters({ preventDefault: () => {} });
+                                        handleAIModalClose();
+                                    }}
+                                    className="bg-blue-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-blue-700"
+                                >
+                                    Apply Filter & Search
+                                </button>
+                                <button
+                                    onClick={handleAIModalClose}
+                                    className="bg-gray-500 text-white px-6 py-2 rounded-lg font-semibold hover:bg-gray-600"
+                                >
+                                    Close
+                                </button>
+                            </div>
+                        </div>
+                    )}
+                    {aiLoading && (
+                        <div className="text-center py-8">
+                            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+                            <p className="mt-4 text-gray-600 dark:text-gray-300">Analyzing your symptoms...</p>
+                        </div>
+                    )}
+                </div>
             </Modal>
         </div>
     );

@@ -1,6 +1,6 @@
 import React from 'react';
 
-const Modal = ({ isOpen, onClose, title, children, showDefaultClose = true }) => {
+const Modal = ({ isOpen, onClose, title, children, showDefaultClose = true, size = 'lg' }) => {
   // Handle escape key press
   React.useEffect(() => {
     const handleEscape = (e) => {
@@ -21,7 +21,7 @@ const Modal = ({ isOpen, onClose, title, children, showDefaultClose = true }) =>
       className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center"
       onClick={(e) => e.target === e.currentTarget && onClose()}>
       <div 
-        className="bg-secondary-dark rounded-lg shadow-xl p-6 w-full max-w-lg"
+        className={`bg-secondary-dark rounded-lg shadow-xl p-6 w-full ${size === 'xl' ? 'max-w-5xl' : size === 'lg' ? 'max-w-lg' : 'max-w-md'}`}
         role="dialog"
         aria-modal="true"
         aria-labelledby="modal-title">

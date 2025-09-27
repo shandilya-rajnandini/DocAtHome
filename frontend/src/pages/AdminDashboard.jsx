@@ -2,10 +2,23 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { getPendingUsers, approveUser } from '../api';
 import AnnouncementManager from '../components/AnnouncementManager';
+import { AlertTriangle, CheckCircle } from 'lucide-react';
 
 const AdminDashboard = () => {
     const [pending, setPending] = useState([]);
     const [message, setMessage] = useState('');
+
+    // Helper function to get flag descriptions
+    const getFlagDescription = (flag) => {
+        const flagDescriptions = {
+            'DUPLICATE_GOV_ID': 'Duplicate Government ID detected',
+            'DUPLICATE_PHONE': 'Duplicate phone number detected',
+            'DISPOSABLE_EMAIL': 'Disposable/temporary email detected',
+            'INVALID_LICENSE_FORMAT': 'License number format appears invalid',
+            'SUSPICIOUS_ACTIVITY': 'Suspicious activity detected'
+        };
+        return flagDescriptions[flag] || flag;
+    };
 
     const fetchPending = async () => {
         try {
@@ -54,14 +67,39 @@ const AdminDashboard = () => {
                         {pending.length === 0 ? <p className="text-gray-500 dark:text-gray-400">No pending approvals.</p> : (
                             <ul className="space-y-4">
                                 {pending.map(user => (
-                                    <li key={user._id} className="flex justify-between items-center bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
-                                        <div>
-                                            <p className="font-bold text-lg text-gray-900 dark:text-white">{user.name} ({user.role})</p>
-                                            <p className="text-gray-600 dark:text-gray-300">{user.email} | {user.specialty} | {user.city}</p>
+                                    <li key={user._id} className={`p-4 rounded-lg border-2 ${user.flags && user.flags.length > 0 ? 'border-red-300 bg-red-50 dark:border-red-700 dark:bg-red-900/20' : 'border-gray-200 bg-gray-50 dark:border-gray-600 dark:bg-gray-700'}`}>
+                                        <div className="flex justify-between items-start">
+                                            <div className="flex-1">
+                                                <div className="flex items-center gap-2 mb-2">
+                                                    <p className="font-bold text-lg text-gray-900 dark:text-white">{user.name} ({user.role})</p>
+                                                    {user.flags && user.flags.length > 0 && (
+                                                        <AlertTriangle className="w-5 h-5 text-red-600 dark:text-red-400" aria-label="Fraud detection flags present" />                                                    )}
+                                                </div>
+                                                <p className="text-gray-600 dark:text-gray-300 mb-2">{user.email} | {user.specialty} | {user.city}</p>
+                                                {user.flags && user.flags.length > 0 && (
+                                                    <div className="mb-2">
+                                                        <p className="text-sm font-semibold text-red-700 dark:text-red-300 mb-1">⚠️ Fraud Detection Flags:</p>
+                                                        <ul className="text-sm text-red-600 dark:text-red-400 space-y-1">
+                                                            {user.flags.map((flag, index) => (
+                                                                <li key={index} className="flex items-center gap-1">
+                                                                    <span>•</span>
+                                                                    <span>{getFlagDescription(flag)}</span>
+                                                                </li>
+                                                            ))}
+                                                        </ul>
+                                                    </div>
+                                                )}
+                                                <p className="text-xs text-gray-500 dark:text-gray-400">
+                                                    Registered: {new Date(user.createdAt).toLocaleDateString()}
+                                                </p>
+                                            </div>
+                                            <button
+                                                onClick={() => handleApprove(user._id)}
+                                                className={`font-bold py-2 px-4 rounded-lg transition ml-4 ${user.flags && user.flags.length > 0 ? 'bg-orange-600 hover:bg-orange-700 text-white' : 'bg-green-600 hover:bg-green-700 text-white'}`}
+                                            >
+                                                {user.flags && user.flags.length > 0 ? 'Review & Approve' : 'Approve'}
+                                            </button>
                                         </div>
-                                        <button onClick={() => handleApprove(user._id)} className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg transition">
-                                            Approve
-                                        </button>
                                     </li>
                                 ))}
                             </ul>
