@@ -13,6 +13,7 @@ const {
   ConflictError,
   logger,
 } = require("../middleware/errorHandler");
+const { performFraudChecks } = require("../utils/fraudDetection");
 
 // (The 'register' and 'getMe' functions can remain as they are)
 // ...
@@ -320,6 +321,7 @@ exports.register = catchAsync(async (req, res, next) => {
     name,
     email,
     password,
+    phone,
     role,
     specialty,
     city,
@@ -382,6 +384,14 @@ exports.register = catchAsync(async (req, res, next) => {
   role: role || "patient",
   };
 
+  // Add phone for professional roles
+  if (role === "doctor" || role === "nurse" || role === "technician" || role === "ambulance") {
+    if (!phone) {
+      return next(new ValidationError("Phone number is required for professional accounts"));
+    }
+    userData.phone = phone.trim();
+  }
+
   // Add professional fields if role is doctor or nurse
   if (role === "doctor" || role === "nurse") {
     try {
@@ -414,6 +424,24 @@ exports.register = catchAsync(async (req, res, next) => {
     }
     userData.driverLicenseNumber = driverLicenseNumber.trim();
     userData.vehicleRegistrationNumber = vehicleRegistrationNumber.trim();
+  }
+
+  // Perform fraud detection checks for professional accounts
+  if (role === "doctor" || role === "nurse" || role === "technician" || role === "ambulance") {
+    try {
+      const fraudFlags = await performFraudChecks(userData);
+      if (fraudFlags.length > 0) {
+        userData.flags = fraudFlags;
+        logger.warn(`Fraud flags detected during registration: ${fraudFlags.join(', ')}`, {
+          email: userData.email,
+          role: userData.role,
+          flags: fraudFlags
+        });
+      }
+    } catch (error) {
+      logger.error('Fraud detection failed during registration:', error);
+      // Continue with registration even if fraud detection fails
+    }
   }
 
   // Create new user
