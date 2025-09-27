@@ -1,7 +1,6 @@
 // routes/supportRoutes.js
 const express = require('express');
 const router = express.Router();
-const { requireRole } = require('../middleware/roleMiddleware');
 const {
   getSupportGroups,
   getSupportGroup,
@@ -15,6 +14,7 @@ const {
   getUserMemberships
 } = require('../controllers/supportController');
 const { protect } = require('../middleware/authMiddleware');
+const { requireRole } = require('../middleware/roleMiddleware');
 
 // Public routes (no auth required)
 router.get('/groups', getSupportGroups);

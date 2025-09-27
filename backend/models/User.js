@@ -242,6 +242,24 @@ const UserSchema = new mongoose.Schema({
       type: [[[Number]]], // Array of arrays of coordinates
     },
   },
+  
+  // --- Service Area Centroid (GeoJSON Point) ---
+  serviceAreaCentroid: {
+    type: {
+      type: String,
+      enum: ['Point'],
+    },
+    coordinates: {
+      type: [Number], // [longitude, latitude]
+      validate: {
+        validator: function(arr) {
+          return Array.isArray(arr) && arr.length === 2 && arr.every(num => typeof num === 'number');
+        },
+        message: 'Centroid coordinates must be an array of two numbers [longitude, latitude]'
+      }
+    }
+  },
+  
   // --- Professional Location (GeoJSON Point) ---
   location: {
     type: {
@@ -288,6 +306,7 @@ UserSchema.methods.matchPassword = async function (enteredPassword) {
 // --- Indexes ---
 // Geospatial index
 UserSchema.index({ serviceArea: '2dsphere' });
+UserSchema.index({ serviceAreaCentroid: '2dsphere' });
 UserSchema.index({ location: '2dsphere' });
 
 // Multi-field query index
