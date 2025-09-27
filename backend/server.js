@@ -13,30 +13,64 @@ const { protect } = require('./middleware/authMiddleware');
 dotenv.config();
 const app = express();
 
-// --- THE DEFINITIVE PRODUCTION CORS FIX ---
-// This tells the server to ONLY accept requests from your Netlify frontend.
-// It is the most secure and reliable way to handle CORS on a live site.
+// --- COMPREHENSIVE CORS CONFIGURATION ---
+// This configuration allows requests from all your frontend deployments and local development
 const allowedOrigins = [
-  'http://localhost:5173', // For local development
-  'https://docathome-rajnandini.netlify.app' // For production on Netlify
+  // Local development
+  'http://localhost:3000',
+  'http://localhost:5173', // Vite default port
+  'http://localhost:8080',
+  'http://127.0.0.1:5173',
+  'http://127.0.0.1:3000',
+
+  // Production deployments
+  'https://docathome-rajnandini.netlify.app',
+  'https://docathome-backend.onrender.com',
+
+  // Add any other domains you might deploy to
+  'https://docathome.netlify.app',
+  'https://docathome.vercel.app',
 ];
 
 app.use(
   cors({
     origin: function (origin, callback) {
-      // Allow requests with no origin (like mobile apps or curl requests)
+      // Allow requests with no origin (like mobile apps, Postman, curl requests)
       if (!origin) return callback(null, true);
+
       // Allow the origin if it is in our allowed list
-      if (allowedOrigins.indexOf(origin) === -1) {
-        const msg = 'The CORS policy for this site does not allow access from the specified Origin.';
-        return callback(new Error(msg), false);
+      if (allowedOrigins.indexOf(origin) !== -1) {
+        return callback(null, true);
       }
-      return callback(null, true);
+
+      // For development, be more permissive with localhost
+      if (
+        process.env.NODE_ENV === 'development' &&
+        origin &&
+        origin.includes('localhost')
+      ) {
+        return callback(null, true);
+      }
+
+      // Log the rejected origin for debugging
+      console.log('CORS blocked origin:', origin);
+      const msg = `The CORS policy for this site does not allow access from the specified Origin: ${origin}`;
+      return callback(new Error(msg), false);
     },
     credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: [
+      'Content-Type',
+      'Authorization',
+      'X-Requested-With',
+      'Accept',
+      'Origin',
+    ],
+    exposedHeaders: ['Content-Length', 'X-Kuma-Revision'],
+    maxAge: 86400, // 24 hours
   })
 );
-// --- END OF FIX ---
+// --- END OF CORS CONFIGURATION ---
 
 app.use(express.json());
 app.use(helmet());
@@ -62,8 +96,12 @@ app.use('/api/notifications', require('./routes/notificationRoutes'));
 app.use('/api/video-calls', require('./routes/videoCallRoutes'));
 app.use('/api/support', require('./routes/supportRoutes'));
 app.use('/api/second-opinions', require('./routes/secondOpinionRoutes'));
-app.use('/api/discharge-concierge', require('./routes/dischargeConciergeRoutes'));
+app.use(
+  '/api/discharge-concierge',
+  require('./routes/dischargeConciergeRoutes')
+);
 app.use('/api/demand-insights', require('./routes/demandInsightsRoutes'));
+app.use('/api/forum', require('./routes/forumRoutes'));
 
 // Health Check
 app.get('/health', (req, res) => res.status(200).send('OK'));
@@ -82,10 +120,29 @@ const server = http.createServer(app);
 // Socket.IO Setup
 const io = new Server(server, {
   cors: {
-    origin: allowedOrigins,
-    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    origin: function (origin, callback) {
+      // Allow requests with no origin
+      if (!origin) return callback(null, true);
+
+      // Allow the origin if it is in our allowed list
+      if (allowedOrigins.indexOf(origin) !== -1) {
+        return callback(null, true);
+      }
+
+      // For development, be more permissive with localhost
+      if (
+        process.env.NODE_ENV === 'development' &&
+        origin &&
+        origin.includes('localhost')
+      ) {
+        return callback(null, true);
+      }
+
+      return callback(null, false);
+    },
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     credentials: true,
-  }
+  },
 });
 
 // Initialize socketManager with io instance

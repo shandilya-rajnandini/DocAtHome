@@ -102,14 +102,13 @@ const authSchemas = {
       .when('role', {
         is: Joi.valid('doctor', 'nurse'),
         then: Joi.required(),
-        otherwise: Joi.forbidden()
+        otherwise: Joi.forbidden(),
       }),
-    city: secureString(2, 50)
-      .when('role', {
-        is: Joi.valid('doctor', 'nurse'),
-        then: Joi.required(),
-        otherwise: Joi.optional()
-      }),
+    city: secureString(2, 50).when('role', {
+      is: Joi.valid('doctor', 'nurse'),
+      then: Joi.required(),
+      otherwise: Joi.optional(),
+    }),
     experience: Joi.number()
       .integer()
       .min(1)
@@ -117,26 +116,24 @@ const authSchemas = {
       .when('role', {
         is: Joi.valid('doctor', 'nurse'),
         then: Joi.required(),
-        otherwise: Joi.forbidden()
+        otherwise: Joi.forbidden(),
       })
       .messages({
         'number.base': 'Experience must be a number',
         'number.integer': 'Experience must be a whole number',
         'number.min': 'Experience must be at least 1 year',
-        'number.max': 'Experience cannot exceed 50 years'
+        'number.max': 'Experience cannot exceed 50 years',
       }),
-    licenseNumber: secureString(5, 50)
-      .when('role', {
-        is: Joi.valid('doctor', 'nurse'),
-        then: Joi.required(),
-        otherwise: Joi.forbidden()
-      }),
-    govId: secureString(5, 50)
-      .when('role', {
-        is: Joi.valid('doctor', 'nurse'),
-        then: Joi.required(),
-        otherwise: Joi.forbidden()
-      })
+    licenseNumber: secureString(5, 50).when('role', {
+      is: Joi.valid('doctor', 'nurse'),
+      then: Joi.required(),
+      otherwise: Joi.forbidden(),
+    }),
+    govId: secureString(5, 50).when('role', {
+      is: Joi.valid('doctor', 'nurse'),
+      then: Joi.required(),
+      otherwise: Joi.forbidden(),
+    }),
   }),
 
   login: Joi.object({
@@ -226,7 +223,7 @@ const appointmentSchemas = {
     status: Joi.string()
       .valid('Pending', 'Confirmed', 'Completed', 'Cancelled')
       .required(),
-    doctorNotes: secureText(1000).allow('').optional()
+    doctorNotes: secureText(1000).allow('').optional(),
   }),
 
   scheduleFollowUp: Joi.object({
@@ -234,10 +231,10 @@ const appointmentSchemas = {
       .pattern(/^\d{4}-\d{2}-\d{2}$/)
       .required()
       .messages({
-        'string.pattern.base': 'Date must be in YYYY-MM-DD format'
+        'string.pattern.base': 'Date must be in YYYY-MM-DD format',
       }),
-    note: secureText(1000).allow('').optional()
-  })
+    note: secureText(1000).allow('').optional(),
+  }),
 };
 
 /**
@@ -303,6 +300,44 @@ const reviewSchemas = {
     doctor: objectId().required(),
     rating: Joi.number().integer().min(1).max(5).required(),
     comment: secureText(500).optional(),
+  }),
+};
+
+/**
+ * Forum schemas
+ */
+const forumSchemas = {
+  createQuestion: Joi.object({
+    title: secureString(10, 200).required(),
+    body: secureText(2000).required(),
+    tags: Joi.array().items(secureString(1, 30)).max(5).default([]),
+    category: Joi.string()
+      .valid(
+        'general',
+        'nutrition',
+        'fitness',
+        'mental-health',
+        'chronic-conditions',
+        'women-health',
+        'pediatrics',
+        'elderly-care',
+        'medication',
+        'symptoms',
+        'prevention'
+      )
+      .default('general'),
+  }),
+
+  createAnswer: Joi.object({
+    body: secureText(3000).required(),
+  }),
+
+  voteQuestion: Joi.object({
+    voteType: Joi.string().valid('upvote', 'downvote').required(),
+  }),
+
+  voteAnswer: Joi.object({
+    voteType: Joi.string().valid('upvote', 'downvote').required(),
   }),
 };
 
@@ -458,6 +493,7 @@ module.exports = {
   profileSchemas,
   labTestSchemas,
   reviewSchemas,
+  forumSchemas,
 
   // Middleware exports
   validate,
