@@ -8,29 +8,95 @@ import IconStethoscope from "../components/icons/IconStethoscope";
 import EmptyState from "../components/EmptyState";
 import { Calendar, MessageCircle } from "lucide-react";
 
-// Confirmation Modal Component
-const ConfirmationModal = ({ isOpen, onClose, onConfirm, title, message }) => {
+// Cancellation Policy Modal Component
+const CancellationModal = ({
+  isOpen,
+  onClose,
+  onConfirm,
+  appointment,
+  isLoading,
+}) => {
   if (!isOpen) return null;
+
+  const appointmentDate = new Date(
+    appointment.appointmentDate
+  ).toLocaleDateString("en-GB", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white dark:bg-primary-dark p-6 rounded-lg shadow-xl max-w-md w-full mx-4">
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-          {title}
+      <div className="bg-white dark:bg-primary-dark p-6 rounded-lg shadow-xl max-w-lg w-full mx-4">
+        <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
+          Cancel Appointment
         </h3>
-        <p className="text-gray-700 dark:text-gray-300 mb-6">{message}</p>
+
+        {/* Appointment Details */}
+        <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg mb-4">
+          <h4 className="font-medium text-gray-900 dark:text-white mb-2">
+            Appointment Details:
+          </h4>
+          <p className="text-gray-700 dark:text-gray-300">
+            <strong>Doctor:</strong> {appointment.doctor?.name}
+          </p>
+          <p className="text-gray-700 dark:text-gray-300">
+            <strong>Date & Time:</strong> {appointmentDate} at{" "}
+            {appointment.appointmentTime}
+          </p>
+          <p className="text-gray-700 dark:text-gray-300">
+            <strong>Type:</strong> {appointment.bookingType}
+          </p>
+          {appointment.fee && (
+            <p className="text-gray-700 dark:text-gray-300">
+              <strong>Fee:</strong> ₹{appointment.fee}
+            </p>
+          )}
+        </div>
+
+        {/* Cancellation Policy */}
+        <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 p-4 rounded-lg mb-6">
+          <h4 className="font-medium text-yellow-800 dark:text-yellow-200 mb-2">
+            📋 Cancellation Policy
+          </h4>
+          <ul className="text-sm text-yellow-700 dark:text-yellow-300 space-y-1">
+            <li>
+              • Appointments must be cancelled at least 24 hours in advance
+            </li>
+            <li>
+              • Cancellations within 24 hours of the appointment time are not
+              permitted
+            </li>
+            {appointment.paymentMethod === "careFund" && (
+              <li>
+                • Your care fund balance will be refunded upon successful
+                cancellation
+              </li>
+            )}
+            <li>• This action cannot be undone once confirmed</li>
+          </ul>
+        </div>
+
+        <p className="text-gray-700 dark:text-gray-300 mb-6">
+          Are you sure you want to cancel this appointment? Please confirm that
+          you understand the cancellation policy.
+        </p>
+
         <div className="flex justify-end space-x-4">
           <button
             onClick={onClose}
-            className="px-4 py-2 text-gray-600 dark:text-gray-400 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+            disabled={isLoading}
+            className="px-4 py-2 text-gray-600 dark:text-gray-400 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors disabled:opacity-50"
           >
-            Cancel
+            Keep Appointment
           </button>
           <button
             onClick={onConfirm}
-            className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+            disabled={isLoading}
+            className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Confirm
+            {isLoading ? "Cancelling..." : "Yes, Cancel Appointment"}
           </button>
         </div>
       </div>
@@ -77,7 +143,7 @@ const AppointmentCard = ({ appointment, onAppointmentUpdate }) => {
   const isUpcoming =
     appointment.status === "Confirmed" && appointmentDateTime > now;
 
-  // Check if appointment can be cancelled (within 2 hours policy)
+  // Check if appointment can be cancelled (within 24 hours policy)
   const canCancel = () => {
     if (!["Pending", "Confirmed"].includes(appointment.status)) {
       return false;
@@ -104,7 +170,7 @@ const AppointmentCard = ({ appointment, onAppointmentUpdate }) => {
     const timeDifference = appointmentDateTime.getTime() - now.getTime();
     const hoursUntilAppointment = timeDifference / (1000 * 60 * 60);
 
-    return hoursUntilAppointment >= 2;
+    return hoursUntilAppointment >= 24;
   };
 
   const handleCancelAppointment = async () => {
@@ -124,7 +190,20 @@ const AppointmentCard = ({ appointment, onAppointmentUpdate }) => {
       setShowCancelModal(false);
       onAppointmentUpdate(); // Refresh the appointments list
     } catch (error) {
-      toast.error(error.response?.data?.msg || "Failed to cancel appointment");
+      const errorMessage =
+        error.response?.data?.msg || "Failed to cancel appointment";
+
+      // Show specific error toast based on the error message
+      if (errorMessage.includes("24 hours")) {
+        toast.error(
+          "❌ Cancellation not allowed - Appointments must be cancelled at least 24 hours in advance",
+          { duration: 5000 }
+        );
+      } else {
+        toast.error(errorMessage);
+      }
+
+      setShowCancelModal(false); // Close modal even on error
     } finally {
       setCancelling(false);
     }
@@ -158,14 +237,25 @@ const AppointmentCard = ({ appointment, onAppointmentUpdate }) => {
           >
             {appointment.status}
           </div>
-          {canCancel() && (
-            <button
-              onClick={() => setShowCancelModal(true)}
-              disabled={cancelling}
-              className="px-3 py-1 text-sm bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {cancelling ? "Cancelling..." : "Cancel Appointment"}
-            </button>
+          {["Pending", "Confirmed"].includes(appointment.status) && (
+            <>
+              {canCancel() ? (
+                <button
+                  onClick={() => setShowCancelModal(true)}
+                  disabled={cancelling}
+                  className="px-3 py-1 text-sm bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {cancelling ? "Cancelling..." : "Cancel Appointment"}
+                </button>
+              ) : (
+                <div
+                  className="px-3 py-1 text-xs bg-gray-600 text-gray-300 rounded-lg cursor-not-allowed"
+                  title="Cannot cancel within 24 hours of appointment"
+                >
+                  Cannot Cancel
+                </div>
+              )}
+            </>
           )}
           {/* Share button for confirmed, upcoming appointments */}
           {isUpcoming && (
@@ -249,12 +339,12 @@ const AppointmentCard = ({ appointment, onAppointmentUpdate }) => {
         </>
       )}
 
-      <ConfirmationModal
+      <CancellationModal
         isOpen={showCancelModal}
         onClose={() => setShowCancelModal(false)}
         onConfirm={handleCancelAppointment}
-        title="Cancel Appointment"
-        message="Are you sure you want to cancel this appointment? This action cannot be undone."
+        appointment={appointment}
+        isLoading={cancelling}
       />
     </div>
   );

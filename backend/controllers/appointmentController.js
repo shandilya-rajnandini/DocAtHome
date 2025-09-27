@@ -1,39 +1,40 @@
-const Appointment = require('../models/Appointment');
-const User = require('../models/User');
-const FollowUp = require('../models/FollowUp');
-const { generateSummary } = require('../utils/aiService');
-const asyncHandler = require('../middleware/asyncHandler');
-const Notification = require('../models/Notification');
-const socketManager = require('../utils/socketManager');
+/* eslint-disable quotes */
+const Appointment = require("../models/Appointment");
+const User = require("../models/User");
+const FollowUp = require("../models/FollowUp");
+const { generateSummary } = require("../utils/aiService");
+const asyncHandler = require("../middleware/asyncHandler");
+const Notification = require("../models/Notification");
+const socketManager = require("../utils/socketManager");
 
-const PDFDocument = require('pdfkit');
+const PDFDocument = require("pdfkit");
 
 // @desc    Create a new appointment
 // @route   POST /api/appointments
 
 exports.createAppointment = asyncHandler(async (req, res) => {
-    // Add the patient's ID from the authenticated user token
-    req.body.patient = req.user.id;
+  // Add the patient's ID from the authenticated user token
+  req.body.patient = req.user.id;
 
-  const { doctor, fee, paymentMethod = 'external', shareRelayNote } = req.body;
+  const { doctor, fee, paymentMethod = "external", shareRelayNote } = req.body;
   const shareRelayNoteBool = !!shareRelayNote;
-  console.log('Received shareRelayNote:', shareRelayNote);
-  console.log('Received shareRelayNote:', shareRelayNoteBool);
+  console.log("Received shareRelayNote:", shareRelayNote);
+  console.log("Received shareRelayNote:", shareRelayNoteBool);
   // Check if the doctor being booked actually exists and has the role of 'doctor'
   const doctorExists = await User.findById(doctor);
   if (
     !doctorExists ||
-    (doctorExists.role !== 'doctor' && doctorExists.role !== 'nurse')
+    (doctorExists.role !== "doctor" && doctorExists.role !== "nurse")
   ) {
-    return res.status(404).json({ msg: 'Professional not found' });
+    return res.status(404).json({ msg: "Professional not found" });
   }
 
   // If patient wants to pay from care fund, check balance and deduct
-  if (paymentMethod === 'careFund') {
+  if (paymentMethod === "careFund") {
     const patient = await User.findById(req.user.id);
 
     if (!patient) {
-      return res.status(404).json({ msg: 'Patient not found' });
+      return res.status(404).json({ msg: "Patient not found" });
     }
 
     if (patient.careFundBalance < fee) {
@@ -48,15 +49,15 @@ exports.createAppointment = asyncHandler(async (req, res) => {
     });
 
     // Create a transaction record for care fund payment
-    const Transaction = require('../models/Transaction');
+    const Transaction = require("../models/Transaction");
     await Transaction.create({
       userId: req.user.id,
       razorpayOrderId: `care_fund_${Date.now()}`,
       razorpayPaymentId: `care_fund_payment_${Date.now()}`,
       amount: fee,
-      currency: 'INR',
+      currency: "INR",
       description: `Care Fund Payment for appointment with ${doctorExists.name}`,
-      status: 'paid',
+      status: "paid",
     });
   }
   // relay note stuff
@@ -64,48 +65,48 @@ exports.createAppointment = asyncHandler(async (req, res) => {
   if (shareRelayNote) {
     const prevAppointments = await Appointment.find({
       patient: req.user.id,
-      status: 'Completed',
-      relayNote: { $exists: true, $ne: '' },
+      status: "Completed",
+      relayNote: { $exists: true, $ne: "" },
     })
       .sort({ appointmentDate: -1, appointmentTime: -1 })
-      .populate('doctor', 'name specialty');
+      .populate("doctor", "name specialty");
 
     sharedRelayNotes = prevAppointments.map((appt) => ({
       note: appt.relayNote,
-      doctorName: appt.doctor?.name || '',
-      doctorDesignation: appt.doctor?.specialty || '',
+      doctorName: appt.doctor?.name || "",
+      doctorDesignation: appt.doctor?.specialty || "",
     }));
   }
   // Create the appointment in the database
-  console.log('shared relay notes found:', sharedRelayNotes);
+  console.log("shared relay notes found:", sharedRelayNotes);
   const appointment = await Appointment.create({
     ...req.body,
-    paymentMethod: paymentMethod || 'external',
+    paymentMethod: paymentMethod || "external",
     sharedRelayNotes, // <-- array of previous notes
     shareRelayNote: shareRelayNoteBool, // <-- always boolean
   });
   // Appointment creation notification
   await Notification.create({
-  userId: doctor,  // notify the doctor/nurse
-  message: `New appointment booked by ${req.user.name || 'a patient'}.`,
-  link: `/appointments/${appointment._id}`,
-  isRead: false,
+    userId: doctor, // notify the doctor/nurse
+    message: `New appointment booked by ${req.user.name || "a patient"}.`,
+    link: `/appointments/${appointment._id}`,
+    isRead: false,
   });
 
   // Emit real-time notification to the doctor
-  socketManager.emitToRoom(doctor.toString(), 'new_notification', {
-    message: `New appointment booked by ${req.user.name || 'a patient'}.`,
-    link: `/appointments/${appointment._id}`
+  socketManager.emitToRoom(doctor.toString(), "new_notification", {
+    message: `New appointment booked by ${req.user.name || "a patient"}.`,
+    link: `/appointments/${appointment._id}`,
   });
- 
+
   // Send a success response back to the frontend
   res.status(201).json({
     success: true,
     data: appointment,
     message:
-      paymentMethod === 'careFund'
+      paymentMethod === "careFund"
         ? `Appointment booked successfully! ₹${fee} deducted from your care fund.`
-        : 'Appointment booked successfully!',
+        : "Appointment booked successfully!",
   });
 });
 
@@ -113,16 +114,16 @@ exports.createAppointment = asyncHandler(async (req, res) => {
 // @route   GET /api/appointments/:id/summary
 exports.getAppointmentSummary = asyncHandler(async (req, res) => {
   const appointment = await Appointment.findById(req.params.id).populate(
-    'patient'
+    "patient"
   );
 
   if (!appointment) {
-    return res.status(404).json({ msg: 'Appointment not found' });
+    return res.status(404).json({ msg: "Appointment not found" });
   }
 
   // Authorization: Only the assigned doctor can get the summary
   if (appointment.doctor.toString() !== req.user.id) {
-    return res.status(401).json({ msg: 'User not authorized' });
+    return res.status(401).json({ msg: "User not authorized" });
   }
 
   const patient = appointment.patient;
@@ -131,7 +132,7 @@ exports.getAppointmentSummary = asyncHandler(async (req, res) => {
   const pastAppointments = await Appointment.find({
     patient: patient._id,
     doctor: req.user.id,
-    status: 'Completed',
+    status: "Completed",
     _id: { $ne: appointment._id },
   })
     .sort({ appointmentDate: -1, appointmentTime: -1 })
@@ -145,7 +146,7 @@ exports.getAppointmentSummary = asyncHandler(async (req, res) => {
     chronicConditions: patient.chronicConditions || [],
     pastVisits: pastAppointments.map((appt) => ({
       date: appt.appointmentDate,
-      notes: appt.doctorNotes || 'No notes recorded.',
+      notes: appt.doctorNotes || "No notes recorded.",
     })),
   };
 
@@ -161,16 +162,15 @@ exports.getAppointmentSummary = asyncHandler(async (req, res) => {
 exports.getMyAppointments = asyncHandler(async (req, res) => {
   let query;
   // Check the role of the logged-in user to build the correct query
-  if (req.user.role === 'doctor' || req.user.role === 'nurse') {
+  if (req.user.role === "doctor" || req.user.role === "nurse") {
     query = { doctor: req.user.id };
   } else {
     query = { patient: req.user.id };
   }
 
-   
   const appointments = await Appointment.find(query)
-    .populate('doctor', 'name specialty')
-    .populate('patient', 'name allergies chronicConditions');
+    .populate("doctor", "name specialty")
+    .populate("patient", "name allergies chronicConditions");
 
   res.status(200).json({
     success: true,
@@ -188,30 +188,30 @@ exports.updateAppointmentStatus = asyncHandler(async (req, res) => {
   let appointment = await Appointment.findById(req.params.id);
 
   if (!appointment) {
-    return res.status(404).json({ msg: 'Appointment not found' });
+    return res.status(404).json({ msg: "Appointment not found" });
   }
 
   // Authorization Check:
   // - For doctors/nurses: they can update any appointment assigned to them
   // - For patients: they can only cancel their own appointments
   if (
-    status === 'Cancelled' &&
+    status === "Cancelled" &&
     appointment.patient.toString() === req.user.id
   ) {
     // Patient canceling their own appointment
 
-    // Check cancellation policy: no cancellations within 2 hours of the appointment
+    // Check cancellation policy: no cancellations within 24 hours of the appointment
     const appointmentDateStr = appointment.appointmentDate; // e.g., "2025-07-02"
     const appointmentTimeStr = appointment.appointmentTime; // e.g., "01:00 PM"
 
     // Convert 12-hour format to 24-hour format for proper parsing
-    const [time, period] = appointmentTimeStr.split(' ');
-    const [hours, minutes] = time.split(':');
+    const [time, period] = appointmentTimeStr.split(" ");
+    const [hours, minutes] = time.split(":");
     let hour24 = parseInt(hours);
 
-    if (period === 'PM' && hour24 !== 12) {
+    if (period === "PM" && hour24 !== 12) {
       hour24 += 12;
-    } else if (period === 'AM' && hour24 === 12) {
+    } else if (period === "AM" && hour24 === 12) {
       hour24 = 0;
     }
 
@@ -222,42 +222,44 @@ exports.updateAppointmentStatus = asyncHandler(async (req, res) => {
     const timeDifference = appointmentDateTime.getTime() - now.getTime();
     const hoursUntilAppointment = timeDifference / (1000 * 60 * 60);
 
-    if (hoursUntilAppointment < 2) {
+    if (hoursUntilAppointment < 24) {
       return res.status(400).json({
-        msg: 'Cannot cancel appointment within 2 hours of the scheduled time',
+        msg: "Cancellations must be made at least 24 hours in advance",
       });
     }
 
     // Check if appointment is in a cancellable state
-    if (!['Pending', 'Confirmed'].includes(appointment.status)) {
+    if (!["Pending", "Confirmed"].includes(appointment.status)) {
       return res.status(400).json({
-        msg: 'This appointment cannot be cancelled',
+        msg: "This appointment cannot be cancelled",
       });
     }
 
-          // If the appointment was paid using care fund, refund the amount
+    // If the appointment was paid using care fund, refund the amount
     // Note: appointment.fee is stored in paise, so careFundBalance increment is consistent
-    if (appointment.paymentMethod === 'careFund') {
-      await User.findByIdAndUpdate(req.user.id, { 
-        $inc: { careFundBalance: appointment.fee } // fee is in paise
+    if (appointment.paymentMethod === "careFund") {
+      await User.findByIdAndUpdate(req.user.id, {
+        $inc: { careFundBalance: appointment.fee }, // fee is in paise
       });
-      
+
       // Create a transaction record for the refund
-      const Transaction = require('../models/Transaction');
+      const Transaction = require("../models/Transaction");
       await Transaction.create({
         userId: req.user.id,
         razorpayOrderId: `refund_${Date.now()}`,
         razorpayPaymentId: `refund_payment_${Date.now()}`,
         amount: appointment.fee, // fee is in paise
-        currency: 'INR',
+        currency: "INR",
         description: `Care Fund Refund for cancelled appointment`,
-        status: 'refunded',
+        status: "refunded",
       });
     }
-    } else if (appointment.doctor.toString() !== req.user.id) {
-      // For all other status updates, only the assigned doctor/nurse can update
-      return res.status(401).json({ msg: 'User not authorized to update this appointment' });
-    }
+  } else if (appointment.doctor.toString() !== req.user.id) {
+    // For all other status updates, only the assigned doctor/nurse can update
+    return res
+      .status(401)
+      .json({ msg: "User not authorized to update this appointment" });
+  }
 
   // Update the status
   appointment.status = status;
@@ -269,7 +271,7 @@ exports.updateAppointmentStatus = asyncHandler(async (req, res) => {
   }
 
   await appointment.save();
-   // Create notification for the patient about status update
+  // Create notification for the patient about status update
   await Notification.create({
     userId: appointment.patient,
     message: `Your appointment on ${appointment.appointmentDate} is now '${appointment.status}'.`,
@@ -278,9 +280,9 @@ exports.updateAppointmentStatus = asyncHandler(async (req, res) => {
   });
 
   // Emit real-time notification to the patient
-  socketManager.emitToRoom(appointment.patient.toString(), 'new_notification', {
+  socketManager.emitToRoom(appointment.patient.toString(), "new_notification", {
     message: `Your appointment on ${appointment.appointmentDate} is now '${appointment.status}'.`,
-    link: `/appointments/${appointment._id}`
+    link: `/appointments/${appointment._id}`,
   });
 
   res.json(appointment);
@@ -296,7 +298,7 @@ exports.saveVoiceNote = asyncHandler(async (req, res) => {
   if (!voiceUrl) {
     return res
       .status(400)
-      .json({ success: false, message: 'Voice URL is required.' });
+      .json({ success: false, message: "Voice URL is required." });
   }
 
   const appointment = await Appointment.findByIdAndUpdate(
@@ -308,7 +310,7 @@ exports.saveVoiceNote = asyncHandler(async (req, res) => {
   if (!appointment) {
     return res
       .status(404)
-      .json({ success: false, message: 'Appointment not found.' });
+      .json({ success: false, message: "Appointment not found." });
   }
 
   res.json({ success: true, data: appointment });
@@ -324,132 +326,158 @@ exports.updateRelayNote = async (req, res) => {
       { new: true }
     );
     if (!appointment) {
-      return res.status(404).json({ msg: 'Appointment not found' });
+      return res.status(404).json({ msg: "Appointment not found" });
     }
     res.json({ success: true, data: appointment });
   } catch (err) {
-    res.status(500).json({ msg: 'Server error', error: err.message });
+    res.status(500).json({ msg: "Server error", error: err.message });
   }
 };
-const sendEmail = require('../utils/sendEmail');
+const sendEmail = require("../utils/sendEmail");
 
 // @desc    Schedule a follow-up for an appointment
 // @route   POST /api/appointments/:id/schedule-follow-up
 exports.scheduleFollowUp = asyncHandler(async (req, res) => {
-    const { followUpDate, note } = req.body;
-    const appointmentId = req.params.id;
+  const { followUpDate, note } = req.body;
+  const appointmentId = req.params.id;
 
-    const appointment = await Appointment.findById(appointmentId).populate('patient doctor');
+  const appointment = await Appointment.findById(appointmentId).populate(
+    "patient doctor"
+  );
 
-    if (!appointment) {
-        return res.status(404).json({ msg: 'Appointment not found' });
-    }
+  if (!appointment) {
+    return res.status(404).json({ msg: "Appointment not found" });
+  }
 
-    // Authorization: Only the assigned doctor can schedule a follow-up
-    if (req.user.role !== 'doctor' || appointment.doctor._id.toString() !== req.user.id) {
-        return res.status(401).json({ msg: 'User not authorized' });
-    }
+  // Authorization: Only the assigned doctor can schedule a follow-up
+  if (
+    req.user.role !== "doctor" ||
+    appointment.doctor._id.toString() !== req.user.id
+  ) {
+    return res.status(401).json({ msg: "User not authorized" });
+  }
 
-    if (appointment.status !== 'Completed') {
-        return res.status(400).json({ msg: 'Follow-up can only be scheduled for completed appointments' });
-    }
-
-    const followUp = await FollowUp.create({
-        patient: appointment.patient,
-        doctor: appointment.doctor,
-        appointment: appointmentId,
-        followUpDate,
-        note,
+  if (appointment.status !== "Completed") {
+    return res.status(400).json({
+      msg: "Follow-up can only be scheduled for completed appointments",
     });
+  }
 
-    // Send email notification immediately
-    const { patient, doctor } = appointment;
-    const bookingLink = `http://localhost:5173/follow-up/${doctor._id}`;
-    const emailOptions = {
-        email: patient.email,
-        subject: 'Follow-up Reminder',
-        message: `Hi ${patient.name},\n\nThis is a reminder from Dr. ${doctor.name} to schedule a follow-up appointment.\n\nNote from your doctor: ${note}\n\nClick here to book your follow-up: ${bookingLink}`,
-    };
-    await sendEmail(emailOptions);
+  const followUp = await FollowUp.create({
+    patient: appointment.patient,
+    doctor: appointment.doctor,
+    appointment: appointmentId,
+    followUpDate,
+    note,
+  });
 
-    res.status(201).json({
-        success: true,
-        data: followUp,
-    });
+  // Send email notification immediately
+  const { patient, doctor } = appointment;
+  const bookingLink = `http://localhost:5173/follow-up/${doctor._id}`;
+  const emailOptions = {
+    email: patient.email,
+    subject: "Follow-up Reminder",
+    message: `Hi ${patient.name},\n\nThis is a reminder from Dr. ${doctor.name} to schedule a follow-up appointment.\n\nNote from your doctor: ${note}\n\nClick here to book your follow-up: ${bookingLink}`,
+  };
+  await sendEmail(emailOptions);
+
+  res.status(201).json({
+    success: true,
+    data: followUp,
+  });
 });
 
 // @desc    Generate and download patient intake form PDF for an appointment
 // @route   GET /api/appointments/:id/intake-form
 exports.getIntakeFormPDF = asyncHandler(async (req, res) => {
   const appointment = await Appointment.findById(req.params.id)
-    .populate('patient', 'name allergies chronicConditions')
-    .populate('doctor', 'name specialty');
+    .populate("patient", "name allergies chronicConditions")
+    .populate("doctor", "name specialty");
   if (!appointment) {
-    return res.status(404).json({ msg: 'Appointment not found' });
+    return res.status(404).json({ msg: "Appointment not found" });
   }
   // Authorization: Only assigned doctor or patient can download
   if (
     appointment.doctor._id.toString() !== req.user.id &&
     appointment.patient._id.toString() !== req.user.id
   ) {
-    return res.status(401).json({ msg: 'User not authorized' });
+    return res.status(401).json({ msg: "User not authorized" });
   }
-  res.setHeader('Content-Type', 'application/pdf');
-  res.setHeader('Content-Disposition', `attachment; filename=intake-form-${appointment._id}.pdf`);
+  res.setHeader("Content-Type", "application/pdf");
+  res.setHeader(
+    "Content-Disposition",
+    `attachment; filename=intake-form-${appointment._id}.pdf`
+  );
   const doc = new PDFDocument();
   doc.pipe(res);
-  doc.fontSize(20).text('Patient Intake Form', { align: 'center' });
+  doc.fontSize(20).text("Patient Intake Form", { align: "center" });
   doc.moveDown();
-  doc.fontSize(14).text('Patient Details:', { underline: true });
+  doc.fontSize(14).text("Patient Details:", { underline: true });
   doc.text(`Name: ${appointment.patient.name}`);
-  doc.text(`Allergies: ${(appointment.patient.allergies || []).join(', ')}`);
-  doc.text(`Chronic Conditions: ${(appointment.patient.chronicConditions || []).join(', ')}`);
+  doc.text(`Allergies: ${(appointment.patient.allergies || []).join(", ")}`);
+  doc.text(
+    `Chronic Conditions: ${(appointment.patient.chronicConditions || []).join(
+      ", "
+    )}`
+  );
   doc.moveDown();
-  doc.text('Doctor:', { underline: true });
+  doc.text("Doctor:", { underline: true });
   doc.text(`Name: ${appointment.doctor.name}`);
   doc.text(`Specialty: ${appointment.doctor.specialty}`);
   doc.moveDown();
-  doc.text('Reason for Visit:', { underline: true });
-  doc.text(appointment.symptoms || '');
+  doc.text("Reason for Visit:", { underline: true });
+  doc.text(appointment.symptoms || "");
   doc.moveDown();
-  doc.text('Previous Medications:', { underline: true });
-  doc.text(appointment.previousMeds || '');
+  doc.text("Previous Medications:", { underline: true });
+  doc.text(appointment.previousMeds || "");
   doc.moveDown();
-  doc.text('Notes:', { underline: true });
-  doc.text('__________________________________________________________');
-  doc.text('__________________________________________________________');
-  doc.text('__________________________________________________________');
+  doc.text("Notes:", { underline: true });
+  doc.text("__________________________________________________________");
+  doc.text("__________________________________________________________");
+  doc.text("__________________________________________________________");
   doc.end();
 });
 
 // --- TRIAGE LOGIC TREE ---
 const triageLogicTree = {
-  'headache': {
-    question: 'Is the headache on one side or both?',
+  headache: {
+    question: "Is the headache on one side or both?",
     followUps: {
-      'one side': {
-        question: 'Do you have nausea?',
+      "one side": {
+        question: "Do you have nausea?",
         followUps: {
-          'yes': {
-            question: 'Are you sensitive to light?',
+          yes: {
+            question: "Are you sensitive to light?",
             followUps: {
-              'yes': { summary: 'Unilateral headache with nausea and photosensitivity, potential migraine.' },
-              'no': { summary: 'Unilateral headache with nausea, further evaluation needed.' }
-            }
+              yes: {
+                summary:
+                  "Unilateral headache with nausea and photosensitivity, potential migraine.",
+              },
+              no: {
+                summary:
+                  "Unilateral headache with nausea, further evaluation needed.",
+              },
+            },
           },
-          'no': { summary: 'Unilateral headache, further evaluation needed.' }
-        }
+          no: { summary: "Unilateral headache, further evaluation needed." },
+        },
       },
-      'both sides': { summary: 'Bilateral headache, possible tension-type.' }
-    }
+      "both sides": { summary: "Bilateral headache, possible tension-type." },
+    },
   },
-  'fever': {
-    question: 'How high is your temperature?',
+  fever: {
+    question: "How high is your temperature?",
     followUps: {
-      'above 102': { question: 'Do you have chills?', followUps: { 'yes': { summary: 'High fever with chills, possible infection.' }, 'no': { summary: 'High fever, monitor closely.' } } },
-      'below 102': { summary: 'Low-grade fever, monitor symptoms.' }
-    }
-  }
+      "above 102": {
+        question: "Do you have chills?",
+        followUps: {
+          yes: { summary: "High fever with chills, possible infection." },
+          no: { summary: "High fever, monitor closely." },
+        },
+      },
+      "below 102": { summary: "Low-grade fever, monitor symptoms." },
+    },
+  },
 };
 
 // @desc    Get next triage question based on user input
@@ -457,7 +485,7 @@ const triageLogicTree = {
 exports.getTriageQuestion = asyncHandler(async (req, res) => {
   const { symptom, answers } = req.body;
   let node = triageLogicTree[symptom.toLowerCase()];
-  if (!node) return res.status(404).json({ msg: 'Symptom not recognized.' });
+  if (!node) return res.status(404).json({ msg: "Symptom not recognized." });
   let current = node;
   for (const answer of answers || []) {
     if (current.followUps && current.followUps[answer]) {
@@ -471,6 +499,6 @@ exports.getTriageQuestion = asyncHandler(async (req, res) => {
   } else if (current.summary) {
     return res.json({ summary: current.summary });
   } else {
-    return res.json({ msg: 'No further questions.' });
+    return res.json({ msg: "No further questions." });
   }
 });
