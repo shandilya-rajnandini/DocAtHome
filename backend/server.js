@@ -6,6 +6,7 @@ const cors = require('cors');
 const helmet = require('helmet');
 const connectDB = require('./config/db');
 
+
 dotenv.config();
 const app = express();
 
@@ -16,22 +17,37 @@ const allowedOrigins = [
     "https://docathome-rajnandini.netlify.app"
 ];
 
-app.use(cors({
-    origin: function (origin, callback) {
-        if (!origin || allowedOrigins.indexOf(origin) !== -1) {
-            callback(null, true);
-        } else {
-            callback(new Error('This origin is not allowed by our CORS policy.'));
-        }
+// app.use(cors({
+//     origin: function (origin, callback) {
+//         if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+//             callback(null, true);
+//         } else {
+//             callback(new Error('This origin is not allowed by our CORS policy.'));
+//         }
+//     }
+// }));
+const corsOptions = {
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      callback(new Error("This origin is not allowed by our CORS policy."));
     }
-}));
+  },
+  methods: "GET,POST,PUT,DELETE,OPTIONS", // Explicitly allow OPTIONS
+};
+
+app.use(cors(corsOptions));
 // --- END OF FIX ---
 
 app.use(express.json());
 app.use(helmet());
 
-// API Routes
-app.use('/api/auth', require('./routes/authRoutes'));
+// // API Routes
+ app.use('/api/auth', require('./routes/authRoutes'));
+
+// Inside server.js
+app.use('/api/announcements', require('./routes/announcementRoutes'));
 // ... (all your other app.use routes) ...
 app.use('/api/lab-tests', require('./routes/labTestRoutes'));
 

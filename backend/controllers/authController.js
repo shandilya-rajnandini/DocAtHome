@@ -14,8 +14,60 @@ const {
   logger,
 } = require("../middleware/errorHandler");
 
-// (The 'register' and 'getMe' functions can remain as they are)
-// ...
+
+exports.register = catchAsync(async (req, res, next) => {
+  const { name, email, password, role } = req.body;
+
+  if (!name || !email || !password) {
+    return next(
+      new ValidationError("Please provide name, email, and password")
+    );
+  }
+
+  const userExists = await User.findOne({ email: email.toLowerCase() });
+
+  if (userExists) {
+    return next(new ConflictError("User with this email already exists"));
+  }
+
+  const user = await User.create({
+    name,
+    email: email.toLowerCase(),
+    password,
+    role: role || "patient",
+  });
+
+  const payload = { user: { id: user.id, role: user.role } };
+
+  jwt.sign(
+    payload,
+    process.env.JWT_SECRET,
+    { expiresIn: "5h" },
+    (err, token) => {
+      if (err) throw err;
+      res.status(201).json({
+        success: true,
+        token,
+        user: {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          role: user.role,
+        },
+      });
+    }
+  );
+});
+
+
+exports.getMe = catchAsync(async (req, res, next) => {
+  const user = await User.findById(req.user.id).select("-password");
+  if (!user) {
+    return next(new AuthenticationError("User not found"));
+  }
+  res.json(user);
+});
+
 
 exports.login = catchAsync(async (req, res, next) => {
   const { email, password } = req.body;
