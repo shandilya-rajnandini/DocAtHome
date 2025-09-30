@@ -1,17 +1,115 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { useState, useEffect } from "react";
 import { IoSunnySharp } from "react-icons/io5";
 import { BsFillMoonStarsFill } from "react-icons/bs";
+import React, { useEffect, useState, useRef } from "react";
+import { io } from "socket.io-client";
+
+// Initialize socket connection once (adjust backend URL)
+const socket = io("http://localhost:5000");
 
 const Navbar = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
 
+  // Notification states
+  const [hasNewNotification, setHasNewNotification] = useState(false);
+  const [notifications, setNotifications] = useState([]);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const dropdownRef = useRef(null);
+
   const [theme, setTheme] = useState(() => {
     return localStorage.getItem("pagemode") || "light";
   });
   const [isOpen, setIsOpen] = useState(false);
+
+  useEffect(() => {
+    if (!user || !user.id) return;
+
+    socket.emit("join_user_room", user.id);
+
+    socket.on("new_notification", () => {
+      setHasNewNotification(true);
+      fetchNotifications();
+    });
+
+    // Initial fetch of unread notifications
+    fetchNotifications();
+
+    // Cleanup on unmount
+    return () => {
+      socket.off("new_notification");
+    };
+  }, [user]);
+
+  // Fetch unread notifications from your backend API
+  const fetchNotifications = async () => {
+    try {
+      const res = await fetch("/api/notifications/unread", {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`, // adjust as per your auth
+        },
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setNotifications(data.notifications || []);
+        setHasNewNotification(data.notifications.length > 0);
+      }
+    } catch (error) {
+      console.error("Failed to fetch notifications", error);
+    }
+  };
+
+  // Mark a notification as read and navigate
+  const handleNotificationClick = async (notification) => {
+    try {
+      const res = await fetch(
+        `/api/notifications/${notification._id}/mark-read`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`, // adjust accordingly
+          },
+        }
+      );
+      if (res.ok) {
+        // Remove from unread list
+        setNotifications((prev) =>
+          prev.filter((notif) => notif._id !== notification._id)
+        );
+        if (notifications.length === 1) setHasNewNotification(false);
+
+        // Navigate to the link
+        navigate(notification.link);
+        setDropdownOpen(false);
+      }
+    } catch (error) {
+      console.error("Failed to mark notification as read", error);
+    }
+  };
+
+  // Toggle dropdown and reset red dot if opening
+  const toggleDropdown = () => {
+    if (!dropdownOpen) {
+      setHasNewNotification(false);
+    }
+    setDropdownOpen(!dropdownOpen);
+  };
+
+  // Close dropdown if clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   useEffect(() => {
     const html = document.documentElement;
@@ -46,7 +144,7 @@ const Navbar = () => {
               ? "/doctor/dashboard"
               : "/"
           }
-          className="text-2xl font-bold text-accent-blue tracking-wide hover:scale-105 transition-transform"
+          className="text-xl md:text-2xl font-bold text-accent-blue tracking-wide hover:scale-105 transition-transform"
         >
           Doc@Home
         </Link>
@@ -67,6 +165,13 @@ const Navbar = () => {
             Ambulance
             <span className="absolute left-0 bottom-0 w-0 h-[2px] bg-accent-blue transition-all duration-300 group-hover:w-full"></span>
           </Link>
+          <Link
+            to="/forum"
+            className="hover:text-accent-blue relative group transition"
+          >
+            Health Forum
+            <span className="absolute left-0 bottom-0 w-0 h-[2px] bg-accent-blue transition-all duration-300 group-hover:w-full"></span>
+          </Link>
           {user && user.role === "patient" && (
             <Link
               to="/health-quests"
@@ -78,7 +183,7 @@ const Navbar = () => {
           )}
           {user ? (
             <>
-            <span className="text-white">Welcome, {user.name}</span>
+              <span className="text-white">Welcome, {user.name}</span>
               <button
                 onClick={handleLogout}
                 className="bg-red-600 px-4 py-2 rounded hover:bg-red-700 transition-colors text-white dark:text-black"
@@ -118,6 +223,60 @@ const Navbar = () => {
           </button>
         </div>
 
+        {/* Notification Bell */}
+        {user && (
+          <div className="relative ml-4" ref={dropdownRef}>
+            <button
+              onClick={toggleDropdown}
+              aria-label="Toggle notifications"
+              className="relative text-white focus:outline-none"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-6 w-6"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 10-12 0v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
+                />
+              </svg>
+              {hasNewNotification && (
+                <span className="absolute top-0 right-0 block h-2.5 w-2.5 rounded-full ring-2 ring-white bg-red-600"></span>
+              )}
+            </button>
+
+            {/* Notifications Dropdown */}
+            {dropdownOpen && (
+              <div className="absolute right-0 mt-2 w-80 max-h-96 overflow-y-auto rounded-md bg-white shadow-lg dark:bg-gray-800 z-50">
+                <div className="p-3 font-semibold border-b dark:border-gray-700">
+                  Notifications
+                </div>
+                {notifications.length === 0 ? (
+                  <div className="p-4 text-gray-500">No new notifications</div>
+                ) : (
+                  notifications.map((notif) => (
+                    <div
+                      key={notif._id}
+                      onClick={() => handleNotificationClick(notif)}
+                      className="cursor-pointer hover:bg-accent-blue hover:text-white px-4 py-3 border-b dark:border-gray-700"
+                    >
+                      <div className="font-medium">{notif.message}</div>
+                      <div className="text-xs text-gray-400">
+                        {new Date(notif.createdAt).toLocaleString()}
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            )}
+          </div>
+        )}
+
         {/* Mobile Hamburger */}
         <div className="md:hidden ml-auto">
           <button
@@ -154,6 +313,7 @@ const Navbar = () => {
           {[
             { to: "/search", label: "Search Doctors" },
             { to: "/book-ambulance", label: "Ambulance" },
+            { to: "/forum", label: "Health Forum" },
             ...(user && user.role === "patient"
               ? [{ to: "/health-quests", label: "Health Quests" }]
               : []),

@@ -27,6 +27,10 @@ const LabTestSchema = new mongoose.Schema(
       type: String,
       required: [true, "Please provide the collection address."],
     },
+    city: {
+      type: String,
+      required: [true, "Please provide the city for collection."],
+    },
     status: {
       type: String,
       enum: ["Pending", "Sample Collected", "Report Ready", "Completed"],
@@ -44,5 +48,6 @@ const LabTestSchema = new mongoose.Schema(
     },
   },{ timestamps: true }
 );
+
 
 module.exports = mongoose.model('LabTest', LabTestSchema);

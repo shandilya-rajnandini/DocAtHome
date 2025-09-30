@@ -9,7 +9,8 @@
     "dev": "nodemon server.js",
     "data:import": "node seeder.js",
     "data:destroy": "node seeder.js -d",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "build": "echo 'No build step required for backend'"
   },
   "keywords": [],
   "author": "",
@@ -29,8 +30,10 @@
     "jsonwebtoken": "^9.0.2",
     "mongodb": "^6.18.0",
     "mongoose": "^8.16.1",
+    "multer": "^2.0.2",
     "node-cron": "^4.2.1",
     "nodemailer": "^7.0.5",
+    "pdfkit": "^0.13.0",
     "qrcode": "^1.5.4",
     "razorpay": "^2.9.6",
     "socket.io": "^4.8.1",
@@ -38,6 +41,7 @@
     "winston": "^3.17.0"
   },
   "devDependencies": {
+    "@types/node": "^24.5.2",
     "eslint": "^9.33.0",
     "jest": "^30.0.5",
     "mongodb-memory-server": "^10.2.0",

@@ -12,7 +12,7 @@ const experienceLevels = Array.from({ length: 30 }, (_, i) => i + 1);
 
 const RegisterPage = () => {
     const [formData, setFormData] = useState({
-        name: '', email: '', password: '', role: 'patient',
+        name: '', email: '', password: '', role: 'patient', phone: '',
         specialty: '', city: '', experience: '', licenseNumber: '', govId: '', vehicleRegistrationNumber: ''
     });
     const navigate = useNavigate();
@@ -35,6 +35,7 @@ const RegisterPage = () => {
                 delete payload.licenseNumber;
                 delete payload.govId;
                 delete payload.vehicleRegistrationNumber;
+                delete payload.phone;
             }
 
             const { data } = await registerApi(payload);
@@ -94,6 +95,21 @@ const RegisterPage = () => {
                         <input type="password" name="confirmPassword" onChange={onChange} required className="w-full p-3 bg-primary-dark rounded"/>
                     </div>
                 </div>
+
+                {/* Phone field for professionals */}
+                {isProfessional && (
+                    <div className="mt-4">
+                        <label className="block text-secondary-text mb-2">Phone Number</label>
+                        <input
+                            type="tel"
+                            name="phone"
+                            onChange={onChange}
+                            required
+                            placeholder="+91 9876543210"
+                            className="w-full p-3 bg-primary-dark rounded"
+                        />
+                    </div>
+                )}
 
                 {/* Professional Fields */}
                 {isProfessional && (

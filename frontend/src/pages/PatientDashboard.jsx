@@ -1,39 +1,83 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { getAdherenceData } from '../api';
 
 // --- New Reusable Feature Card Component ---
 // This new card has a gradient background and a cleaner look.
 const NewFeatureCard = ({ icon, title, description, link, color }) => (
     <Link 
         to={link} 
-        className={`bg-gradient-to-br ${color} p-6 rounded-xl shadow-lg text-white transform hover:scale-105 transition-transform duration-300 flex flex-col focus:ring-2 focus:ring-offset-2 focus:outline-none`}
+        className={`bg-gradient-to-br ${color} p-4 md:p-6 rounded-xl shadow-lg text-white transform hover:scale-105 transition-transform duration-300 flex flex-col focus:ring-2 focus:ring-offset-2 focus:outline-none`}
         role="article"
         aria-labelledby={`card-title-${title.toLowerCase().replace(/\s+/g, '-')}`}
     >
-        <span className="text-4xl mb-4" role="img" aria-label={title}>{icon}</span>
-        <h3 id={`card-title-${title.toLowerCase().replace(/\s+/g, '-')}`} className="text-2xl font-bold mb-2">{title}</h3>
-        <p className="text-gray-200 text-sm flex-grow">{description}</p>
+        <span className="text-3xl md:text-4xl mb-3 md:mb-4" role="img" aria-label={title}>{icon}</span>
+        <h3 id={`card-title-${title.toLowerCase().replace(/\s+/g, '-')}`} className="text-xl md:text-2xl font-bold mb-2">{title}</h3>
+        <p className="text-gray-200 text-xs md:text-sm flex-grow">{description}</p>
     </Link>
 );
 
 const PatientDashboard = () => {
   const { user } = useAuth();
+  const [adherenceData, setAdherenceData] = useState(null);
+
+  useEffect(() => {
+    const fetchAdherence = async () => {
+      try {
+        const { data } = await getAdherenceData(30);
+        setAdherenceData(data);
+      } catch (error) {
+        console.error('Error fetching adherence data:', error);
+      }
+    };
+    fetchAdherence();
+  }, []);
 
   return (
     <main className="bg-amber-200 dark:bg-primary-dark min-h-full pt-24 pb-12 px-4">
       <div className="container mx-auto">
-        <header className="mb-12">
-          <h1 className="text-4xl md:text-5xl font-bold text-black dark:text-white">Hello, {user?.name}!</h1>
-          <p className="text-lg text-gray-800 dark:text-secondary-text mt-2">Your personal health command center.</p>
+        <header className="mb-8 md:mb-12">
+          <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-black dark:text-white">Hello, {user?.name}!</h1>
+          <p className="text-base md:text-lg text-gray-800 dark:text-secondary-text mt-2">Your personal health command center.</p>
         </header>
 
-        <section aria-labelledby="care-navigator-title" className="mb-12 bg-secondary-dark text-center py-12 px-4 rounded-lg">
-          <h2 id="care-navigator-title" className="text-3xl font-bold text-white mb-4">Not Sure Where to Start?</h2>
-          <p className="text-secondary-text mb-8 max-w-2xl mx-auto">Let our Care Navigator guide you to the right professional based on your needs.</p>
+        {/* Medication Adherence Section */}
+        {adherenceData && (
+          <section className="mb-8 md:mb-12 bg-gradient-to-r from-green-500 to-blue-600 text-white p-4 md:p-8 rounded-lg shadow-lg">
+            <div className="flex flex-col md:flex-row items-center justify-between mb-4">
+              <div className="mb-4 md:mb-0">
+                <h2 className="text-2xl md:text-3xl font-bold">Medication Adherence</h2>
+                <p className="text-green-100">Track your medication routine</p>
+              </div>
+              <div className="text-center md:text-right">
+                <div className="text-4xl md:text-5xl font-bold">{adherenceData.adherenceScore}%</div>
+                <div className="text-base md:text-lg text-green-100">
+                  {adherenceData.streak > 0 ? `🔥 ${adherenceData.streak} day streak!` : 'Keep it up!'}
+                </div>
+              </div>
+            </div>
+            <div className="bg-white bg-opacity-20 rounded-full h-3 md:h-4 mb-4">
+              <div 
+                className="bg-white h-3 md:h-4 rounded-full transition-all duration-1000"
+                style={{ width: `${adherenceData.adherenceScore}%` }}
+              ></div>
+            </div>
+            <Link
+              to="/my-prescriptions"
+              className="inline-block bg-white text-green-600 font-bold py-2 px-4 md:py-2 md:px-6 rounded-lg hover:bg-gray-100 transition-colors text-sm md:text-base"
+            >
+              View Today's Checklist
+            </Link>
+          </section>
+        )}
+
+        <section aria-labelledby="care-navigator-title" className="mb-8 md:mb-12 bg-secondary-dark text-center py-8 md:py-12 px-4 rounded-lg">
+          <h2 id="care-navigator-title" className="text-2xl md:text-3xl font-bold text-white mb-4">Not Sure Where to Start?</h2>
+          <p className="text-secondary-text mb-6 md:mb-8 max-w-2xl mx-auto text-sm md:text-base">Let our Care Navigator guide you to the right professional based on your needs.</p>
           <Link
             to="/care-navigator"
-            className="bg-accent-blue hover:bg-accent-blue-hover text-white font-bold py-3 px-8 rounded-lg text-lg transition-transform transform hover:scale-105 inline-block focus:ring-2 focus:ring-offset-2 focus:ring-accent-blue focus:outline-none"
+            className="bg-accent-blue hover:bg-accent-blue-hover text-white font-bold py-2 px-6 md:py-3 md:px-8 rounded-lg text-base md:text-lg transition-transform transform hover:scale-105 inline-block focus:ring-2 focus:ring-offset-2 focus:ring-accent-blue focus:outline-none"
             role="button"
             aria-label="Get help choosing the right healthcare professional"
           >
@@ -41,7 +85,7 @@ const PatientDashboard = () => {
           </Link>
         </section>
 
-        <section aria-label="Healthcare Services" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <section aria-label="Healthcare Services" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
           <NewFeatureCard 
             icon="🩺"
             title="Find a Doctor"
@@ -118,6 +162,20 @@ const PatientDashboard = () => {
             description="Quick access to all your payment history."
             link="/payment-history"
             color="from-blue-600 to-blue-800"
+          />
+          <NewFeatureCard
+            icon="🤝"
+            title="Support Community"
+            description="Connect anonymously with others facing similar health challenges."
+            link="/support-community"
+            color="from-orange-600 to-orange-800"
+          />
+          <NewFeatureCard
+            icon="🔍"
+            title="Second Opinion"
+            description="Get expert analysis from top specialists within 48 hours."
+            link="/second-opinion-request"
+            color="from-purple-600 to-purple-800"
           />
         </section>
       </div>

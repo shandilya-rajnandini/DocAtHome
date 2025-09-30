@@ -22,6 +22,7 @@ import About from "./About.jsx";
 import Services from "./Services.jsx";
 import Testimonials from "./Testimonials.jsx";
 import Contact from "./Contact.jsx";
+import DischargeConcierge from "./DischargeConcierge.jsx";
 
 // Protected Patient Pages
 import PatientDashboard from "../pages/PatientDashboard.jsx";
@@ -40,6 +41,7 @@ import PublicDonationPage from "../pages/PublicDonationPage.jsx";
 // Protected Professional Pages
 import DoctorDashboard from "../pages/DoctorDashboard.jsx";
 import NurseDashboard from "../pages/NurseDashboard.jsx";
+import TechnicianDashboard from "../pages/TechnicianDashboard.jsx";
 import DriverDashboard from "../pages/DriverDashboard.jsx";
 import DoctorEditProfilePage from "../pages/DoctorEditProfilePage.jsx";
 import NurseEditProfilePage from "../pages/NurseEditProfilePage.jsx";
@@ -57,6 +59,20 @@ import TwoFactorAuthPage from "../pages/TwoFactorAuthPage.jsx";
 import NotFoundPage from "../pages/NotFoundPage.jsx";
 import ScrollToUp from "./ScrollToUp.jsx";
 
+// Support Community Pages
+import SupportCommunity from "../pages/SupportCommunity.jsx";
+import SupportGroupChat from "../components/SupportGroupChat.jsx";
+import NurseModerationDashboard from "../components/NurseModerationDashboard.jsx";
+
+// Second Opinion Pages
+import SecondOpinionRequest from "../pages/SecondOpinionRequest.jsx";
+import MySecondOpinions from "../pages/MySecondOpinions.jsx";
+import SpecialistSecondOpinions from "../pages/SpecialistSecondOpinions.jsx";
+
+// Forum Pages
+import ForumPage from "../pages/ForumPage.jsx";
+import AskQuestionPage from "../pages/AskQuestionPage.jsx";
+import QuestionDetailPage from "../pages/QuestionDetailPage.jsx";
 
 const AnimatedRoutes = () => {
   const location = useLocation();
@@ -64,7 +80,7 @@ const AnimatedRoutes = () => {
   return (
     <AnimatePresence mode="wait" initial={false}>
       {/* scroll to top on every navigation */}
-     <ScrollToUp/>
+      <ScrollToUp />
       <Routes location={location} key={location.pathname}>
         {/* --- Public Routes --- */}
         <Route
@@ -186,6 +202,14 @@ const AnimatedRoutes = () => {
           element={
             <AnimatedPage>
               <Services />
+            </AnimatedPage>
+          }
+        />
+        <Route
+          path="/discharge-concierge"
+          element={
+            <AnimatedPage>
+              <DischargeConcierge />
             </AnimatedPage>
           }
         />
@@ -329,6 +353,16 @@ const AnimatedRoutes = () => {
           }
         />
         <Route
+          path="/technician/dashboard"
+          element={
+            <AnimatedPage>
+              <ProtectedRoute>
+                <TechnicianDashboard />
+              </ProtectedRoute>
+            </AnimatedPage>
+          }
+        />
+        <Route
           path="/driver/dashboard"
           element={
             <AnimatedPage>
@@ -462,8 +496,105 @@ const AnimatedRoutes = () => {
             </AnimatedPage>
           }
         />
-      </Routes>
+        <Route
+          path="/support-community"
+          element={
+            <AnimatedPage>
+              <ProtectedRoute>
+                <SupportCommunity />
+              </ProtectedRoute>
+            </AnimatedPage>
+          }
+        />
+        <Route
+          path="/support-community/:groupId"
+          element={
+            <AnimatedPage>
+              <ProtectedRoute>
+                <SupportGroupChat />
+              </ProtectedRoute>
+            </AnimatedPage>
+          }
+        />
+        <Route
+          path="/nurse/moderation"
+          element={
+            <AnimatedPage>
+              <ProtectedRoute roles={["nurse", "admin"]}>
+                <NurseModerationDashboard />
+              </ProtectedRoute>
+            </AnimatedPage>
+          }
+        />
+        <Route
+          path="/second-opinion-request"
+          element={
+            <AnimatedPage>
+              <ProtectedRoute>
+                <SecondOpinionRequest />
+              </ProtectedRoute>
+            </AnimatedPage>
+          }
+        />
+        <Route
+          path="/my-second-opinions"
+          element={
+            <AnimatedPage>
+              <ProtectedRoute>
+                <MySecondOpinions />
+              </ProtectedRoute>
+            </AnimatedPage>
+          }
+        />
+        <Route
+          path="/specialist-second-opinions"
+          element={
+            <AnimatedPage>
+              <ProtectedRoute>
+                <SpecialistSecondOpinions />
+              </ProtectedRoute>
+            </AnimatedPage>
+          }
+        />
+        <Route
+          path="/specialist/second-opinions"
+          element={
+            <AnimatedPage>
+              <ProtectedRoute>
+                <SpecialistSecondOpinions />
+              </ProtectedRoute>
+            </AnimatedPage>
+          }
+        />
 
+        {/* --- Forum Routes --- */}
+        <Route
+          path="/forum"
+          element={
+            <AnimatedPage>
+              <ForumPage />
+            </AnimatedPage>
+          }
+        />
+        <Route
+          path="/forum/ask"
+          element={
+            <AnimatedPage>
+              <ProtectedRoute>
+                <AskQuestionPage />
+              </ProtectedRoute>
+            </AnimatedPage>
+          }
+        />
+        <Route
+          path="/forum/question/:questionId"
+          element={
+            <AnimatedPage>
+              <QuestionDetailPage />
+            </AnimatedPage>
+          }
+        />
+      </Routes>
     </AnimatePresence>
   );
 };

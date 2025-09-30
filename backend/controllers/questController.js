@@ -1,6 +1,9 @@
 const Quest = require('../models/Quest');
 const UserQuest = require('../models/UserQuest');
 const User = require('../models/User');
+const Notification = require('../models/Notification');
+const socketManager = require('../utils/socketManager');
+
 const { 
   catchAsync, 
   _AppError, 
@@ -94,6 +97,20 @@ exports.acceptQuest = catchAsync(async (req, res, next) => {
       startedAt: new Date(),
       progress: 0,
       lastLoggedDate: null,
+    });
+
+    // Notification for quest acceptance
+    await Notification.create({
+      userId,
+      message: `You have accepted the quest "${quest.title}". Good luck!`,
+      link: `/quests/${questId}`,
+      isRead: false,
+    });
+
+    // Emit real-time notification
+    socketManager.emitToRoom(userId.toString(), 'new_notification', {
+      message: `You have accepted the quest "${quest.title}". Good luck!`,
+      link: `/quests/${questId}`
     });
 
     res.status(201).json({ 
@@ -205,6 +222,20 @@ exports.logQuestProgress = asyncHandler(async (req, res) => {
       ]);
 
       const [completedQuest, updatedUser] = completionResult;
+
+      // Notification for quest completion
+      await Notification.create({
+        userId,
+        message: `Congratulations! You completed the quest "${updateResult.quest.title}" and earned ${updateResult.quest.points} health points.`,
+        link: `/quests/${completedQuest.quest._id}`,
+        isRead: false,
+      });
+
+      // Emit real-time notification
+      socketManager.emitToRoom(userId.toString(), 'new_notification', {
+        message: `Congratulations! You completed the quest "${updateResult.quest.title}" and earned ${updateResult.quest.points} health points.`,
+        link: `/quests/${completedQuest.quest._id}`
+      }); 
 
       return res.status(200).json({ 
         success: true, 

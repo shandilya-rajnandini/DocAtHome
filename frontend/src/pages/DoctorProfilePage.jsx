@@ -5,24 +5,101 @@ import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
 import VerifiedSkillsBadge from '../components/VerifiedSkillsBadge.jsx';
 import { getAvailability } from '../api';
+import axios from 'axios';
 
 // --- Mock Data ---
 const timeSlots = ["11:00 AM", "11:30 AM", "12:00 PM", "12:30 PM", "01:00 PM", "01:30 PM", "02:00 PM"];
-const generateDates = () => {
-    const dates = [];
-    const today = new Date();
-    for (let i = 0; i < 7; i++) {
-        const futureDate = new Date(today);
-        futureDate.setDate(today.getDate() + i);
-        dates.push({
-            dayName: futureDate.toLocaleDateString('en-US', { weekday: 'short' }).toUpperCase(),
-            day: futureDate.getDate(),
-            fullDate: futureDate.toISOString().split('T')[0],
-        });
+
+const DynamicTriageForm = ({ onSummary }) => {
+  const [symptom, setSymptom] = useState('');
+  const [answers, setAnswers] = useState([]);
+  const [question, setQuestion] = useState('');
+  const [summary, setSummary] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [answerOptions, setAnswerOptions] = useState([]);
+
+  const fetchQuestion = async (symptomInput, answerList) => {
+    setLoading(true);
+    setQuestion('');
+    setSummary('');
+    try {
+      const res = await axios.post('/api/triage/question', { symptom: symptomInput, answers: answerList });
+      if (res.data.question) {
+        setSummary('');
+        setQuestion(res.data.question);
+        setAnswerOptions(res.data.answerOptions || []);
+      } else if (res.data.summary) {
+        setQuestion('');
+        setSummary(res.data.summary);
+        setAnswerOptions([]);
+        onSummary(res.data.summary);
+      } else {
+        setQuestion('');
+        setSummary('');
+        setAnswerOptions([]);
+      }
+    } catch (err) {
+      setQuestion('');
+      setSummary('');
+      setAnswerOptions([]);
+      console.error('Triage fetch failed', err);
+    } finally {
+      setLoading(false);
     }
-    return dates;
+  };
+
+  const handleSymptomChange = (e) => {
+    setSymptom(e.target.value);
+    setAnswers([]);
+    setAnswerOptions([]);
+    setSummary('');
+    if (e.target.value) fetchQuestion(e.target.value, []);
+    else setQuestion('');
+  };
+
+  const handleAnswer = (answer) => {
+    const newAnswers = [...answers, answer];
+    setAnswers(newAnswers);
+    fetchQuestion(symptom, newAnswers);
+  };
+
+  return (
+    <div className="bg-primary-dark p-4 rounded-lg mt-4">
+      <label className="block text-white font-bold mb-2">Describe your main symptom</label>
+      <input type="text" value={symptom} onChange={handleSymptomChange} placeholder="e.g. Severe headache" className="w-full p-3 mb-4 bg-secondary-dark rounded" />
+      {loading && <div className="text-secondary-text">Loading...</div>}
+      {question && !summary && (
+        <div className="mt-2">
+          <label className="block text-white font-semibold mb-2">{question}</label>
+          <div className="flex gap-2 flex-wrap">
+            {answerOptions.length > 0 ? (
+              answerOptions.map((option, index) => (
+                <button
+                  key={index}
+                  onClick={() => handleAnswer(option.value)}
+                  className={`${index % 2 === 0 ? 'bg-accent-blue' : 'bg-gray-600'} text-white px-4 py-2 rounded hover:opacity-80 transition-opacity`}
+                >
+                  {option.label}
+                </button>
+              ))
+            ) : (
+              // Fallback to basic yes/no if no options provided
+              <>
+                <button onClick={() => handleAnswer('yes')} className="bg-accent-blue text-white px-4 py-2 rounded">Yes</button>
+                <button onClick={() => handleAnswer('no')} className="bg-gray-600 text-white px-4 py-2 rounded">No</button>
+              </>
+            )}
+          </div>
+        </div>
+      )}
+      {summary && (
+        <div className="mt-4 p-3 bg-green-900 text-green-200 rounded">
+          <strong>Triage Summary:</strong> {summary}
+        </div>
+      )}
+    </div>
+  );
 };
-const availableDates = generateDates();
 
 const DoctorProfilePage = () => {
     const { id } = useParams();
@@ -200,18 +277,22 @@ const DoctorProfilePage = () => {
                         </div>
                         <div className="mt-8 border-t border-gray-700 pt-6">
                             <h3 className="text-xl font-bold text-white mb-4">Tell us about your condition</h3>
-                            <div className="space-y-4">
-<textarea name="symptoms" value={bookingDetails.symptoms} onChange={handleBookingDetailChange} placeholder="Describe your symptoms or reason for visit..." rows="4" className="w-full p-3 bg-primary-dark rounded-md border-gray-700 text-white"></textarea>
-<input type="text" name="previousMeds" value={bookingDetails.previousMeds} onChange={handleBookingDetailChange} placeholder="List any previous medications (optional)" className="w-full p-3 bg-primary-dark rounded-md border-gray-700 text-white"/>
-                                <div>
-                                    <label className="block text-secondary-text mb-2">Upload previous report/photo (optional)</label>
-                                    <input type="file" name="reportImage" onChange={handleBookingDetailChange} className="w-full text-secondary-text file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-accent-blue file:text-white hover:file:bg-accent-blue-hover"/>
-                                </div>
+                            <DynamicTriageForm
+                              onSummary={(s) => {
+                                setBookingDetails(prev => ({ ...prev, symptoms: s }));
+                              }}
+                            />
+                            <textarea name="symptoms" value={bookingDetails.symptoms} onChange={handleBookingDetailChange} placeholder="Describe your symptoms or reason for visit..." rows="4" className="w-full p-3 bg-primary-dark rounded-md border-gray-700 text-white mt-4"></textarea>
+                            <input type="text" name="previousMeds" value={bookingDetails.previousMeds} onChange={handleBookingDetailChange} placeholder="List any previous medications (optional)" className="w-full p-3 bg-primary-dark rounded-md border-gray-700 text-white"/>
+                            <div>
+                                <label className="block text-secondary-text mb-2">Upload previous report/photo (optional)</label>
+                                <input type="file" name="reportImage" onChange={handleBookingDetailChange} className="w-full text-secondary-text file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-accent-blue file:text-white hover:file:bg-accent-blue-hover"/>
                             </div>
                         </div>
                     </div>
 
-                    <div className="lg:col-span-1 bg-secondary-dark p-6 rounded-lg shadow-lg h-fit">
+                    <div className="lg:col-span-1 sticky top-20">
+                        {/* Booking Summary card content */}
                         <h2 className="text-2xl font-bold text-white mb-4">Booking Summary</h2>
                         <div className="space-y-4 text-secondary-text">
                             <div className="flex justify-between"><span>Doctor:</span><span className="text-white">{doctor.name}</span></div>
