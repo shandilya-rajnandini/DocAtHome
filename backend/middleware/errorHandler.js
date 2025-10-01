@@ -184,8 +184,6 @@ const globalErrorHandler = (err, req, res, _next) => {
   });
 
   if (process.env.NODE_ENV === 'production') {
-    sendErrorDev(err, res);
-  } else {
     let error = { ...err };
     error.message = err.message;
 
@@ -197,6 +195,8 @@ const globalErrorHandler = (err, req, res, _next) => {
     if (error.name === 'TokenExpiredError') error = handleJWTExpiredError();
 
     sendErrorProd(error, res);
+  } else {
+    sendErrorDev(err, res);
   }
 };
 
