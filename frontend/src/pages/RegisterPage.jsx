@@ -12,7 +12,7 @@ const experienceLevels = Array.from({ length: 30 }, (_, i) => i + 1);
 
 const RegisterPage = () => {
     const [formData, setFormData] = useState({
-        name: '', email: '', password: '', role: 'patient', phone: '',
+        name: '', email: '', password: '', confirmPassword: '', role: 'patient', phone: '',
         specialty: '', city: '', experience: '', licenseNumber: '', govId: '', vehicleRegistrationNumber: ''
     });
     const navigate = useNavigate();
@@ -25,8 +25,17 @@ const RegisterPage = () => {
 
     const onSubmit = async (e) => {
         e.preventDefault();
+        
+        // Validate password confirmation
+        if (formData.password !== formData.confirmPassword) {
+            toast.error('Passwords do not match. Please ensure both password fields are identical.');
+            return;
+        }
+        
         try {
             const payload = { ...formData };
+            // Remove confirmPassword from payload as it's not needed by the backend
+            delete payload.confirmPassword;
             if (!isProfessional) {
                 // Remove professional fields if registering as a patient
                 delete payload.specialty;
@@ -53,7 +62,16 @@ const RegisterPage = () => {
                 navigate('/');
             }
         } catch (err) {
-            toast.error(err.response?.data?.msg || 'Registration failed.');
+            console.error('Registration error:', err);
+            
+            // Extract the error message from the backend response
+            const errorMessage = err.response?.data?.message ||    // Validation errors
+                                err.response?.data?.error ||       // Rate limiter errors
+                                err.response?.data?.msg ||         // Legacy format
+                                err.message ||                     // Network errors
+                                'Registration failed. Please try again.';
+            
+            toast.error(errorMessage);
         }
     };
 
@@ -78,21 +96,52 @@ const RegisterPage = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                         <label className="block text-secondary-text mb-2">Full Name</label>
-                        <input type="text" name="name" onChange={onChange} required className="w-full p-3 bg-primary-dark rounded"/>
+                        <input 
+                            type="text" 
+                            name="name" 
+                            value={formData.name}
+                            onChange={onChange} 
+                            required 
+                            className="w-full p-3 bg-primary-dark rounded"
+                        />
                     </div>
                     <div>
                         <label className="block text-secondary-text mb-2">Email Address</label>
-                        <input type="email" name="email" onChange={onChange} required className="w-full p-3 bg-primary-dark rounded"/>
+                        <input 
+                            type="email" 
+                            name="email" 
+                            value={formData.email}
+                            onChange={onChange} 
+                            required 
+                            className="w-full p-3 bg-primary-dark rounded"
+                        />
                     </div>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                     <div>
                         <label className="block text-secondary-text mb-2">Password</label>
-                        <input type="password" name="password" onChange={onChange} required minLength="6" className="w-full p-3 bg-primary-dark rounded"/>
+                        <input 
+                            type="password" 
+                            name="password" 
+                            value={formData.password}
+                            onChange={onChange} 
+                            required 
+                            minLength="8" 
+                            className="w-full p-3 bg-primary-dark rounded"
+                        />
                     </div>
                     <div>
                         <label className="block text-secondary-text mb-2">Confirm Password</label>
-                        <input type="password" name="confirmPassword" onChange={onChange} required className="w-full p-3 bg-primary-dark rounded"/>
+                        <input 
+                            type="password" 
+                            name="confirmPassword" 
+                            minLength="8" 
+                            value={formData.confirmPassword}
+                            onChange={onChange} 
+                            required 
+                            className="w-full p-3 bg-primary-dark rounded"
+                        />
+            
                     </div>
                 </div>
 

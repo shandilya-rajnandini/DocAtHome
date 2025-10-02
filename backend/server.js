@@ -9,6 +9,7 @@ const connectDB = require('./config/db');
 const socketManager = require('./utils/socketManager');
 const { startScheduler } = require('./utils/adherenceScheduler');
 const { protect } = require('./middleware/authMiddleware');
+const { globalErrorHandler } = require('./middleware/errorHandler');
 
 dotenv.config();
 const app = express();
@@ -110,10 +111,9 @@ app.get('/health', (req, res) => res.status(200).send('OK'));
 app.use((req, res, _next) => {
   res.status(404).json({ message: 'API endpoint not found' });
 });
-app.use((err, req, res, _next) => {
-  console.error(err.stack);
-  res.status(500).json({ message: 'Internal Server Error' });
-});
+
+// Use the comprehensive global error handler
+app.use(globalErrorHandler);
 
 const server = http.createServer(app);
 

@@ -13,7 +13,12 @@ const ForgotPasswordPage = () => {
       await forgotPassword({ email });
       toast.success('Password reset email sent. Please check your inbox.');
     } catch (err) {
-      toast.error(err.response?.data?.msg || 'Failed to send email.');
+      const errorMessage = err.response?.data?.message || 
+                          err.response?.data?.error || 
+                          err.response?.data?.msg || 
+                          err.message || 
+                          'Failed to send email.';
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }
