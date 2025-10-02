@@ -126,7 +126,7 @@ const RegisterPage = () => {
                             value={formData.password}
                             onChange={onChange} 
                             required 
-                            minLength="6" 
+                            minLength="8" 
                             className="w-full p-3 bg-primary-dark rounded"
                         />
                     </div>
@@ -135,6 +135,7 @@ const RegisterPage = () => {
                         <input 
                             type="password" 
                             name="confirmPassword" 
+                            minLength="8" 
                             value={formData.confirmPassword}
                             onChange={onChange} 
                             required 
