@@ -48,6 +48,8 @@ app.use(helmet());
 
 // Inside server.js
 app.use('/api/announcements', require('./routes/announcementRoutes'));
+
+app.use("/api/profile", require("./routes/profileRoutes")); 
 // ... (all your other app.use routes) ...
 app.use('/api/lab-tests', require('./routes/labTestRoutes'));
 
