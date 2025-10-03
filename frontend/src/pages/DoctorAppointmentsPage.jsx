@@ -7,6 +7,7 @@ import {
   updateRelayNote,
 } from "../api";
 import toast from "react-hot-toast";
+import { useApi } from "../hooks";
 import DoctorNotesModal from "../components/DoctorNotesModal";
 import RelayNote from "../components/RelayNote";
 import Modal from "../components/Modal";
@@ -15,10 +16,20 @@ import { Calendar } from "lucide-react";
 import FollowUpModal from "../components/FollowUpModal";
 
 const DoctorAppointmentsPage = () => {
-  const [appointments, setAppointments] = useState([]);
-  const [loading, setLoading] = useState(true);
   // const { user } = useAuth(); // Removed unused import
   const [filter, setFilter] = useState("Pending"); // To filter by status
+
+  // Use the useApi hook for handling appointments
+  const {
+    data: appointmentsResponse,
+    loading,
+    request: loadAppointments,
+  } = useApi(getMyAppointments, {
+    defaultErrorMessage: "Could not fetch appointments.",
+  });
+
+  // Extract appointments from the API response
+  const appointments = appointmentsResponse?.data || [];
   const [isNotesModalOpen, setIsNotesModalOpen] = useState(false);
   const [selectedApptId, setSelectedApptId] = useState(null);
   const [isSummaryModalOpen, setIsSummaryModalOpen] = useState(false);
@@ -94,7 +105,7 @@ const DoctorAppointmentsPage = () => {
                 saveAppointmentVoiceNote(id, data.secure_url)
                   .then(() => {
                     toast.success("Voice note saved to appointment!");
-                    fetchAppointments();
+                    loadAppointments();
                   })
                   .catch(() =>
                     toast.error("Failed to save voice note to appointment.")
@@ -110,42 +121,19 @@ const DoctorAppointmentsPage = () => {
         });
     }
   };
-  const fetchAppointments = async () => {
-    setLoading(true);
-    try {
-      const { data } = await getMyAppointments();
-      // The API returns an object like { success, count, data: [...] }
-      // We need to set the inner 'data' array to the state.
-      setAppointments(data.data || []);
-    // eslint-disable-next-line no-unused-vars
-    } catch (error) {
-      toast.error("Could not fetch appointments.");
-      setAppointments([]); // Ensure state is an array even on error
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
-    fetchAppointments();
-  }, []);
+    loadAppointments();
+  }, [loadAppointments]);
 
   const handleStatusUpdate = async (id, newStatus, doctorNotes = "") => {
-    const originalAppointments = [...appointments];
-
-    // Optimistically update the UI
-    const updatedAppointments = appointments.map((appt) =>
-      appt._id === id ? { ...appt, status: newStatus, doctorNotes } : appt
-    );
-    setAppointments(updatedAppointments);
-
     try {
       await updateAppointmentStatus(id, { status: newStatus, doctorNotes });
       toast.success(`Appointment successfully ${newStatus.toLowerCase()}!`);
-    // eslint-disable-next-line no-unused-vars
+      // Refresh the appointments list
+      loadAppointments();
+      // eslint-disable-next-line no-unused-vars
     } catch (error) {
       toast.error("Failed to update status. Please try again.");
-      setAppointments(originalAppointments);
     }
   };
 
@@ -166,7 +154,7 @@ const DoctorAppointmentsPage = () => {
     try {
       const { data } = await getAppointmentSummary(id);
       setSummary(data.summary);
-    // eslint-disable-next-line no-unused-vars
+      // eslint-disable-next-line no-unused-vars
     } catch (error) {
       toast.error("Could not fetch summary.");
       setSummary("Failed to load summary.");
@@ -294,12 +282,23 @@ const DoctorAppointmentsPage = () => {
                         </>
                       )}
                       {appt.status === "Confirmed" && (
-                        <button
-                          onClick={() => openNotesModal(appt._id)}
-                          className="bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold py-2 px-3 rounded"
-                        >
-                          Mark as Complete
-                        </button>
+                        <>
+                          <button
+                            onClick={() => openNotesModal(appt._id)}
+                            className="bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold py-2 px-3 rounded"
+                          >
+                            Mark as Complete
+                          </button>
+                          <a
+                            href={`/api/appointments/${appt._id}/intake-form`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="bg-green-600 hover:bg-green-700 text-white text-sm font-bold py-2 px-3 rounded"
+                            style={{ marginTop: "0.5rem" }}
+                          >
+                            Download Intake Form
+                          </a>
+                        </>
                       )}
                       {appt.status === "Completed" && (
                         <button
@@ -387,31 +386,32 @@ const DoctorAppointmentsPage = () => {
                     </div>
                   )}
                   {/* --- Relay Note Section --- */}
-                  {appt.status === "Completed" && (appt.relayNote ? (
-                    <div className="bg-secondary-dark p-4 rounded-lg shadow-lg">
-                      <strong>Relay Note:</strong>
-                      <p>{appt.relayNote}</p>
+                  {appt.status === "Completed" &&
+                    (appt.relayNote ? (
+                      <div className="bg-secondary-dark p-4 rounded-lg shadow-lg">
+                        <strong>Relay Note:</strong>
+                        <p>{appt.relayNote}</p>
+                        <button
+                          onClick={() => {
+                            setSelectedAppt(appt);
+                            setIsRelayNoteOpen(true);
+                          }}
+                          className="bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-2 rounded mt-2"
+                        >
+                          Edit Relay Note
+                        </button>
+                      </div>
+                    ) : (
                       <button
                         onClick={() => {
                           setSelectedAppt(appt);
                           setIsRelayNoteOpen(true);
                         }}
-                        className="bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-2 rounded mt-2"
+                        className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded mt-2"
                       >
-                        Edit Relay Note
+                        Add Relay Note
                       </button>
-                    </div>
-                  ) : (
-                    <button
-                      onClick={() => {
-                        setSelectedAppt(appt);
-                        setIsRelayNoteOpen(true);
-                      }}
-                      className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded mt-2"
-                    >
-                      Add Relay Note
-                    </button>
-                  ))}
+                    ))}
                 </div>
               ))
             ) : (
@@ -452,18 +452,18 @@ const DoctorAppointmentsPage = () => {
             updateRelayNote(selectedAppt._id, relayNote)
               .then(() => {
                 toast.success("Relay note saved successfully!");
-                fetchAppointments();
+                loadAppointments();
               })
               .catch(() => toast.error("Failed to save relay note."));
           }
           setIsRelayNoteOpen(false);
         }}
-        />
+      />
       <FollowUpModal
         isOpen={isFollowUpModalOpen}
         onClose={() => setIsFollowUpModalOpen(false)}
         appointmentId={selectedApptId}
-        onFollowUpScheduled={fetchAppointments}
+        onFollowUpScheduled={() => loadAppointments()}
       />
     </div>
   );

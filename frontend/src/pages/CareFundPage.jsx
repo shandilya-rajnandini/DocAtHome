@@ -1,39 +1,34 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from "react";
 // Correctly import the specific functions you need with curly braces
-import { getMyCareFund, createDonationOrder } from '../api/index.js';
-import { useAuth } from '../context/AuthContext';
-import toast from 'react-hot-toast';
+import { getMyCareFund } from "../api/index.js";
+import { useApi } from "../hooks";
 
 const CareFundPage = () => {
-    const [fund, setFund] = useState(null);
-    const [loading, setLoading] = useState(true);
-    // ... (add other state for donation form)
+  // Use the useApi hook for handling care fund data
+  const {
+    data: fund,
+    loading,
+    request: fetchFund,
+  } = useApi(getMyCareFund, {
+    defaultErrorMessage: "Could not load your Care Fund details.",
+    initialLoading: true,
+  });
 
-    useEffect(() => {
-        const fetchFund = async () => {
-            try {
-                const { data } = await getMyCareFund();
-                setFund(data);
-            } catch (error) {
-                toast.error("Could not load your Care Fund details.");
-            } finally {
-                setLoading(false);
-            }
-        };
-        fetchFund();
-    }, []);
+  useEffect(() => {
+    fetchFund();
+  }, [fetchFund]);
 
-    // ... (add JSX and other functions for the page)
+  // ... (add JSX and other functions for the page)
 
-    if (loading) return <div>Loading...</div>;
+  if (loading) return <div>Loading...</div>;
 
-    return (
-        <div>
-            <h1>My Care Fund</h1>
-            <p>Current Balance: ₹{fund?.careFundBalance || 0}</p>
-            {/* Add donation form and other UI elements here */}
-        </div>
-    );
+  return (
+    <div>
+      <h1>My Care Fund</h1>
+      <p>Current Balance: ₹{fund?.careFundBalance || 0}</p>
+      {/* Add donation form and other UI elements here */}
+    </div>
+  );
 };
 
 export default CareFundPage;

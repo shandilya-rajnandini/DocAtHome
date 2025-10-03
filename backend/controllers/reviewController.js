@@ -1,6 +1,8 @@
 const Review = require('../models/Review');
 const User = require('../models/User');
 const asyncHandler = require('../middleware/asyncHandler');
+const Notification = require('../models/Notification');
+const socketManager = require('../utils/socketManager');
 
 // @desc    Create a new review
 // @route   POST /api/doctors/:doctorId/reviews
@@ -38,6 +40,20 @@ exports.createReview = asyncHandler(async (req, res) => {
         averageRating: 0
       });
     }
+    
+    // Create notification to notify the doctor of the new review
+    await Notification.create({
+      userId: doctor._id,
+      message: `You have received a new review from a patient.`,
+      link: `/doctors/${doctor._id}/reviews`,
+      isRead: false,
+    });
+
+    // Emit real-time notification via Socket.IO
+    socketManager.emitToRoom(doctor._id.toString(), 'new_notification', {
+      message: `You have received a new review from a patient.`,
+      link: `/doctors/${doctor._id}/reviews`
+    });
 
     res.status(201).json({ success: true, data: review });
 });

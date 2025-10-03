@@ -1,9 +1,13 @@
-// import { useState, useEffect } from 'react';
-// import { Link } from 'react-router-dom';
+
 // import { getMyProfile, updateMyProfile } from '../api';
-// import toast from 'react-hot-toast';
-// import ServiceAreaMap from '../components/ServiceAreaMap';
-// import { useNavigate } from 'react-router-dom';
+
+import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import { getMyProfile, updateMyProfile, deleteMyProfile } from '../api';
+import toast from 'react-hot-toast';
+import ServiceAreaMap from '../components/ServiceAreaMap';
+import { useNavigate } from 'react-router-dom';
+
 
 // const DoctorEditProfilePage = () => {
 //     const [profile, setProfile] = useState({ 
@@ -400,10 +404,27 @@ const DoctorEditProfilePage = () => {
     }
   };
 
+
   // Replace the old onSubmit with explicit Save Draft/Publish calls
   // Note: The form's onSubmit event should be removed or changed to point to handleSaveDraft
   const handleSaveDraft = (e) => handleSaveProfile("Draft", e);
   const handlePublishProfile = (e) => handleSaveProfile("Published", e);
+
+  const handleDeactivate = async () => {
+        setIsDeactivating(true);
+        try {
+            await deleteMyProfile();
+            toast.success('Account deactivated.');
+            localStorage.clear();
+            navigate('/login');
+        } catch (error) {
+            toast.error(error.response?.data?.message || 'Failed to deactivate account');
+        } finally {
+            setIsDeactivating(false);
+            setShowDeactivateModal(false);
+        }
+    };
+
 
   // 4. Deactivate logic (copied from the end of your original file)
   const disable2FA = async () => {
@@ -617,6 +638,7 @@ const DoctorEditProfilePage = () => {
               )}
             </div>
 
+
             {/* 6. NEW BUTTONS: Save Draft and Publish Profile */}
             <div className="space-x-4">
               {/* Save Draft Button (replaces the old 'Save Changes' submit button) */}
@@ -692,5 +714,6 @@ const DoctorEditProfilePage = () => {
       )}
     </div>
   );
+
 };
 export default DoctorEditProfilePage;

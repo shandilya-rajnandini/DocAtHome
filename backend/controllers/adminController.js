@@ -4,7 +4,10 @@ const asyncHandler = require('../middleware/asyncHandler');
 // @desc    Get all users pending verification
 // @route   GET /api/admin/pending
 exports.getPendingUsers = asyncHandler(async (req, res) => {
-  const pendingUsers = await User.find({ isVerified: false, role: { $in: ['doctor', 'nurse'] } });
+  const pendingUsers = await User.find({
+    isVerified: false,
+    role: { $in: ['doctor', 'nurse', 'technician', 'ambulance'] }
+  }).select('name email role specialty city flags createdAt');
   res.json(pendingUsers);
 });
 

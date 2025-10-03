@@ -1,5 +1,7 @@
 const User = require('../models/User');
 const asyncHandler = require('../middleware/asyncHandler');
+const Notification = require('../models/Notification');
+const socketManager = require('../utils/socketManager');
 
 // @desc    Get current user's profile
 // @route   GET /api/profile/me
@@ -128,6 +130,20 @@ exports.inviteToCareCircle = asyncHandler(async (req, res) => {
             status: 'Active' // Auto-activating for this demo
         });
         await circle.save();
+        if (memberUser) {
+          await Notification.create({
+            userId: memberUser._id,
+            message: `You have been invited to join a care circle as a ${role}.`,
+            link: '/carecircle', // Adjust route as needed
+            isRead: false,
+          });
+
+          // Emit notification in real-time
+          socketManager.emitToRoom(memberUser._id.toString(), 'new_notification', {
+            message: `You have been invited to join a care circle as a ${role}.`,
+            link: '/carecircle'
+          });
+        }
         res.json(circle);
 });
 
