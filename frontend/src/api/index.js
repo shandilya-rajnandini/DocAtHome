@@ -1,10 +1,19 @@
 import axios from "axios";
 
+
+// // This hardcoded URL is the most reliable way to ensure the live frontend
+// // talks to the live backend. Replace with your actual Render/Fly.io URL.
+// const API_URL = 'https://docathome-backend.onrender.com/api';
+// This line now reads the URL from your .env file for local development,
+// but provides a fallback for the live production build.
+//const API_URL = import.meta.env.VITE_API_BASE_URL;
+
 // Environment-aware API URL configuration with fallback
 const API_URL =
   import.meta.env.VITE_API_URL ||
   import.meta.env.VITE_API_BASE_URL ||
   "https://docathome-backend.onrender.com/api";
+
 
 // Debug logging for development
 if (import.meta.env.DEV) {
