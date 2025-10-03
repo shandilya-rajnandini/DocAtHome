@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { getMyAppointments, updateAppointmentStatus } from "../api";
 import { useAuth } from "../context/AuthContext";
 import toast from "react-hot-toast";
+import { useApi } from "../hooks";
 import IconCalendarCheck from "../components/icons/IconCalendarCheck";
 import IconHistory from "../components/icons/IconHistory";
 import IconStethoscope from "../components/icons/IconStethoscope";
@@ -351,32 +352,26 @@ const AppointmentCard = ({ appointment, onAppointmentUpdate }) => {
 };
 
 const MyAppointmentsPage = () => {
-  const [appointments, setAppointments] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("Upcoming");
   const { user } = useAuth();
 
-  const fetchAppointments = async () => {
-    try {
-      const { data } = await getMyAppointments();
-      setAppointments(data.data || []); // Handle the case where data.data might not exist
-    } catch (error) {
-      toast.error("Could not fetch your appointments.");
-      console.error(error);
-    }
-  };
+  // Use the useApi hook for handling appointments
+  const {
+    data: appointmentsResponse,
+    loading,
+    request: fetchAppointments,
+  } = useApi(getMyAppointments, {
+    defaultErrorMessage: "Could not fetch your appointments.",
+  });
+
+  // Extract appointments from the API response
+  const appointments = appointmentsResponse?.data || [];
 
   useEffect(() => {
-    const loadAppointments = async () => {
-      setLoading(true);
-      await fetchAppointments();
-      setLoading(false);
-    };
-
     if (user) {
-      loadAppointments();
+      fetchAppointments();
     }
-  }, [user]);
+  }, [user, fetchAppointments]);
 
   const filteredAppointments = appointments.filter((appt) => {
     const appointmentDate = new Date(appt.appointmentDate);
@@ -472,7 +467,7 @@ const MyAppointmentsPage = () => {
                 <AppointmentCard
                   key={appt._id}
                   appointment={appt}
-                  onAppointmentUpdate={fetchAppointments}
+                  onAppointmentUpdate={() => fetchAppointments()}
                 />
               ))}
             </div>
