@@ -9,29 +9,29 @@ const bcrypt = require('bcryptjs');
 const UserSchema = new mongoose.Schema({
   name: {
     type: String,
-    required: [true, 'Please add a name'],
+    required: [true, "Please add a name"],
   },
   email: {
     type: String,
-    required: [true, 'Please add an email'],
+    required: [true, "Please add an email"],
     unique: true,
     match: [
       /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/,
-      'Please add a valid email',
+      "Please add a valid email",
     ],
   },
   password: {
     type: String,
-    required: [true, 'Please add a password'],
+    required: [true, "Please add a password"],
     minlength: 6,
     select: false,
   },
   role: {
     type: String,
-  enum: ['patient', 'doctor', 'nurse', 'admin', 'technician', 'ambulance'],
-    default: 'patient',
+    enum: ["patient", "doctor", "nurse", "admin", "technician", "ambulance"],
+    default: "patient",
   },
-  
+
   isOnline: {
     type: Boolean,
     default: false,
@@ -41,19 +41,19 @@ const UserSchema = new mongoose.Schema({
   specialty: {
     type: String,
     required: function () {
-      return this.role === 'doctor' || this.role === 'nurse';
+      return this.role === "doctor" || this.role === "nurse";
     },
   },
   city: {
     type: String,
     required: function () {
-      return this.role === 'doctor' || this.role === 'nurse';
+      return this.role === "doctor" || this.role === "nurse";
     },
   },
   experience: {
     type: Number,
     required: function () {
-      return this.role === 'doctor' || this.role === 'nurse';
+      return this.role === "doctor" || this.role === "nurse";
     },
   },
   qualifications: {
@@ -65,34 +65,41 @@ const UserSchema = new mongoose.Schema({
   licenseNumber: {
     type: String,
     required: function () {
-      return this.role === 'doctor' || this.role === 'nurse';
+      return this.role === "doctor" || this.role === "nurse";
     },
   },
   govId: {
     type: String,
     required: function () {
-      return this.role === 'doctor' || this.role === 'nurse';
+      return this.role === "doctor" || this.role === "nurse";
     },
   },
+  profileStatus: {
+    type: String,
+    enum: ["Draft", "Published"],
+    default: "Draft",
+    required: true, // Generally a good idea for required fields
+  },
+
   certificationId: {
     type: String,
     required: function () {
-      return this.role === 'technician';
+      return this.role === "technician";
     },
 
-  // --- Ambulance Driver Specific Fields ---
-  driverLicenseNumber: {
-    type: String,
-    required: function () {
-      return this.role === 'ambulance';
+    // --- Ambulance Driver Specific Fields ---
+    driverLicenseNumber: {
+      type: String,
+      required: function () {
+        return this.role === "ambulance";
+      },
     },
-  },
-  vehicleRegistrationNumber: {
-    type: String,
-    required: function () {
-      return this.role === 'ambulance';
+    vehicleRegistrationNumber: {
+      type: String,
+      required: function () {
+        return this.role === "ambulance";
+      },
     },
-  },
   },
 
   // --- Patient-Specific Medical Info ---
@@ -107,13 +114,13 @@ const UserSchema = new mongoose.Schema({
   careFundBalance: {
     type: Number,
     default: 0,
-    min: [0, 'Care fund balance cannot be negative'],
+    min: [0, "Care fund balance cannot be negative"],
     validate: {
-      validator: function(balance) {
+      validator: function (balance) {
         return Number.isInteger(balance) && balance >= 0;
       },
-      message: 'Care fund balance must be a non-negative integer in paise'
-    }
+      message: "Care fund balance must be a non-negative integer in paise",
+    },
   },
 
   // --- Status & Ratings ---
@@ -123,7 +130,7 @@ const UserSchema = new mongoose.Schema({
   },
   averageRating: {
     type: Number,
-    max: [5, 'Rating must not be more than 5'],
+    max: [5, "Rating must not be more than 5"],
     default: 0,
   },
   numReviews: {
@@ -132,7 +139,7 @@ const UserSchema = new mongoose.Schema({
   },
   profilePictureUrl: {
     type: String,
-    default: '',
+    default: "",
   },
   verifiedSkills: {
     type: [String],
@@ -174,22 +181,22 @@ const UserSchema = new mongoose.Schema({
   // --- Subscription Fields ---
   subscriptionTier: {
     type: String,
-    enum: ['free', 'pro'],
-    default: 'free',
+    enum: ["free", "pro"],
+    default: "free",
     required: function () {
-      return this.role === 'doctor' || this.role === 'nurse';
+      return this.role === "doctor" || this.role === "nurse";
     },
   },
   subscriptionExpiry: {
     type: Date,
     required: function () {
-      return this.subscriptionTier === 'pro';
+      return this.subscriptionTier === "pro";
     },
   },
   razorpaySubscriptionId: {
     type: String,
     required: function () {
-      return this.subscriptionTier === 'pro';
+      return this.subscriptionTier === "pro";
     },
   },
 
@@ -197,7 +204,7 @@ const UserSchema = new mongoose.Schema({
   serviceArea: {
     type: {
       type: String,
-      enum: ['Polygon'],
+      enum: ["Polygon"],
       required: false,
     },
     coordinates: {

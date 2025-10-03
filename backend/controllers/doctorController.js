@@ -134,7 +134,11 @@ const getDoctors = asyncHandler(async (req, res) => {
     radius = 10,
   } = req.query;
 
-  const baseQuery = { role: "doctor", isVerified: true };
+  const baseQuery = {
+    role: "doctor",
+    isVerified: true,
+    profileStatus: "Published", 
+  };
 
   // Apply filters
   if (specialty && specialty !== "") {
@@ -369,7 +373,12 @@ const searchDoctors = asyncHandler(async (req, res) => {
   // Filter parameters
   const { specialty, city, lat, lng, minExperience, maxExperience, sortBy } =
     req.query;
-  const query = { role: "doctor", isVerified: true };
+  
+  const query = {
+    role: "doctor",
+    isVerified: true,
+    profileStatus: "Published", 
+  };
 
   // Apply filters
   if (specialty) {
