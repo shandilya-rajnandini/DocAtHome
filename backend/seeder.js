@@ -52,20 +52,44 @@ const importData = async () => {
         const specialties = ['Cardiologist', 'Dermatologist', 'Gynecologist', 'Dentist', 'Pediatrician', 'General Physician', 'Neurologist'];
         const cities = ['Mumbai', 'Delhi', 'Bangalore', 'Pune', 'Patna', 'Kolkata', 'Chennai'];
         
+        // City coordinates for approximate locations (latitude, longitude)
+        const cityCoordinates = {
+            'Mumbai': [19.0760, 72.8777],
+            'Delhi': [28.7041, 77.1025],
+            'Bangalore': [12.9716, 77.5946],
+            'Pune': [18.5204, 73.8567],
+            'Patna': [25.5941, 85.1376],
+            'Kolkata': [22.5726, 88.3639],
+            'Chennai': [13.0827, 80.2707]
+        };
+        
         const doctorsToCreate = [];
         for (let i = 0; i < 50; i++) {
             const email = faker.internet.email().toLowerCase();
+            const city = faker.helpers.arrayElement(cities);
+            const baseLat = cityCoordinates[city][0];
+            const baseLng = cityCoordinates[city][1];
+            
+            // Add some randomization within a 10km radius for privacy
+            const randomLatOffset = (faker.number.float({ min: -0.09, max: 0.09 })); // ~10km variance
+            const randomLngOffset = (faker.number.float({ min: -0.09, max: 0.09 })); // ~10km variance
+            
             doctorsToCreate.push({
                 name: `Dr. ${faker.person.firstName()} ${faker.person.lastName()}`,
                 email: email,
                 password: getUniquePasswordForUser(email),
                 role: 'doctor',
                 specialty: faker.helpers.arrayElement(specialties),
-                city: faker.helpers.arrayElement(cities),
+                city: city,
                 experience: faker.number.int({ min: 2, max: 25 }),
                 licenseNumber: `DOC-${faker.string.alphanumeric(8).toUpperCase()}`,
                 govId: `GOV-${faker.string.alphanumeric(8).toUpperCase()}`,
                 isVerified: true,
+                // Add location coordinates for map display
+                location: {
+                    type: 'Point',
+                    coordinates: [baseLng + randomLngOffset, baseLat + randomLatOffset] // [longitude, latitude]
+                }
             });
         }
         await User.create(doctorsToCreate);

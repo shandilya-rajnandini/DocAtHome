@@ -3,6 +3,24 @@ const asyncHandler = require('../middleware/asyncHandler');
 const Notification = require('../models/Notification');
 const socketManager = require('../utils/socketManager');
 
+// Helper function to calculate the centroid of a polygon
+const calculatePolygonCentroid = (coordinates) => {
+  let totalLat = 0;
+  let totalLng = 0;
+  let totalPoints = 0;
+
+  // coordinates is an array of [lng, lat] pairs
+  for (const coord of coordinates) {
+    if (coord && coord.length >= 2) {
+      totalLng += coord[0]; // longitude
+      totalLat += coord[1]; // latitude
+      totalPoints++;
+    }
+  }
+
+  return [totalLng / totalPoints, totalLat / totalPoints]; // Return as [lng, lat] for GeoJSON
+};
+
 // @desc    Get current user's profile
 // @route   GET /api/profile/me
 exports.getMyProfile = asyncHandler(async (req, res) => {
@@ -41,6 +59,7 @@ exports.updateMyProfile = asyncHandler(async (req, res) => {
     if (serviceArea === null) {
       // Allow clearing the service area
       profileFields.serviceArea = null;
+      profileFields.serviceAreaCentroid = null;
     } else {
       try {
         // Allow serviceArea to be a parsed object or a JSON string
@@ -51,7 +70,29 @@ exports.updateMyProfile = asyncHandler(async (req, res) => {
           Array.isArray(area.coordinates) &&
           Array.isArray(area.coordinates[0])
         ) {
+          // Ensure the polygon is properly closed (first and last coordinates are the same)
+          const coordinates = area.coordinates[0];
+          const firstCoord = coordinates[0];
+          const lastCoord = coordinates[coordinates.length - 1];
+          
+          // If not properly closed, close it
+          if (firstCoord[0] !== lastCoord[0] || firstCoord[1] !== lastCoord[1]) {
+            coordinates.push([firstCoord[0], firstCoord[1]]);
+          }
+          
+          // Calculate centroid from the service area coordinates (excluding the closing point)
+          const centroid = calculatePolygonCentroid(coordinates.slice(0, -1));
+          
+          area.coordinates[0] = coordinates;
           profileFields.serviceArea = area;
+          
+          // Store centroid as a separate GeoJSON Point field
+          profileFields.serviceAreaCentroid = {
+            type: 'Point',
+            coordinates: centroid
+          };
+          
+          console.log(`Calculated centroid ${centroid} for service area for user ${req.user.id}`);
         } else {
           return res.status(400).json({ msg: 'Invalid serviceArea. Expect GeoJSON Polygon.' });
         }
@@ -75,6 +116,35 @@ exports.updateMyProfile = asyncHandler(async (req, res) => {
     res.json(profile);
 });
 
+// @desc    Update current user's location
+// @route   PUT /api/profile/location
+exports.updateMyLocation = asyncHandler(async (req, res) => {
+  const { latitude, longitude } = req.body;
+
+  if (!latitude || !longitude) {
+    return res.status(400).json({ msg: 'Latitude and longitude are required' });
+  }
+
+  const locationData = {
+    type: 'Point',
+    coordinates: [parseFloat(longitude), parseFloat(latitude)]
+  };
+
+  const profile = await User.findByIdAndUpdate(
+    req.user.id,
+    { $set: { location: locationData } },
+    { new: true, runValidators: true }
+  ).select('-password');
+
+  if (!profile) {
+    return res.status(404).json({ msg: 'Profile not found' });
+  }
+
+  res.json({ 
+    message: 'Location updated successfully',
+    location: profile.location 
+  });
+});
 
 
 // ... existing getMyProfile and updateMyProfile functions

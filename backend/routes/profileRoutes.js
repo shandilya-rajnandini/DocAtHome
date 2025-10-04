@@ -5,6 +5,7 @@ const router = express.Router();
 const { 
     getMyProfile, 
     updateMyProfile, 
+    updateMyLocation,
     getMyCareCircle, 
     inviteToCareCircle,
     getProfileById, // <-- Import the new function
@@ -21,6 +22,10 @@ router.route('/me')
     .get(protect, getMyProfile)
     .put(protect, updateMyProfile)
     .delete(protect, deactivateMyAccount);
+
+// Route for updating user location
+router.route('/location')
+    .put(protect, updateMyLocation);
 
 // Route for the logged-in user's Care Circle
 router.route('/my-care-circle')
