@@ -4,12 +4,16 @@
     <!-- <img src="URL_TO_YOUR_LOGO.png" alt="Logo" width="80" height="80"> -->
   </a>
 
+  <img src="https://user-images.githubusercontent.com/74038190/212284100-561aa473-3905-4a80-b561-0d28506553ee.gif" width="100%">
+  
   <h1 align="center">Doc@Home - On-Demand In-Home Healthcare</h1>
+  
+  <img src="https://user-images.githubusercontent.com/74038190/212284100-561aa473-3905-4a80-b561-0d28506553ee.gif" width="100%">
 
   <p align="center">
     A full-stack web application built with the MERN stack to bridge the gap between patients seeking convenient healthcare and underemployed medical professionals.
     <br />
-    <a href="[YOUR-LIVE-DEMO-LINK]"><strong>Explore the Live Demo »</strong></a>
+    <a href="https://docathome-rajnandini.netlify.app/forum?category=medication"><strong>Explore the Live Demo »</strong></a>
     <br />
     <br />
     <a href="https://github.com/shandilya-rajnandini/DocAtHome/issues">Report a Bug</a>
@@ -30,18 +34,41 @@
 
 </div>
 
----
+
+<div align="center">
+<img src="https://readme-typing-svg.herokuapp.com?font=Fira+Code&weight=600&size=24&duration=3000&pause=1000&color=0000FF&center=true&vCenter=true&width=700&lines=Welcome+to+Open+Source+Contribution!;GirlScript+Summer+of+Code+GSSoC+2025!+🎉;Start+this+repo+now!;Fork+it+🚀;Contribute+to+it+🛠️;Commit+to+your+forked+repo+💾;Create+a+Pull+Request+without+conflicts+✅" alt="Typing SVG" />
+</div>
+
+<img src="https://user-images.githubusercontent.com/74038190/212284100-561aa473-3905-4a80-b561-0d28506553ee.gif" width="100%">
+
+## 🎯 Vision
+<p>
+Make high-quality, trustworthy in‑home healthcare universally accessible by connecting verified medical professionals with patients through a simple, secure platform.
+<ul>
+<li>Enable convenient, safe home care for patients.</li>
+<li>Create dignified, flexible earning opportunities for verified medical professionals.</li>
+<li>Build a community-driven, verifiable marketplace that prioritizes quality and trust.</li>
+</ul>
+</p>
+<img src="https://user-images.githubusercontent.com/74038190/212284100-561aa473-3905-4a80-b561-0d28506553ee.gif" width="100%">
 
 ## 🌟 Why Doc@Home?
 
 Doc@Home is not just another booking app; it's an ecosystem designed with a strong social mission. We address a critical, dual-sided problem in the healthcare landscape:
 
 *   **For Patients:** Provides a single, trusted platform to book a wide range of verified in-home medical services—from doctor consultations to nursing care and lab tests—eliminating the stress and hassle of hospital visits.
+  
 *   **For Professionals:** Creates dignified, flexible employment for an often-overlooked workforce, including MBBS graduates, retired nurses, and technicians, allowing them to earn a fair income directly from patients.
 
-This project was selected for the **GirlScript Summer of Code '24**, and our goal is to build a high-impact, community-driven platform.
+This project was selected for the **GirlScript Summer of Code '25**, and our goal is to build a high-impact, community-driven platform.
 
----
+<img src="https://user-images.githubusercontent.com/74038190/212284100-561aa473-3905-4a80-b561-0d28506553ee.gif" width="100%">
+
+## 🔁 Project Flowchart
+
+<img width="600" height="300" alt="Flowchart" src="https://github.com/user-attachments/assets/81a7cdfa-c5f6-4405-b2d0-85887015cb23">
+
+<img src="https://user-images.githubusercontent.com/74038190/212284100-561aa473-3905-4a80-b561-0d28506553ee.gif" width="100%">
 
 ## 🚀 Core Features
 
@@ -55,7 +82,7 @@ This project was selected for the **GirlScript Summer of Code '24**, and our goa
 | **Professional Verification**| - | - | ✅ |
 | **Lab Test & Ambulance Booking** | ✅ | - | - |
 
----
+<img src="https://user-images.githubusercontent.com/74038190/212284100-561aa473-3905-4a80-b561-0d28506553ee.gif" width="100%">
 
 ## 🛠️ Tech Stack Showcase
 
@@ -74,7 +101,7 @@ This project is built using the MERN stack and other modern web technologies.
   </tr>
 </table>
 
----
+<img src="https://user-images.githubusercontent.com/74038190/212284100-561aa473-3905-4a80-b561-0d28506553ee.gif" width="100%">
 
 ## ⚙️ Getting Started
 
@@ -88,7 +115,7 @@ To get a local copy up and running, follow these simple steps.
     ```
 3.  **Follow the detailed setup instructions** in our [**LEARN.md**](LEARN.md) file to set up the frontend, backend, and environment variables.
 
----
+<img src="https://user-images.githubusercontent.com/74038190/212284100-561aa473-3905-4a80-b561-0d28506553ee.gif" width="100%">
 
 ## 🤝 How to Contribute
 
@@ -96,13 +123,13 @@ Contributions are what make the open-source community such an amazing place to l
 
 Please read our [**CONTRIBUTING.md**](CONTRIBUTING.md) for detailed guidelines on our workflow, issue reporting, and pull request process.
 
----
+<img src="https://user-images.githubusercontent.com/74038190/212284100-561aa473-3905-4a80-b561-0d28506553ee.gif" width="100%">
 
 ## 🛡️ Our Code of Conduct
 
 To ensure a welcoming and inclusive environment for everyone, we have a Code of Conduct that all contributors are expected to follow. Please read the [**CODE_OF_CONDUCT.md**](CODE_OF_CONDUCT.md) before participating.
 
----
+<img src="https://user-images.githubusercontent.com/74038190/212284100-561aa473-3905-4a80-b561-0d28506553ee.gif" width="100%">
 
 ## 👑 Project Admin
 
@@ -110,7 +137,7 @@ To ensure a welcoming and inclusive environment for everyone, we have a Code of 
 | :---: | :---: |
 | Rajnandini | [![GitHub](https://img.shields.io/badge/GitHub-shandilya--rajnandini-blue?style=flat&logo=github)](https://github.com/shandilya-rajnandini) |
 
----
+<img src="https://user-images.githubusercontent.com/74038190/212284100-561aa473-3905-4a80-b561-0d28506553ee.gif" width="100%">
 
 ## 🧑‍💻 Project Mentor
 
@@ -118,7 +145,7 @@ To ensure a welcoming and inclusive environment for everyone, we have a Code of 
 | :---: | :---: |
 | Nikhil Deshmukh | [![GitHub](https://img.shields.io/badge/GitHub-nikhil--deshmukh-blue?style=flat&logo=github)](https://github.com/nikhildeshmukh170) |
 
----
+<img src="https://user-images.githubusercontent.com/74038190/212284100-561aa473-3905-4a80-b561-0d28506553ee.gif" width="100%">
 
 ## ✨ Our Amazing Contributors
 
@@ -133,7 +160,7 @@ A huge thank you to all the wonderful people who have contributed to Doc@Home du
   <img src="https://contrib.rocks/image?repo=shandilya-rajnandini/DocAtHome" />
 </a>
 
----
+<img src="https://user-images.githubusercontent.com/74038190/212284100-561aa473-3905-4a80-b561-0d28506553ee.gif" width="100%">
 
 <!-- markdownlint-restore -->
 <!-- prettier-ignore-end -->
