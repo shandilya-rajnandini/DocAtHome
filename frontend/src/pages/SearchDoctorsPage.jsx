@@ -46,7 +46,6 @@ const SearchDoctorsPage = () => {
     const [aiLoading, setAILoading] = useState(false);
 
   const {
-    data: searchResponse,
     loading: isSearching,
     request: requestDoctors,
   } = useApi(searchDoctors, {
