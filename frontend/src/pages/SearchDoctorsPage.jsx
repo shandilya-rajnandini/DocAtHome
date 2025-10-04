@@ -1,14 +1,12 @@
 import { useState, useEffect, useCallback } from "react";
 import { Link } from "react-router-dom";
-import { searchDoctors } from "../api"; // Assuming your AI call is separate for now
+import { searchDoctors } from "../api";
 import toast from "react-hot-toast";
 import DoctorCardSkeleton from "../components/DoctorCardSkeleton";
 import Modal from "../components/Modal";
-
 import MapComponent from "../components/MapComponent";
-
 import SymptomBodyMap from "../components/SymptomBodyMap";
-import axios from "axios"; // Keep for the separate AI call
+import axios from "axios";
 import useApi from "../hooks/useApi";
 
 const doctorSpecialties = [
@@ -38,16 +36,18 @@ const SearchDoctorsPage = () => {
     const [pagination, setPagination] = useState({
         currentPage: 1, totalPages: 1, totalDoctors: 0, limit: 6, hasNextPage: false, hasPrevPage: false,
     });
-    const [isLoading, setIsLoading] = useState(true);
     const [isGettingLocation, setIsGettingLocation] = useState(false);
     const [userLocation, setUserLocation] = useState(null);
-    const [viewMode, setViewMode] = useState('list'); // 'list' or 'map'
+    const [viewMode, setViewMode] = useState('list');
     const [locationFilterEnabled, setLocationFilterEnabled] = useState(false);
+    const [showAIModal, setShowAIModal] = useState(false);
+    const [aiSuggestion, setAISuggestion] = useState("");
+    const [aiReasoning, setAIReasoning] = useState("");
+    const [aiLoading, setAILoading] = useState(false);
 
-  // Use the useApi hook for handling doctor search
   const {
     data: searchResponse,
-    loading: isLoading,
+    loading: isSearching,
     request: requestDoctors,
   } = useApi(searchDoctors, {
     defaultErrorMessage: "Failed to fetch doctors. Is the server running?",
@@ -55,11 +55,9 @@ const SearchDoctorsPage = () => {
   });
 
     const fetchDoctors = useCallback(async (currentFilters, page = 1) => {
-        setIsLoading(true);
         try {
             const queryParams = { ...currentFilters, page, limit: pagination.limit };
             
-            // Add mapView parameter when in map mode
             if (viewMode === 'map') {
                 queryParams.mapView = 'true';
             }
@@ -68,25 +66,23 @@ const SearchDoctorsPage = () => {
                 if (queryParams[key] === "" || queryParams[key] == null) delete queryParams[key];
             });
 
-  const [showAIModal, setShowAIModal] = useState(false);
-  const [aiSuggestion, setAISuggestion] = useState("");
-  const [aiReasoning, setAIReasoning] = useState("");
-  const [aiLoading, setAILoading] = useState(false);
+            const data = await requestDoctors(queryParams);
 
-            if (data.doctors && data.pagination) {
+            if (data && data.doctors && data.pagination) {
                 setDoctors(data.doctors);
                 setPagination(data.pagination);
-            } else {
-                setDoctors(data.doctors || data);
-                setPagination({ currentPage: 1, totalPages: 1, totalDoctors: data.doctors ? data.doctors.length : data.length, limit: pagination.limit, hasNextPage: false, hasPrevPage: false });
+            } else if (data && data.doctors) {
+                setDoctors(data.doctors);
+                setPagination({ currentPage: 1, totalPages: 1, totalDoctors: data.doctors.length, limit: pagination.limit, hasNextPage: false, hasPrevPage: false });
+            } else if (data) {
+                setDoctors(data);
+                setPagination({ currentPage: 1, totalPages: 1, totalDoctors: data.length, limit: pagination.limit, hasNextPage: false, hasPrevPage: false });
             }
         } catch (error) {
             toast.error("Failed to fetch doctors. Is the server running?");
             console.error("API Error:", error);
-        } finally {
-            setIsLoading(false);
         }
-    }, [pagination.limit, viewMode]);
+    }, [pagination.limit, viewMode, requestDoctors]);
 
   useEffect(() => {
     fetchDoctors({}, 1);
@@ -96,12 +92,12 @@ const SearchDoctorsPage = () => {
         const newFilters = { ...filters, [e.target.name]: e.target.value };
         setFilters(newFilters);
         
-        // If radius changes and location filter is enabled, update search immediately
         if (e.target.name === 'radius' && locationFilterEnabled && userLocation) {
             const updatedFilters = { ...newFilters, lat: userLocation.lat, lng: userLocation.lng };
             fetchDoctors(updatedFilters, 1);
         }
     };
+    
     const handleApplyFilters = (e) => {
         e.preventDefault();
         setPagination(prev => ({ ...prev, currentPage: 1 }));
@@ -115,7 +111,6 @@ const SearchDoctorsPage = () => {
             async (position) => {
                 const { latitude, longitude } = position.coords;
                 
-                // Check if coordinates seem valid (not default fallback locations)
                 const isValidLocation = latitude !== 0 && longitude !== 0;
                 
                 if (!isValidLocation) {
@@ -125,7 +120,6 @@ const SearchDoctorsPage = () => {
                 }
 
                 try {
-                    // Store location in user's profile
                     const token = localStorage.getItem('token');
                     await fetch('/api/profile/location', {
                         method: 'PUT',
@@ -151,7 +145,6 @@ const SearchDoctorsPage = () => {
             () => {
                 setIsGettingLocation(false);
                 
-                // For localhost development, provide a Delhi fallback
                 if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
                     const delhiCoords = { lat: 28.7041, lng: 77.1025 };
                     setUserLocation(delhiCoords);
@@ -167,12 +160,10 @@ const SearchDoctorsPage = () => {
             {
                 enableHighAccuracy: true,
                 timeout: 10000,
-                maximumAge: 300000 // 5 minutes
+                maximumAge: 300000
             }
         );
-      }
-    );
-  };
+    };
 
     const clearLocationFilter = () => {
         setUserLocation(null);
@@ -197,8 +188,6 @@ const SearchDoctorsPage = () => {
     if (!symptoms.trim()) return toast.error("Please select your symptoms.");
     setAILoading(true);
     try {
-      // NOTE: This assumes your backend has an /api/ai/suggest-specialty route
-      // And you have set up a proxy in vite.config.js or are using the full URL
       const { data } = await axios.post(
         "https://docathome-backend.onrender.com/api/ai/suggest-specialty",
         { symptoms }
@@ -216,7 +205,6 @@ const SearchDoctorsPage = () => {
 
   return (
     <div>
-      {/* Header, Main Content, and Filters Form */}
       <div className="relative bg-[url('/search-header-bg.jpg')] bg-cover bg-center h-60">
         <div className="absolute inset-0 bg-black bg-opacity-60 flex justify-center items-center">
           <h1 className="text-5xl font-bold text-white">Find Your Doctor</h1>
@@ -232,7 +220,6 @@ const SearchDoctorsPage = () => {
             Filters
           </h2>
 
-          {/* All filter inputs go here... */}
           <div className="mb-6">
             <label className="block text-slate-700 dark:text-secondary-text mb-2 font-semibold">
               Specialty
@@ -260,13 +247,12 @@ const SearchDoctorsPage = () => {
               </button>
             </div>
           </div>
-          {/* ... other filters like city, experience, etc. */}
 
           <div className="mb-6">
             <label className="block text-slate-700 dark:text-secondary-text mb-2 font-semibold">
               City
             </label>
-            <div className="flex gap-2 items-center">
+            <div className="space-y-3">
               <select
                 name="city"
                 value={filters.city}
@@ -280,28 +266,48 @@ const SearchDoctorsPage = () => {
                   </option>
                 ))}
               </select>
+
               <button
                 type="button"
-                className="bg-green-500 text-white px-3 py-2 rounded hover:bg-green-600 font-semibold"
-                onClick={findNearbyDoctors}
+                className={`w-full p-3 rounded font-semibold transition-colors ${
+                  locationFilterEnabled
+                    ? "bg-green-600 text-white hover:bg-green-700"
+                    : "bg-blue-500 text-white hover:bg-blue-600"
+                }`}
+                onClick={
+                  locationFilterEnabled
+                    ? clearLocationFilter
+                    : findNearbyDoctors
+                }
                 disabled={isGettingLocation}
               >
                 {isGettingLocation
-                  ? "Locating..."
-                  : "Find Professionals Near Me"}
+                  ? "Getting Location..."
+                  : locationFilterEnabled
+                  ? "🌍 Location Filter ON - Click to Disable"
+                  : "📍 Enable Location Filter"}
               </button>
-              {userLocation && (
-                <button
-                  type="button"
-                  className="ml-2 text-xs text-gray-600 underline"
-                  onClick={clearLocationFilter}
-                >
-                  Clear Location
-                </button>
+
+              {locationFilterEnabled && userLocation && (
+                <div>
+                  <label className="block text-slate-700 dark:text-secondary-text mb-1 text-sm font-semibold">
+                    Search Radius
+                  </label>
+                  <select
+                    name="radius"
+                    value={filters.radius}
+                    onChange={handleFilterChange}
+                    className="w-full p-2 bg-gray-200 dark:bg-primary-dark text-black dark:text-white rounded border-gray-700"
+                  >
+                    <option value="2">Within 2km</option>
+                    <option value="5">Within 5km</option>
+                    <option value="10">Within 10km</option>
+                  </select>
+                </div>
               )}
             </div>
           </div>
-          {/* THIS IS THE CORRECTLY PLACED VERIFIED SKILLS FILTER */}
+
           <div className="mb-4">
             <label
               htmlFor="skillKeyword"
@@ -323,192 +329,138 @@ const SearchDoctorsPage = () => {
           <button
             type="submit"
             className="w-full bg-accent-blue text-white p-3 rounded font-bold hover:bg-accent-blue-hover disabled:opacity-50"
-            disabled={isLoading}
+            disabled={isSearching}
           >
-            {isLoading ? "Searching..." : "Search Doctors"}
+            {isSearching ? "Searching..." : "Search Doctors"}
           </button>
         </form>
 
-            <div className="container mx-auto p-8 grid grid-cols-1 lg:grid-cols-4 gap-8">
-                <form onSubmit={handleApplyFilters} className="lg:col-span-1 bg-white dark:bg-secondary-dark p-6 rounded-lg shadow-lg h-fit">
-                    <h2 className="text-2xl font-bold text-slate-800 dark:text-white mb-6">Filters</h2>
-                    
-                    {/* All filter inputs go here... */}
-                    <div className="mb-6">
-                        <label className="block text-slate-700 dark:text-secondary-text mb-2 font-semibold">Specialty</label>
-                        <div className="flex gap-2">
-                            <select name="specialty" value={filters.specialty} onChange={handleFilterChange} className="w-full p-3 bg-gray-200 dark:bg-primary-dark text-black dark:text-white rounded border-gray-700">
-                                <option value="">All Specialties</option>
-                                {doctorSpecialties.map(spec => <option key={spec} value={spec}>{spec}</option>)}
-                            </select>
-                            <button type="button" className="bg-blue-500 text-white px-3 py-2 rounded hover:bg-blue-600 font-semibold" onClick={handleAIModalOpen}>Help</button>
-                        </div>
-                    </div>
-                    {/* ... other filters like city, experience, etc. */}
-                    
-                    <div className="mb-6">
-                      <label className="block text-slate-700 dark:text-secondary-text mb-2 font-semibold">City</label>
-                      <div className="space-y-3">
-                        <select name="city" value={filters.city} onChange={handleFilterChange} className="w-full p-3 bg-gray-200 dark:bg-primary-dark text-black dark:text-white rounded border-gray-700">
-                          <option value="">All Cities</option>
-                          {cities.map(city => <option key={city} value={city}>{city}</option>)}
-                        </select>
-                        
-                        {/* Enable Location Filter Button */}
-                        <button 
-                          type="button" 
-                          className={`w-full p-3 rounded font-semibold transition-colors ${
-                            locationFilterEnabled 
-                              ? 'bg-green-600 text-white hover:bg-green-700' 
-                              : 'bg-blue-500 text-white hover:bg-blue-600'
-                          }`}
-                          onClick={locationFilterEnabled ? clearLocationFilter : findNearbyDoctors} 
-                          disabled={isGettingLocation}
-                        >
-                          {isGettingLocation ? "Getting Location..." : 
-                           locationFilterEnabled ? "🌍 Location Filter ON - Click to Disable" : 
-                           "📍 Enable Location Filter"}
-                        </button>
-                        
-                        {/* Radius Dropdown - Only show when location filter is enabled */}
-                        {locationFilterEnabled && userLocation && (
-                          <div>
-                            <label className="block text-slate-700 dark:text-secondary-text mb-1 text-sm font-semibold">
-                              Search Radius
-                            </label>
-                            <select 
-                              name="radius" 
-                              value={filters.radius} 
-                              onChange={handleFilterChange} 
-                              className="w-full p-2 bg-gray-200 dark:bg-primary-dark text-black dark:text-white rounded border-gray-700"
-                            >
-                              <option value="2">Within 2km</option>
-                              <option value="5">Within 5km</option>
-                              <option value="10">Within 10km</option>
-                            </select>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                    {/* THIS IS THE CORRECTLY PLACED VERIFIED SKILLS FILTER */}
-                    <div className="mb-4">
-                      <label htmlFor="skillKeyword" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                        Search by Verified Skills
-                      </label>
-                      <input
-                        type="text"
-                        id="skillKeyword"
-                        name="skillKeyword"
-                        value={filters.skillKeyword}
-                        onChange={handleFilterChange}
-                        placeholder="e.g., Diabetes Management"
-                        className="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                      />
-                    </div>
-                    
-                    <button type="submit" className="w-full bg-accent-blue text-white p-3 rounded font-bold hover:bg-accent-blue-hover disabled:opacity-50" disabled={isLoading}>
-                        {isLoading ? "Searching..." : "Search Doctors"}
-                    </button>
-                </form>
+        <main className="lg:col-span-3">
+          <div className="mb-6 flex justify-between items-center">
+            <div className="flex items-center space-x-4">
+              <h2 className="text-xl font-bold text-slate-800 dark:text-white">
+                {pagination.totalDoctors} Doctor
+                {pagination.totalDoctors !== 1 ? "s" : ""} Found
+                {locationFilterEnabled && userLocation && (
+                  <span className="text-green-600 text-sm font-normal ml-2">
+                    (within {filters.radius}km of your location)
+                  </span>
+                )}
+              </h2>
+            </div>
+            <div className="flex bg-gray-200 dark:bg-primary-dark rounded-lg p-1">
+              <button
+                onClick={() => {
+                  setViewMode("list");
+                  setTimeout(
+                    () => fetchDoctors(filters, pagination.currentPage),
+                    0
+                  );
+                }}
+                className={`px-4 py-2 rounded-md font-semibold transition-colors ${
+                  viewMode === "list"
+                    ? "bg-accent-blue text-white"
+                    : "text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-white"
+                }`}
+              >
+                📋 List View
+              </button>
+              <button
+                onClick={() => {
+                  setViewMode("map");
+                  setTimeout(() => fetchDoctors(filters, 1), 0);
+                }}
+                className={`px-4 py-2 rounded-md font-semibold transition-colors ${
+                  viewMode === "map"
+                    ? "bg-accent-blue text-white"
+                    : "text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-white"
+                }`}
+              >
+                🗺️ Map View
+              </button>
+            </div>
+          </div>
 
-                <main className="lg:col-span-3">
-                    {/* View Mode Toggle */}
-                    <div className="mb-6 flex justify-between items-center">
-                        <div className="flex items-center space-x-4">
-                            <h2 className="text-xl font-bold text-slate-800 dark:text-white">
-                                {pagination.totalDoctors} Doctor{pagination.totalDoctors !== 1 ? 's' : ''} Found
-                                {locationFilterEnabled && userLocation && (
-                                    <span className="text-green-600 text-sm font-normal ml-2">
-                                        (within {filters.radius}km of your location)
-                                    </span>
-                                )}
-                            </h2>
-                        </div>
-                        <div className="flex bg-gray-200 dark:bg-primary-dark rounded-lg p-1">
-                            <button
-                                onClick={() => {
-                                    setViewMode('list');
-                                    // Re-fetch doctors for list view (with pagination)
-                                    setTimeout(() => fetchDoctors(filters, pagination.currentPage), 0);
-                                }}
-                                className={`px-4 py-2 rounded-md font-semibold transition-colors ${
-                                    viewMode === 'list'
-                                        ? 'bg-accent-blue text-white'
-                                        : 'text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-white'
-                                }`}
-                            >
-                                📋 List View
-                            </button>
-                            <button
-                                onClick={() => {
-                                    setViewMode('map');
-                                    // Re-fetch doctors for map view (without pagination)
-                                    setTimeout(() => fetchDoctors(filters, 1), 0);
-                                }}
-                                className={`px-4 py-2 rounded-md font-semibold transition-colors ${
-                                    viewMode === 'map'
-                                        ? 'bg-accent-blue text-white'
-                                        : 'text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-white'
-                                }`}
-                            >
-                                🗺️ Map View
-                            </button>
-                        </div>
-                    </div>
+          {isSearching ? (
+            <div className="space-y-6">
+              {[...Array(3)].map((_, idx) => (
+                <DoctorCardSkeleton key={idx} />
+              ))}
+            </div>
+          ) : doctors.length > 0 ? (
+            <div>
+              {viewMode === "list" ? (
+                <div className="space-y-6">
+                  {doctors.map((doctor) => (
+                    <DoctorCard key={doctor._id} doctor={doctor} />
+                  ))}
+                </div>
+              ) : (
+                <MapComponent
+                  doctors={doctors}
+                  userLocation={userLocation}
+                  filteredByLocation={locationFilterEnabled}
+                />
+              )}
 
-                    {/* Results Display */}
-                    {isLoading ? (
-                        <div className="space-y-6">
-                            {[...Array(3)].map((_, idx) => <DoctorCardSkeleton key={idx} />)}
-                        </div>
-                    ) : doctors.length > 0 ? (
-                        <div>
-                            {viewMode === 'list' ? (
-                                <div className="space-y-6">
-                                    {doctors.map(doctor => <DoctorCard key={doctor._id} doctor={doctor} />)}
-                                </div>
-                            ) : (
-                                <MapComponent 
-                                    doctors={doctors} 
-                                    userLocation={userLocation}
-                                    filteredByLocation={locationFilterEnabled}
-                                />
-                            )}
-                            
-                            {/* Pagination - Only show in list view */}
-                            {viewMode === 'list' && pagination.totalPages > 1 && (
-                                <div className="flex justify-center items-center space-x-4 mt-8">
-                                    <button
-                                        onClick={() => fetchDoctors(filters, pagination.currentPage - 1)}
-                                        disabled={!pagination.hasPrevPage}
-                                        className="px-4 py-2 bg-accent-blue text-white rounded disabled:opacity-50 disabled:cursor-not-allowed"
-                                    >
-                                        Previous
-                                    </button>
-                                    <span className="text-gray-600 dark:text-gray-300">
-                                        Page {pagination.currentPage} of {pagination.totalPages}
-                                    </span>
-                                    <button
-                                        onClick={() => fetchDoctors(filters, pagination.currentPage + 1)}
-                                        disabled={!pagination.hasNextPage}
-                                        className="px-4 py-2 bg-accent-blue text-white rounded disabled:opacity-50 disabled:cursor-not-allowed"
-                                    >
-                                        Next
-                                    </button>
-                                </div>
-                            )}
-                        </div>
-                    ) : (
-                        <div className="text-center bg-white dark:bg-secondary-dark p-10 rounded-lg">
-                            <p className="text-black dark:text-secondary-text text-xl">No doctors found matching your criteria.</p>
-                            {locationFilterEnabled && (
-                                <p className="text-gray-600 dark:text-gray-400 text-sm mt-2">
-                                    Try increasing your search radius or disabling location filter.
-                                </p>
-                            )}
-                        </div>
-                    )}
-                </main>
+              {viewMode === "list" && pagination.totalPages > 1 && (
+                <div className="flex justify-center items-center space-x-4 mt-8">
+                  <button
+                    onClick={() =>
+                      fetchDoctors(filters, pagination.currentPage - 1)
+                    }
+                    disabled={!pagination.hasPrevPage}
+                    className="px-4 py-2 bg-accent-blue text-white rounded disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    Previous
+                  </button>
+                  <span className="text-gray-600 dark:text-gray-300">
+                    Page {pagination.currentPage} of {pagination.totalPages}
+                  </span>
+                  <button
+                    onClick={() =>
+                      fetchDoctors(filters, pagination.currentPage + 1)
+                    }
+                    disabled={!pagination.hasNextPage}
+                    className="px-4 py-2 bg-accent-blue text-white rounded disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    Next
+                  </button>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="text-center bg-white dark:bg-secondary-dark p-10 rounded-lg">
+              <p className="text-black dark:text-secondary-text text-xl">
+                No doctors found matching your criteria.
+              </p>
+              {locationFilterEnabled && (
+                <p className="text-gray-600 dark:text-gray-400 text-sm mt-2">
+                  Try increasing your search radius or disabling location
+                  filter.
+                </p>
+              )}
+            </div>
+          )}
+        </main>
+      </div>
+
+      <Modal isOpen={showAIModal} onClose={handleAIModalClose}>
+        <div className="p-6">
+          <h2 className="text-2xl font-bold mb-4 text-gray-800 dark:text-white">
+            AI Specialty Suggestion
+          </h2>
+          <SymptomBodyMap onSubmit={handleAISubmit} />
+          {aiSuggestion && (
+            <div className="mt-6 p-4 bg-green-100 dark:bg-green-900 rounded-lg">
+              <h3 className="text-lg font-semibold text-green-800 dark:text-green-200">
+                Recommended: {aiSuggestion}
+              </h3>
+              {aiReasoning && (
+                <p className="text-sm text-green-700 dark:text-green-300 mt-2">
+                  {aiReasoning}
+                </p>
+              )}
             </div>
           )}
           {aiLoading && (
@@ -525,7 +477,6 @@ const SearchDoctorsPage = () => {
   );
 };
 
-// --- THIS IS THE CORRECTLY PLACED DOCTOR CARD COMPONENT ---
 const DoctorCard = ({ doctor }) => (
   <div className="bg-secondary-dark p-6 rounded-lg shadow-lg flex flex-col md:flex-row gap-6">
     <img
