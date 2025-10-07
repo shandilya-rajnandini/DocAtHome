@@ -76,7 +76,7 @@ const RegisterPage = () => {
     };
 
     return (
-        <div className="flex justify-center items-center mt-10 mb-20">
+        <div className="flex justify-center mt-16 md:mt-24 mb-20 px-4">
             <form onSubmit={onSubmit} className="bg-secondary-dark p-8 rounded-lg shadow-lg w-full max-w-2xl">
                 <h2 className="text-3xl font-bold mb-6 text-center text-white">Create Your Account</h2>
                 

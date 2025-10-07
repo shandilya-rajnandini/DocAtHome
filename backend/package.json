@@ -20,6 +20,7 @@
     "@faker-js/faker": "^9.9.0",
     "@google/generative-ai": "^0.24.1",
     "@sendgrid/mail": "^8.1.5",
+    "axios": "^1.12.2",
     "bcryptjs": "^3.0.2",
     "cors": "^2.8.5",
     "dotenv": "^17.0.0",
