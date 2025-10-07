@@ -7,7 +7,16 @@ import IconCalendarCheck from "../components/icons/IconCalendarCheck";
 import IconHistory from "../components/icons/IconHistory";
 import IconStethoscope from "../components/icons/IconStethoscope";
 import EmptyState from "../components/EmptyState";
-import { Calendar, MessageCircle } from "lucide-react";
+import {
+  Calendar,
+  MessageCircle,
+  CalendarPlus,
+  ChevronDown,
+} from "lucide-react";
+import {
+  generateGoogleCalendarUrl,
+  downloadICSFile,
+} from "../utils/calendarUtils";
 
 // Cancellation Policy Modal Component
 const CancellationModal = ({
@@ -128,8 +137,38 @@ const AppointmentCard = ({ appointment, onAppointmentUpdate }) => {
     const url = `https://wa.me/?text=${text}`;
     window.open(url, "_blank");
   };
+
+  // Calendar handlers
+  const handleAddToGoogleCalendar = () => {
+    const calendarUrl = generateGoogleCalendarUrl(appointment);
+    window.open(calendarUrl, "_blank");
+  };
+
+  const handleDownloadICS = () => {
+    downloadICSFile(appointment);
+    toast.success("Calendar file downloaded successfully!");
+  };
+
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [cancelling, setCancelling] = useState(false);
+  const [showCalendarDropdown, setShowCalendarDropdown] = useState(false);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        showCalendarDropdown &&
+        !event.target.closest(".calendar-dropdown-container")
+      ) {
+        setShowCalendarDropdown(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [showCalendarDropdown]);
   // Combine date and time for accurate comparison
   const appointmentDateStr = appointment.appointmentDate; // e.g., "2025-07-02"
   const appointmentTimeStr = appointment.appointmentTime; // e.g., "01:00 PM"
@@ -268,6 +307,47 @@ const AppointmentCard = ({ appointment, onAppointmentUpdate }) => {
               <MessageCircle className="w-4 h-4 mr-1" />
               <span>Share</span>
             </button>
+          )}
+
+          {/* Add to Calendar button for confirmed appointments */}
+          {appointment.status === "Confirmed" && (
+            <div className="relative mt-2 calendar-dropdown-container">
+              <button
+                onClick={() => setShowCalendarDropdown(!showCalendarDropdown)}
+                className="px-3 py-1 text-sm bg-blue-600 text-white rounded-lg flex items-center space-x-2 hover:bg-blue-700 transition-colors"
+                title="Add to Calendar"
+              >
+                <CalendarPlus className="w-4 h-4 mr-1" />
+                <span>Add to Calendar</span>
+                <ChevronDown className="w-3 h-3 ml-1" />
+              </button>
+
+              {/* Calendar dropdown */}
+              {showCalendarDropdown && (
+                <div className="absolute right-0 mt-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg z-10 min-w-48">
+                  <button
+                    onClick={() => {
+                      handleAddToGoogleCalendar();
+                      setShowCalendarDropdown(false);
+                    }}
+                    className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-t-lg transition-colors"
+                  >
+                    <CalendarPlus className="w-4 h-4 inline mr-2" />
+                    Google Calendar
+                  </button>
+                  <button
+                    onClick={() => {
+                      handleDownloadICS();
+                      setShowCalendarDropdown(false);
+                    }}
+                    className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-b-lg transition-colors"
+                  >
+                    <Calendar className="w-4 h-4 inline mr-2" />
+                    Download (.ics)
+                  </button>
+                </div>
+              )}
+            </div>
           )}
         </div>
       </div>
