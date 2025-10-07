@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 
-// Import all the necessary controller functions
+// Import all controller functions
 const {
   createAppointment,
   getMyAppointments,
@@ -10,9 +10,11 @@ const {
   saveVoiceNote,
   scheduleFollowUp,
   updateRelayNote,
-  getIntakeFormPDF
+  getIntakeFormPDF,
+  getTriageQuestion,
+  requestReschedule,   // function to request a reschedule
+  respondReschedule    // function to approve/deny reschedule
 } = require('../controllers/appointmentController');
-const { getTriageQuestion } = require('../controllers/appointmentController');
 
 const { protect } = require('../middleware/authMiddleware');
 const {
@@ -23,58 +25,63 @@ const {
   detectXSS,
 } = require('../middleware/validation');
 
-// Apply comprehensive security middleware to all appointment routes
+// Apply security middleware to all appointment routes
 router.use(limitRequestSize);
 router.use(detectXSS);
 
-// All routes in this file are protected and require a user to be logged in.
+// ---------------------- Appointment Routes ----------------------
 
 // GET /api/appointments/my-appointments
-// Fetches all appointments related to the logged-in user (as either patient or professional)
-router.route('/my-appointments').get(protect, getMyAppointments);
-router.route('/my-appointments').get(protect, getMyAppointments);
+router.get('/my-appointments', protect, getMyAppointments);
 
 // GET /api/appointments/:id/summary
-// Gets a smart summary for a specific appointment with ID validation
-router
-  .route('/:id/summary')
-  .get(protect, validateObjectId('id'), getAppointmentSummary);
+router.get('/:id/summary', protect, validateObjectId('id'), getAppointmentSummary);
 
 // PUT /api/appointments/:id
-// Updates the status of a specific appointment with comprehensive validation
-router
-  .route('/:id')
-  .put(
-    protect,
-    validateObjectId('id'),
-    validate(appointmentSchemas.updateStatus),
-    updateAppointmentStatus
-  );
+router.put(
+  '/:id',
+  protect,
+  validateObjectId('id'),
+  validate(appointmentSchemas.updateStatus),
+  updateAppointmentStatus
+);
 
 // POST /api/appointments/
-// Creates a new appointment with comprehensive input validation
-router.route('/').post(
+// Create a new appointment
+router.post(
+  '/',
   protect,
   validate(appointmentSchemas.create),
   createAppointment
 );
 
-//POST /:id/voicenote
-//Creates a voice note for the appointment
+// POST /api/appointments/:id/voice-note
 router.post('/:id/voice-note', protect, validateObjectId('id'), saveVoiceNote);
 
-//PUT /:id/relay-note
-//Updates the relay note for the appointment
+// PUT /api/appointments/:id/relay-note
 router.put('/:id/relay-note', protect, validateObjectId('id'), updateRelayNote);
 
 // POST /api/appointments/:id/schedule-follow-up
-// Schedules a follow-up for a specific appointment
-router.route('/:id/schedule-follow-up')
-    .post(protect, 
-        validateObjectId('id'), 
-        validate(appointmentSchemas.scheduleFollowUp), 
-        scheduleFollowUp);
+router.post(
+  '/:id/schedule-follow-up',
+  protect,
+  validateObjectId('id'),
+  validate(appointmentSchemas.scheduleFollowUp),
+  scheduleFollowUp
+);
+
+// GET /api/appointments/:id/intake-form
 router.get('/:id/intake-form', protect, validateObjectId('id'), getIntakeFormPDF);
+
 // POST /api/triage/question
 router.post('/triage/question', protect, getTriageQuestion);
+
+// POST /api/appointments/:id/reschedule
+// Doctor or patient can request a reschedule
+router.post('/:id/reschedule', protect, validateObjectId('id'), requestReschedule);
+
+// POST /api/appointments/:id/respond-reschedule
+// Approve or deny a reschedule request
+router.post('/:id/respond-reschedule', protect, validateObjectId('id'), respondReschedule);
+
 module.exports = router;

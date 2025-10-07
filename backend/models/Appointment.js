@@ -3,13 +3,11 @@ const mongoose = require('mongoose');
 const AppointmentSchema = new mongoose.Schema(
   {
     doctor: {
-      // This field stores the ID of the professional (doctor or nurse)
       type: mongoose.Schema.ObjectId,
       ref: 'User',
       required: true,
     },
     patient: {
-      // This field stores the ID of the patient booking the appointment
       type: mongoose.Schema.ObjectId,
       ref: 'User',
       required: true,
@@ -29,13 +27,13 @@ const AppointmentSchema = new mongoose.Schema(
     },
     symptoms: {
       type: String,
-      required: [true, 'Please describe your symptoms or needs.'], // This field is required
+      required: [true, 'Please describe your symptoms or needs.'],
     },
     previousMeds: {
-      type: String, // This field is now optional
+      type: String,
     },
     reportImage: {
-      type: String, // This field is now optional
+      type: String,
     },
     status: {
       type: String,
@@ -57,11 +55,11 @@ const AppointmentSchema = new mongoose.Schema(
     },
     voiceRecording: {
       type: String,
-      default: '', // This field is now optional
+      default: '',
     },
     relayNote: {
       type: String,
-      default: '', // This field is now optional
+      default: '',
     },
     sharedRelayNotes: [
       {
@@ -74,10 +72,33 @@ const AppointmentSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+
+    // 🆕 Added for reschedule functionality
+    rescheduleRequest: {
+      requestedBy: {
+        type: String,
+        enum: ['patient', 'doctor'],
+        default: null,
+      },
+      newDate: {
+        type: String,
+        default: null,
+      },
+      newTime: {
+        type: String,
+        default: null,
+      },
+      status: {
+        type: String,
+        enum: ['pending', 'approved', 'denied'],
+        default: null,
+      },
+    },
   },
   { timestamps: true }
 );
 
+// Indexes for faster lookup
 AppointmentSchema.index({ patient: 1 });
 AppointmentSchema.index({ doctor: 1 });
 
