@@ -17,9 +17,13 @@ const LoginPage = () => {
   const onChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
 
   const onSubmit = async (e) => {
+    // Prevent default form submission immediately
     e.preventDefault();
+    e.stopPropagation();
+    
     try {
       const { data } = await loginApi(formData);
+      
       if (data.twoFactorRequired) {
         setTwoFactorRequired(true);
         setUserId(data.userId);
@@ -50,12 +54,21 @@ const LoginPage = () => {
         }
       }
     } catch (err) {
-      toast.error(err.response?.data?.msg || 'Login failed. Please check your credentials.');
+      const errorMessage = err.response?.data?.message ||    // Auth controller errors
+                          err.response?.data?.error ||       // Rate limiter errors  
+                          err.response?.data?.msg ||         // Legacy format
+                          err.message ||                     // Network errors
+                          'Login failed. Please check your credentials.';
+      
+      toast.error(errorMessage);
     }
   };
 
   const on2FASubmit = async (e) => {
+    // Prevent default form submission immediately
     e.preventDefault();
+    e.stopPropagation();
+    
     try {
       const { data } = await loginWithTwoFactor({ userId, token });
       localStorage.setItem('token', data.token);

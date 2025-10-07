@@ -63,7 +63,11 @@ API.interceptors.response.use(
     if (error.response?.status === 401) {
       // Token expired or invalid
       localStorage.removeItem("token");
-      window.location.href = "/login";
+      
+      // Only redirect if we're not already on the login page
+      if (!window.location.pathname.includes('/login')) {
+        window.location.href = "/login";
+      }
     } else if (
       error.code === "NETWORK_ERROR" ||
       error.message.includes("Network Error")
