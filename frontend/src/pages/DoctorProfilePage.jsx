@@ -16,7 +16,7 @@ const formatLastActive = (lastActive) => {
   try {
     const date = new Date(lastActive);
     return formatDistanceToNow(date, { addSuffix: true });
-  } catch (error) {
+  } catch {
     return 'Unknown';
   }
 };
