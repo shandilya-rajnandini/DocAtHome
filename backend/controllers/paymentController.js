@@ -19,11 +19,17 @@ const socketManager = require('../utils/socketManager');
 // - Order context must match donation intent (via notes verification)
 // - Prevents replay attacks, cross-context crediting, and order mismatches
 
-// Initialize Razorpay instance
-const instance = new Razorpay({
-  key_id: process.env.RAZORPAY_KEY_ID,
-  key_secret: process.env.RAZORPAY_KEY_SECRET,
-});
+// Initialize Razorpay instance (only if credentials are available)
+let instance = null;
+if (process.env.RAZORPAY_KEY_ID && process.env.RAZORPAY_KEY_SECRET) {
+  const Razorpay = require('razorpay');
+  instance = new Razorpay({
+    key_id: process.env.RAZORPAY_KEY_ID,
+    key_secret: process.env.RAZORPAY_KEY_SECRET,
+  });
+} else {
+  console.warn('Razorpay credentials not found. Payment features will be disabled.');
+}
 
 // @desc    Create a Razorpay order
 // @route   POST /api/payment/create-order
@@ -115,6 +121,14 @@ exports.createOrder = asyncHandler(async (req, res) => {
     };
   }
 
+  // Check if Razorpay instance is available
+  if (!instance) {
+    return res.status(500).json({
+      success: false,
+      message: 'Payment service is currently unavailable',
+    });
+  }
+
   const order = await instance.orders.create(options);
   return res.status(200).json(order);
 
@@ -187,6 +201,14 @@ exports.verifyPayment = asyncHandler(async (req, res) => {
   }
 
   if (isDonation && donorName && patientId) {
+    // Check if Razorpay instance is available
+    if (!instance) {
+      return res.status(500).json({
+        success: false,
+        message: 'Payment service is currently unavailable',
+      });
+    }
+
     try {
       // Fetch canonical payment details from Razorpay to get the actual amount
       const payment = await instance.payments.fetch(razorpay_payment_id);
@@ -219,6 +241,14 @@ exports.verifyPayment = asyncHandler(async (req, res) => {
       }
 
       // Verify order context matches donation intent
+      // Check if Razorpay instance is available
+      if (!instance) {
+        return res.status(500).json({
+          success: false,
+          message: 'Payment service is currently unavailable',
+        });
+      }
+
       try {
         const order = await instance.orders.fetch(razorpay_order_id);
         if (order.notes && order.notes.isDonation === 'true') {
@@ -310,6 +340,14 @@ exports.verifyPayment = asyncHandler(async (req, res) => {
   }
 
   // Else store as a normal transaction
+  // Check if Razorpay instance is available
+  if (!instance) {
+    return res.status(500).json({
+      success: false,
+      message: 'Payment service is currently unavailable',
+    });
+  }
+
   try {
     // Fetch canonical payment details from Razorpay to get the actual amount
     const payment = await instance.payments.fetch(razorpay_payment_id);
