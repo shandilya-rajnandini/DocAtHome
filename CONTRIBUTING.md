@@ -13,12 +13,16 @@ Follow these simple steps to make your contribution:
 
 2. Clone your forked repository to your local machine:
 
-   git clone https://github.com/shandilya-rajnandini/DocAtHome.git  
+   git clone https://github.com/Gupta-02/DocAtHome.git  
    cd DocAtHome
 
-3. Create a new branch:
+3. Create a new branch from `develop`:
 
-   git checkout -b your-branch-name
+   ```bash
+   git checkout develop
+   git pull origin develop
+   git checkout -b your-feature-branch
+   ```
 
 4. Make your changes in code or documentation.
 
@@ -31,7 +35,38 @@ Follow these simple steps to make your contribution:
 
    git push origin your-branch-name
 
-7. Open GitHub → go to your fork → click **“Compare & pull request”** to open a pull request.
+7. Open GitHub → go to your fork → click **"Compare & pull request"** to open a pull request targeting the `develop` branch.
+
+---
+
+## 🌟 Staging Environment Workflow
+
+We use a **staging-first deployment strategy** to ensure quality and prevent bugs from reaching production:
+
+### Branch Structure
+- **`main`** - Production branch (only project admins can merge)
+- **`develop`** - Staging branch for testing new features
+
+### Deployment URLs
+- **Production**: https://docathome.netlify.app
+- **Staging**: https://develop--docathome.netlify.app (auto-deployed from `develop` branch)
+- **Backend Production**: https://docathome-backend.onrender.com
+- **Backend Staging**: https://docathome-backend-staging.onrender.com
+
+### Contribution Flow
+1. **Create feature branch** from `develop`
+2. **Make changes** and test locally
+3. **Push to your fork** and create PR to `develop`
+4. **Test on staging** - Your changes will be automatically deployed to staging
+5. **Project admin reviews** and merges to `develop`
+6. **Final testing** on staging environment
+7. **Release to production** - Admin merges `develop` into `main`
+
+### Testing Requirements
+- ✅ All tests pass locally
+- ✅ Feature works on staging environment
+- ✅ No breaking changes
+- ✅ Code review approved
 
 ---
 
@@ -39,21 +74,26 @@ Follow these simple steps to make your contribution:
 
 Use clear and meaningful commit messages. Follow this format:
 
+```
 type(scope): short description
+```
 
 **Examples:**
 
-- docs(contributing): add contributing guide  
-- fix(auth): fix login bug  
-- feat(profile): add edit profile option
+- `feat(auth): add two-factor authentication`
+- `fix(profile): resolve avatar upload issue`
+- `docs(contributing): update staging workflow`
+- `refactor(api): optimize database queries`
 
 **Common types:**
 
-- feat = new feature  
-- fix = bug fix  
-- docs = documentation only changes  
-- style = formatting only  
-- refactor = code restructure (no logic change)
+- `feat` = new feature
+- `fix` = bug fix
+- `docs` = documentation only changes
+- `style` = formatting only
+- `refactor` = code restructure (no logic change)
+- `test` = adding or updating tests
+- `chore` = maintenance tasks
 
 ---
 
