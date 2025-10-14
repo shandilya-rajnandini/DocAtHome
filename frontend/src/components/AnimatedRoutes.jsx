@@ -37,6 +37,7 @@ import PaymentHistoryPage from "../pages/PaymentHistoryPage.jsx";
 import CareNavigatorPage from "../pages/CareNavigatorPage.jsx";
 import CareFundPage from "../pages/CareFundPage.jsx";
 import PublicDonationPage from "../pages/PublicDonationPage.jsx";
+import BookDischargeConciergePage from "../pages/BookDischargeConciergePage.jsx";
 
 // Protected Professional Pages
 import DoctorDashboard from "../pages/DoctorDashboard.jsx";
@@ -265,6 +266,16 @@ const AnimatedRoutes = () => {
             <AnimatedPage>
               <ProtectedRoute>
                 <BookLabTestPage />
+              </ProtectedRoute>
+            </AnimatedPage>
+          }
+        />
+        <Route
+          path="/book-discharge-concierge"
+          element={
+            <AnimatedPage>
+              <ProtectedRoute>
+                <BookDischargeConciergePage />
               </ProtectedRoute>
             </AnimatedPage>
           }

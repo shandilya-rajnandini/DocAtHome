@@ -214,6 +214,13 @@ const PatientDashboard = () => {
             link="/second-opinion-request"
             color="from-purple-600 to-purple-800"
           />
+          <NewFeatureCard
+            icon="🏥"
+            title="Discharge Concierge"
+            description="Professional post-discharge care and home safety assessment."
+            link="/book-discharge-concierge"
+            color="from-cyan-600 to-cyan-800"
+          />
         </section>
       </div>
     </main>

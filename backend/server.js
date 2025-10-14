@@ -52,10 +52,14 @@ app.use(
         return callback(null, true);
       }
 
+      // TEMPORARY: Allow all origins for debugging CORS issues
+      console.log('CORS: Allowing origin for debugging:', origin);
+      return callback(null, true);
+
       // Log the rejected origin for debugging
-      console.log('CORS blocked origin:', origin);
-      const msg = `The CORS policy for this site does not allow access from the specified Origin: ${origin}`;
-      return callback(new Error(msg), false);
+      // console.log('CORS blocked origin:', origin);
+      // const msg = `The CORS policy for this site does not allow access from the specified Origin: ${origin}`;
+      // return callback(new Error(msg), false);
     },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],

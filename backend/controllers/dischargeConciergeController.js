@@ -4,18 +4,47 @@ const User = require('../models/User');
 // Book a Discharge Concierge package
 exports.bookDischargeConcierge = async (req, res) => {
   try {
-    const { patientId, hospital, dischargeDate, medicationsOld, medicationsNew } = req.body;
+    const { patientId, hospital, dischargeDate, medicationsOld, medicationsNew, emergencyContact, specialInstructions } = req.body;
+
+    // Validate required fields
+    if (!patientId || !hospital || !dischargeDate) {
+      return res.status(400).json({ success: false, error: 'Patient ID, hospital, and discharge date are required' });
+    }
+
     const booking = new DischargeConciergeBooking({
       patient: patientId,
       hospital,
       dischargeDate,
-      medicationsOld,
-      medicationsNew,
+      medicationsOld: medicationsOld || [],
+      medicationsNew: medicationsNew || [],
       status: 'pending'
     });
+
+    // Add optional fields if provided
+    if (emergencyContact) {
+      booking.emergencyContact = emergencyContact;
+    }
+    if (specialInstructions) {
+      booking.specialInstructions = specialInstructions;
+    }
+
     await booking.save();
-    res.status(201).json({ success: true, booking });
+
+    // Populate patient information for response
+    await booking.populate('patient');
+
+    res.status(201).json({
+      success: true,
+      booking,
+      pricing: {
+        serviceFee: booking.pricing.serviceFee,
+        currency: booking.pricing.currency,
+        total: booking.pricing.serviceFee
+      },
+      message: 'Discharge concierge booking created successfully. Our team will contact you within 1 hour.'
+    });
   } catch (err) {
+    console.error('Booking error:', err);
     res.status(500).json({ success: false, error: err.message });
   }
 };
@@ -90,6 +119,19 @@ exports.getAllBookings = async (req, res) => {
       .populate('patient nurse')
       .limit(limit)
       .skip(skip);
+    res.json({ success: true, bookings });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+};
+
+// Get my bookings (for patients)
+exports.getMyBookings = async (req, res) => {
+  try {
+    const bookings = await DischargeConciergeBooking.find({ patient: req.user._id })
+      .populate('nurse', 'name email phone')
+      .sort({ createdAt: -1 });
+
     res.json({ success: true, bookings });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });

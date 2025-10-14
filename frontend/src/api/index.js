@@ -6,19 +6,25 @@ const API_URL =
   import.meta.env.VITE_API_BASE_URL ||
   "https://docathome-backend.onrender.com/api";
 
+// For production, ensure we're using the correct backend URL
+const PRODUCTION_API_URL = "https://docathome-backend.onrender.com/api";
+const FINAL_API_URL = import.meta.env.PROD ? PRODUCTION_API_URL : API_URL;
+
 // Debug logging for development
 if (import.meta.env.DEV) {
   console.log("API Configuration:", {
     VITE_API_URL: import.meta.env.VITE_API_URL,
     VITE_API_BASE_URL: import.meta.env.VITE_API_BASE_URL,
-    Final_API_URL: API_URL,
+    PRODUCTION_API_URL,
+    FINAL_API_URL,
     Environment: import.meta.env.MODE,
+    IsProduction: import.meta.env.PROD,
   });
 }
 
 // Create a configured instance of Axios with enhanced configuration
 const API = axios.create({
-  baseURL: API_URL,
+  baseURL: FINAL_API_URL,
   timeout: 15000, // 15 second timeout for potentially slow connections
   withCredentials: true, // Include credentials for CORS
   headers: {
@@ -290,5 +296,11 @@ export const voteOnAnswer = (answerId, voteData) =>
   API.post(`/forum/answers/${answerId}/vote`, voteData);
 export const acceptAnswer = (answerId) =>
   API.post(`/forum/answers/${answerId}/accept`);
+
+// === Discharge Concierge Routes ===
+export const bookDischargeConcierge = (bookingData) =>
+  API.post("/discharge-concierge/book", bookingData);
+export const getMyDischargeConciergeBookings = () =>
+  API.get("/discharge-concierge/my-bookings");
 
 export { API };
