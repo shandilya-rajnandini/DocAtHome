@@ -10,6 +10,7 @@ const socketManager = require('./utils/socketManager');
 const { startScheduler } = require('./utils/adherenceScheduler');
 const { protect } = require('./middleware/authMiddleware');
 
+
 dotenv.config();
 const app = express();
 
@@ -31,6 +32,29 @@ const allowedOrigins = [
   'https://docathome.netlify.app',
   'https://docathome.vercel.app',
 ];
+
+
+// app.use(cors({
+//     origin: function (origin, callback) {
+//         if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+//             callback(null, true);
+//         } else {
+//             callback(new Error('This origin is not allowed by our CORS policy.'));
+//         }
+//     }
+// }));
+// const corsOptions = {
+//   origin: function (origin, callback) {
+//     if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+//       callback(null, true);
+//     } else {
+//       callback(new Error("This origin is not allowed by our CORS policy."));
+//     }
+//   },
+//   methods: "GET,POST,PUT,DELETE,OPTIONS", // Explicitly allow OPTIONS
+// };
+
+// app.use(cors(corsOptions));
 
 app.use(
   cors({
@@ -75,6 +99,9 @@ app.use(
 app.use(express.json());
 app.use(helmet());
 
+
+// ... (all your other app.use routes) ...
+
 // Secure uploads access (auth required; add resource-level ACLs in controller)
 app.get('/uploads/:bucket/:file', protect, async (req, res) => {
   const { bucket, file } = req.params;
@@ -89,9 +116,11 @@ app.use('/api/auth', require('./routes/authRoutes'));
 app.use('/api/admin', require('./routes/adminRoutes'));
 app.use('/api/announcements', require('./routes/announcementRoutes'));
 app.use('/api/appointments', require('./routes/appointmentRoutes'));
+
 app.use('/api/availability', require('./routes/availabilityRoutes'));
 app.use('/api/care-circle', require('./routes/careCircle'));
 app.use('/api/doctors', require('./routes/doctorRoutes'));
+
 app.use('/api/lab-tests', require('./routes/labTestRoutes'));
 app.use('/api/nurses', require('./routes/nurseRoutes'));
 app.use('/api/notifications', require('./routes/notificationRoutes'));

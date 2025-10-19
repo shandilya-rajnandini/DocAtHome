@@ -32,15 +32,22 @@ exports.getMyProfile = asyncHandler(async (req, res) => {
     res.json(profile);
 });
 
-// @desc    Update current user's profile
+// @desc    Update current user's profilex
 // @route   PUT /api/profile/me
 exports.updateMyProfile = asyncHandler(async (req, res) => {
-  const { name, city, experience, qualifications, bio, profilePictureUrl, serviceArea } = req.body;
+  const { name, city, experience, qualifications, bio, profilePictureUrl, serviceArea, profileStatus } = req.body;
 
   const profileFields = {};
   if (name) profileFields.name = name;
   if (city) profileFields.city = city;
   if (experience) profileFields.experience = experience;
+  
+  if (profileStatus) {
+    // Ensure the status is one of the allowed enum values ('Draft' or 'Published')
+    if (profileStatus === "Draft" || profileStatus === "Published") {
+      profileFields.profileStatus = profileStatus;
+    }
+  }
   
   // Handle qualifications safely
   if (qualifications) {
