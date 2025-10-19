@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { getAvailability, updateAvailability } = require('../controllers/availabilityController');
-const { protect } = require('../middleware/auth');
+const { protect } = require('../middleware/authMiddleware');
 
 // Get professional's availability
 router.get('/:id', protect, getAvailability);

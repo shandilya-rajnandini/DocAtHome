@@ -4,7 +4,7 @@ const SearchLog = require("../models/SearchLog");
 const asyncHandler = require("../middleware/asyncHandler");
 
 // Helper function to get approximate city coordinates
-const getCityCoordinates = (city) => {
+const _getCityCoordinates = (city) => {
   const cityLower = city.toLowerCase();
   const cityCoords = {
     mumbai: { lat: 19.076, lng: 72.8777 },
@@ -38,7 +38,18 @@ const calculateDistance = (lat1, lng1, lat2, lng2) => {
   return distance;
 };
 
-// Helper function to calculate the centroid of a polygon
+// Helper function to get centroid from service area centroid field
+const getCentroidFromServiceArea = (serviceAreaCentroid) => {
+  if (serviceAreaCentroid && serviceAreaCentroid.coordinates && serviceAreaCentroid.coordinates.length >= 2) {
+    return {
+      lat: serviceAreaCentroid.coordinates[1], // latitude
+      lng: serviceAreaCentroid.coordinates[0]  // longitude
+    };
+  }
+  return null;
+};
+
+// Helper function to calculate the centroid of a polygon (fallback method)
 const calculatePolygonCentroid = (coordinates) => {
   let totalLat = 0;
   let totalLng = 0;
@@ -60,7 +71,7 @@ const calculatePolygonCentroid = (coordinates) => {
 };
 
 // Helper function to create a 10-point decagon polygon around a point
-const createDecagonPolygon = (lat, lng, radiusKm) => {
+const _createDecagonPolygon = (lat, lng, radiusKm) => {
   const points = [];
   const radiusInDegrees = radiusKm / 111; // Approximate conversion km to degrees
 
@@ -82,7 +93,7 @@ const createDecagonPolygon = (lat, lng, radiusKm) => {
 };
 
 // Helper function to check if doctor's service area intersects with decagon
-const checkServiceAreaIntersection = (serviceArea, decagonPolygon) => {
+const _checkServiceAreaIntersection = (serviceArea, decagonPolygon) => {
   // For now, we'll check if the centroid of service area is within the decagon
   // This could be enhanced with more complex polygon intersection algorithms
   if (!serviceArea || !serviceArea.coordinates || !serviceArea.coordinates[0] || !decagonPolygon) {
@@ -120,7 +131,7 @@ const isPointInPolygon = (lat, lng, polygon) => {
 const getDoctors = asyncHandler(async (req, res) => {
   // Pagination parameters with validation
   const page = Math.max(1, parseInt(req.query.page) || 1);
-  const limit = Math.min(parseInt(req.query.limit) || 10, 50); // Max 50 per page
+  const limit = Math.min(parseInt(req.query.limit) || 6, 50); // Default 6 per page, max 50
   const skip = (page - 1) * limit;
 
   // Filter parameters
@@ -134,6 +145,7 @@ const getDoctors = asyncHandler(async (req, res) => {
     lat,
     lng,
     radius = 10,
+    mapView,
   } = req.query;
 
 
@@ -181,25 +193,25 @@ const getDoctors = asyncHandler(async (req, res) => {
   let sortQuery = {};
   switch (sortBy) {
     case "experience_desc":
-      sortQuery = { subscriptionTier: -1, experience: -1 };
+      sortQuery = { subscriptionTier: -1, experience: -1, _id: 1 };
       break;
     case "experience_asc":
-      sortQuery = { subscriptionTier: -1, experience: 1 };
+      sortQuery = { subscriptionTier: -1, experience: 1, _id: 1 };
       break;
     case "rating_desc":
-      sortQuery = { subscriptionTier: -1, averageRating: -1 };
+      sortQuery = { subscriptionTier: -1, averageRating: -1, _id: 1 };
       break;
     case "rating_asc":
-      sortQuery = { subscriptionTier: -1, averageRating: 1 };
+      sortQuery = { subscriptionTier: -1, averageRating: 1, _id: 1 };
       break;
     case "name_asc":
-      sortQuery = { subscriptionTier: -1, name: 1 };
+      sortQuery = { subscriptionTier: -1, name: 1, _id: 1 };
       break;
     case "name_desc":
-      sortQuery = { subscriptionTier: -1, name: -1 };
+      sortQuery = { subscriptionTier: -1, name: -1, _id: 1 };
       break;
     default:
-      sortQuery = { subscriptionTier: -1, averageRating: -1 }; // Default sort
+      sortQuery = { subscriptionTier: -1, averageRating: -1, _id: 1 }; // Default sort
   }
 
   let doctors;
@@ -211,6 +223,7 @@ const getDoctors = asyncHandler(async (req, res) => {
     latitude = parseFloat(lat);
     longitude = parseFloat(lng);
     if (!Number.isNaN(latitude) && !Number.isNaN(longitude)) {
+      // Use MongoDB's $near operator for geospatial queries
       baseQuery.location = {
         $near: {
           $geometry: {
@@ -223,140 +236,101 @@ const getDoctors = asyncHandler(async (req, res) => {
     }
   }
 
-  // Query doctors with location-based sorting if coordinates provided
-  if (baseQuery.location) {
-    doctors = await User.find(baseQuery)
-      .sort(sortQuery)
-      .skip(skip)
-      .limit(limit);
-    totalDoctors = await User.countDocuments(baseQuery);
-  } else {
-    doctors = await User.find(baseQuery)
-      .sort(sortQuery)
-      .skip(skip)
-      .limit(limit);
-    totalDoctors = await User.countDocuments(baseQuery);
-  }
-
-  // Create 10-point decagon polygon around patient's location
-  let decagonPolygon = null;
-  if (latitude && longitude && !isNaN(latitude) && !isNaN(longitude)) {
-    decagonPolygon = createDecagonPolygon(
-      latitude,
-      longitude,
-      parseFloat(radius)
-    );
-  }
-
-  // Store patient location in a format that could be saved to localStorage on frontend
-  patientLocation = {
-    lat: latitude,
-    lng: longitude,
-    timestamp: new Date().toISOString(),
-    searchRadius: radius,
-    decagonPolygon: decagonPolygon,
-  };
-
-  // Find all doctors with service areas (apply filters but no pagination yet)
-  const geoQuery = {
-    ...baseQuery,
-    serviceArea: { $exists: true, $ne: null },
-  };
-
-  const allDoctorsWithServiceArea = await User.find(geoQuery).select(
-    "-password"
-  );
-
-  // Filter doctors whose service areas intersect with the decagon polygon
-  const doctorsWithinDecagon = allDoctorsWithServiceArea.filter(
-    (doctor) => {
-      if (
-        doctor.serviceArea &&
-        doctor.serviceArea.coordinates &&
-        doctor.serviceArea.coordinates[0]
-      ) {
-        return checkServiceAreaIntersection(
-          doctor.serviceArea,
-          decagonPolygon
-        );
-      }
-      return false;
-    }
-  );
-
-  // Calculate actual distances for doctors within decagon
-  const doctorsWithDistance = doctorsWithinDecagon.map((doctor) => {
-    const polygon = doctor.serviceArea.coordinates[0];
-    const centroid = calculatePolygonCentroid(polygon);
-    const distance = calculateDistance(
-      latitude,
-      longitude,
-      centroid.lat,
-      centroid.lng
-    );
-
-    return {
-      ...doctor.toObject(),
-      distance: Math.round(distance * 10) / 10,
-      hasServiceArea: true,
-      withinDecagon: true,
-    };
-  });
-
-  // Also find doctors without service areas within radius (fallback to city)
-  const nearbyQuery = {
-    ...baseQuery,
-    $or: [{ serviceArea: { $exists: false } }, { serviceArea: null }],
-  };
-
-  const allDoctorsNoServiceArea = await User.find(nearbyQuery).select(
-    "-password"
-  );
-
-  // Calculate distances for doctors without service areas (using city coordinates)
-  const doctorsNearbyByCity = allDoctorsNoServiceArea
-    .map((doctor) => {
-      if (doctor.city) {
-        const cityCoords = getCityCoordinates(doctor.city);
-        if (cityCoords) {
+  // Query doctors with location-based filtering if coordinates provided
+  try {
+    if (baseQuery.location) {
+      // Remove the $near query since we'll do custom filtering based on service area centroid
+      delete baseQuery.location;
+      
+      // Get all doctors first, then filter by service area centroid
+      const allDoctors = await User.find(baseQuery).select("-password");
+      
+      // Filter doctors based on service area centroid within radius
+      const doctorsWithinRadius = [];
+      
+      for (const doctor of allDoctors) {
+        let isWithinRadius = false;
+        
+        // Try to get centroid from serviceAreaCentroid field first
+        const centroid = getCentroidFromServiceArea(doctor.serviceAreaCentroid);
+        
+        if (centroid) {
           const distance = calculateDistance(
             latitude,
             longitude,
-            cityCoords.lat,
-            cityCoords.lng
+            centroid.lat,
+            centroid.lng
           );
-          if (distance <= radius) {
-            return {
-              ...doctor.toObject(),
-              distance: Math.round(distance * 10) / 10,
-              hasServiceArea: false,
-              estimatedFromCity: true,
-            };
+          
+          if (distance <= parseFloat(radius)) {
+            isWithinRadius = true;
+          }
+        } else {
+          // Fallback to location coordinates if no valid service area centroid
+          if (doctor.location && doctor.location.coordinates && doctor.location.coordinates.length >= 2) {
+            const distance = calculateDistance(
+              latitude,
+              longitude,
+              doctor.location.coordinates[1], // latitude
+              doctor.location.coordinates[0]  // longitude
+            );
+            
+            if (distance <= parseFloat(radius)) {
+              isWithinRadius = true;
+            }
           }
         }
+        
+        if (isWithinRadius) {
+          doctorsWithinRadius.push(doctor);
+        }
       }
-      return null;
-    })
-    .filter(Boolean);
-
-  // Combine both sets of doctors
-  let allDoctors = [...doctorsWithDistance, ...doctorsNearbyByCity];
-
-  // Sort by distance for geo searches (subscription tier priority still applies)
-  allDoctors.sort((a, b) => {
-    // Pro users get higher priority
-    if (a.subscriptionTier === "pro" && b.subscriptionTier !== "pro")
-      return -1;
-    if (b.subscriptionTier === "pro" && a.subscriptionTier !== "pro")
-      return 1;
-
-    // If same subscription tier, sort by distance
-    return a.distance - b.distance;
-  });
-
-  // Apply pagination to the sorted results
-  totalDoctors = allDoctors.length;
-  doctors = allDoctors.slice(skip, skip + limit);
+      
+      // Sort by subscription tier first
+      doctorsWithinRadius.sort((a, b) => {
+        // Pro users get higher priority
+        if (a.subscriptionTier === "pro" && b.subscriptionTier !== "pro") return -1;
+        if (b.subscriptionTier === "pro" && a.subscriptionTier !== "pro") return 1;
+        return 0;
+      });
+      
+      // Apply pagination only if not map view
+      totalDoctors = doctorsWithinRadius.length;
+      if (mapView === 'true') {
+        // For map view, return all doctors without pagination
+        doctors = doctorsWithinRadius;
+      } else {
+        // For list view, apply pagination
+        doctors = doctorsWithinRadius.slice(skip, skip + limit);
+      }
+      
+      // Store patient location for frontend
+      patientLocation = {
+        lat: latitude,
+        lng: longitude,
+        timestamp: new Date().toISOString(),
+        searchRadius: radius,
+      };
+    } else {
+      // Non-location-based query
+      doctors = await User.find(baseQuery)
+        .sort(sortQuery)
+        .skip(skip)
+        .limit(limit)
+        .select("-password");
+      totalDoctors = await User.countDocuments(baseQuery);
+    }
+  } catch (queryError) {
+    console.error('Query error:', queryError.message);
+    // Fallback to basic query
+    const fallbackQuery = { role: "doctor", isVerified: true };
+    doctors = await User.find(fallbackQuery)
+      .sort(sortQuery)
+      .skip(skip)
+      .limit(limit)
+      .select("-password");
+    totalDoctors = await User.countDocuments(fallbackQuery);
+  }
 
   // Calculate pagination metadata
   const totalPages = Math.ceil(totalDoctors / limit);
