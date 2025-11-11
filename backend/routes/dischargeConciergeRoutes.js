@@ -15,7 +15,4 @@ router.post('/complete', protect, dischargeConciergeController.completeVisit);
 // Get all bookings (admin/hospital)
 router.get('/all', protect, dischargeConciergeController.getAllBookings);
 
-// Get my bookings (patient)
-router.get('/my-bookings', protect, dischargeConciergeController.getMyBookings);
-
 module.exports = router;

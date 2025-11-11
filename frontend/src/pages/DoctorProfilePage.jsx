@@ -6,20 +6,9 @@ import toast from 'react-hot-toast';
 import VerifiedSkillsBadge from '../components/VerifiedSkillsBadge.jsx';
 import { getAvailability } from '../api';
 import axios from 'axios';
-import { formatDistanceToNow } from 'date-fns';
 
 // --- Mock Data ---
 const timeSlots = ["11:00 AM", "11:30 AM", "12:00 PM", "12:30 PM", "01:00 PM", "01:30 PM", "02:00 PM"];
-
-// Helper function to format last active time
-const formatLastActive = (lastActive) => {
-  try {
-    const date = new Date(lastActive);
-    return formatDistanceToNow(date, { addSuffix: true });
-  } catch {
-    return 'Unknown';
-  }
-};
 
 const DynamicTriageForm = ({ onSummary }) => {
   const [symptom, setSymptom] = useState('');
@@ -260,11 +249,6 @@ const DoctorProfilePage = () => {
                         </h1>
                         <p className="text-xl text-accent-blue mt-1">{doctor.specialty}</p>
                         <p className="text-md text-secondary-text">{doctor.experience} years experience in {doctor.city}</p>
-                        {doctor.lastActive && (
-                            <p className="text-sm text-green-400 mt-1">
-                                Last active: {formatLastActive(doctor.lastActive)}
-                            </p>
-                        )}
                         {doctor.verifiedSkills && doctor.verifiedSkills.length > 0 && (
                             <VerifiedSkillsBadge skills={doctor.verifiedSkills} />
                         )}

@@ -1,5 +1,5 @@
 <div align="center">
-  <a href="https://github.com/Gupta-02/DocAtHome">
+  <a href="https://github.com/shandilya-rajnandini/DocAtHome">
     <!-- You can replace this with a link to your logo if you have one -->
     <!-- <img src="URL_TO_YOUR_LOGO.png" alt="Logo" width="80" height="80"> -->
   </a>
@@ -13,24 +13,24 @@
   <p align="center">
     A full-stack web application built with the MERN stack to bridge the gap between patients seeking convenient healthcare and underemployed medical professionals.
     <br />
-    <a href="https://docathome.netlify.app/forum?category=medication"><strong>Explore the Live Demo »</strong></a>
+    <a href="https://docathome-rajnandini.netlify.app/forum?category=medication"><strong>Explore the Live Demo »</strong></a>
     <br />
     <br />
-    <a href="https://github.com/Gupta-02/DocAtHome/issues">Report a Bug</a>
+    <a href="https://github.com/shandilya-rajnandini/DocAtHome/issues">Report a Bug</a>
     ·
-    <a href="https://github.com/Gupta-02/DocAtHome/issues">Request a Feature</a>
+    <a href="https://github.com/shandilya-rajnandini/DocAtHome/issues">Request a Feature</a>
   </p>
 </div>
 
 <div align="center">
 
-[![CodeRabbit Pull Request Reviews](https://img.shields.io/coderabbit/prs/github/Gupta-02/DocAtHome?utm_source=oss&utm_medium=github&utm_campaign=Gupta-02%2FDocAtHome&labelColor=171717&color=FF570A&link=https%3A%2F%2Fcoderabbit.ai&label=CodeRabbit+Reviews)](https://coderabbit.ai/github/Gupta-02/DocAtHome)
+[![CodeRabbit Pull Request Reviews](https://img.shields.io/coderabbit/prs/github/shandilya-rajnandini/DocAtHome?utm_source=oss&utm_medium=github&utm_campaign=shandilya-rajnandini%2FDocAtHome&labelColor=171717&color=FF570A&link=https%3A%2F%2Fcoderabbit.ai&label=CodeRabbit+Reviews)](https://coderabbit.ai/github/shandilya-rajnandini/DocAtHome)
 [![GSoc-24](https://img.shields.io/badge/GSSoC-24-blue?style=for-the-badge&logo=google-summer-of-code)](https://gssoc.girlscript.tech/)
 [![React Version](https://img.shields.io/badge/react-18.2.0-blue?style=for-the-badge&logo=react)](https://reactjs.org/)
-[![License](https://img.shields.io/github/license/Gupta-02/DocAtHome?style=for-the-badge)](LICENSE)
-[![Forks](https://img.shields.io/github/forks/Gupta-02/DocAtHome?style=for-the-badge)](https://github.com/Gupta-02/DocAtHome/network/members)
-[![Stargazers](https://img.shields.io/github/stars/Gupta-02/DocAtHome?style=for-the-badge)](https://github.com/Gupta-02/DocAtHome/stargazers)
-[![Issues](https://img.shields.io/github/issues/Gupta-02/DocAtHome?style=for-the-badge)](https://github.com/Gupta-02/DocAtHome/issues)
+[![License](https://img.shields.io/github/license/shandilya-rajnandini/DocAtHome?style=for-the-badge)](LICENSE)
+[![Forks](https://img.shields.io/github/forks/shandilya-rajnandini/DocAtHome?style=for-the-badge)](https://github.com/shandilya-rajnandini/DocAtHome/network/members)
+[![Stargazers](https://img.shields.io/github/stars/shandilya-rajnandini/DocAtHome?style=for-the-badge)](https://github.com/shandilya-rajnandini/DocAtHome/stargazers)
+[![Issues](https://img.shields.io/github/issues/shandilya-rajnandini/DocAtHome?style=for-the-badge)](https://github.com/shandilya-rajnandini/DocAtHome/issues)
 
 </div>
 
@@ -117,33 +117,6 @@ To get a local copy up and running, follow these simple steps.
 
 <img src="https://user-images.githubusercontent.com/74038190/212284100-561aa473-3905-4a80-b561-0d28506553ee.gif" width="100%">
 
-## 🚀 Deployment & Environments
-
-Doc@Home uses a **staging-first deployment strategy** to ensure quality and prevent bugs from reaching production.
-
-### 🌐 Live Environments
-
-| Environment | Frontend URL | Backend API | Database |
-|-------------|-------------|-------------|----------|
-| **Production** | [https://docathome.netlify.app](https://docathome.netlify.app) | https://docathome-backend.onrender.com | MongoDB Atlas |
-| **Staging** | [https://develop--docathome.netlify.app](https://develop--docathome.netlify.app) | https://docathome-backend-staging.onrender.com | MongoDB Atlas |
-
-### 🔄 Deployment Flow
-
-1. **Develop** → All new features are developed on the `develop` branch
-2. **Staging** → Changes are automatically deployed to staging for testing
-3. **Review** → Project admin reviews and tests on staging environment
-4. **Production** → Approved changes are merged to `main` for production deployment
-
-### 🏗️ Infrastructure
-
-- **Frontend**: Netlify (with branch-based deployments)
-- **Backend**: Render (separate services for staging/production)
-- **Database**: MongoDB Atlas (separate databases for each environment)
-- **Version Control**: GitHub (with protected branches)
-
-<img src="https://user-images.githubusercontent.com/74038190/212284100-561aa473-3905-4a80-b561-0d28506553ee.gif" width="100%">
-
 ## 🤝 How to Contribute
 
 Contributions are what make the open-source community such an amazing place to learn, inspire, and create. Any contributions you make are **greatly appreciated**.
@@ -183,8 +156,8 @@ A huge thank you to all the wonderful people who have contributed to Doc@Home du
 <!-- markdownlint-disable -->
 
 
-<a href="https://github.com/Gupta-02/DocAtHome/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=Gupta-02/DocAtHome" />
+<a href="https://github.com/shandilya-rajnandini/DocAtHome/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=shandilya-rajnandini/DocAtHome" />
 </a>
 
 <img src="https://user-images.githubusercontent.com/74038190/212284100-561aa473-3905-4a80-b561-0d28506553ee.gif" width="100%">
