@@ -169,6 +169,12 @@ const UserSchema = new mongoose.Schema({
     default: Date.now,
   },
 
+  // --- Activity Tracking ---
+  lastActive: {
+    type: Date,
+    default: Date.now,
+  },
+
   // --- Password Reset Fields ---
   passwordResetToken: String,
   passwordResetExpires: Date,

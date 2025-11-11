@@ -9,12 +9,12 @@ import { useApi } from "../hooks";
 const NewFeatureCard = ({ icon, title, description, link, color }) => (
   <Link
     to={link}
-    className={`bg-gradient-to-br ${color} p-4 md:p-6 rounded-xl shadow-lg text-white transform hover:scale-105 transition-transform duration-300 flex flex-col focus:ring-2 focus:ring-offset-2 focus:outline-none`}
+    className={`bg-gradient-to-br ${color} p-3 md:p-4 lg:p-6 rounded-xl shadow-lg text-white transform hover:scale-105 transition-transform duration-300 flex flex-col focus:ring-2 focus:ring-offset-2 focus:outline-none min-h-[120px] md:min-h-[140px]`}
     role="article"
     aria-labelledby={`card-title-${title.toLowerCase().replace(/\s+/g, "-")}`}
   >
     <span
-      className="text-3xl md:text-4xl mb-3 md:mb-4"
+      className="text-2xl md:text-3xl lg:text-4xl mb-2 md:mb-3"
       role="img"
       aria-label={title}
     >
@@ -22,11 +22,11 @@ const NewFeatureCard = ({ icon, title, description, link, color }) => (
     </span>
     <h3
       id={`card-title-${title.toLowerCase().replace(/\s+/g, "-")}`}
-      className="text-xl md:text-2xl font-bold mb-2"
+      className="text-lg md:text-xl lg:text-2xl font-bold mb-1 md:mb-2"
     >
       {title}
     </h3>
-    <p className="text-gray-200 text-xs md:text-sm flex-grow">{description}</p>
+    <p className="text-gray-200 text-xs md:text-sm flex-grow leading-relaxed">{description}</p>
   </Link>
 );
 
@@ -59,57 +59,59 @@ const PatientDashboard = () => {
 
         {/* Medication Adherence Section */}
         {adherenceData && (
-          <section className="mb-8 md:mb-12 bg-gradient-to-r from-green-500 to-blue-600 text-white p-4 md:p-8 rounded-lg shadow-lg">
-            <div className="flex flex-col md:flex-row items-center justify-between mb-4">
-              <div className="mb-4 md:mb-0">
-                <h2 className="text-2xl md:text-3xl font-bold">
+          <section className="mb-6 md:mb-8 lg:mb-12 bg-gradient-to-r from-green-500 to-blue-600 text-white p-4 md:p-6 lg:p-8 rounded-lg shadow-lg mx-2 md:mx-0">
+            <div className="flex flex-col sm:flex-row items-center justify-between mb-4">
+              <div className="mb-4 sm:mb-0 text-center sm:text-left">
+                <h2 className="text-xl md:text-2xl lg:text-3xl font-bold">
                   Medication Adherence
                 </h2>
-                <p className="text-green-100">Track your medication routine</p>
+                <p className="text-green-100 text-sm md:text-base">Track your medication routine</p>
               </div>
-              <div className="text-center md:text-right">
-                <div className="text-4xl md:text-5xl font-bold">
+              <div className="text-center sm:text-right">
+                <div className="text-3xl md:text-4xl lg:text-5xl font-bold">
                   {adherenceData.adherenceScore}%
                 </div>
-                <div className="text-base md:text-lg text-green-100">
+                <div className="text-sm md:text-base lg:text-lg text-green-100">
                   {adherenceData.streak > 0
                     ? `🔥 ${adherenceData.streak} day streak!`
                     : "Keep it up!"}
                 </div>
               </div>
             </div>
-            <div className="bg-white bg-opacity-20 rounded-full h-3 md:h-4 mb-4">
+            <div className="bg-white bg-opacity-20 rounded-full h-2 md:h-3 lg:h-4 mb-4">
               <div
-                className="bg-white h-3 md:h-4 rounded-full transition-all duration-1000"
+                className="bg-white h-2 md:h-3 lg:h-4 rounded-full transition-all duration-1000"
                 style={{ width: `${adherenceData.adherenceScore}%` }}
               ></div>
             </div>
-            <Link
-              to="/my-prescriptions"
-              className="inline-block bg-white text-green-600 font-bold py-2 px-4 md:py-2 md:px-6 rounded-lg hover:bg-gray-100 transition-colors text-sm md:text-base"
-            >
-              View Today's Checklist
-            </Link>
+            <div className="text-center">
+              <Link
+                to="/my-prescriptions"
+                className="inline-block bg-white text-green-600 font-bold py-2 px-4 md:py-2 md:px-6 rounded-lg hover:bg-gray-100 transition-colors text-sm md:text-base"
+              >
+                View Today's Checklist
+              </Link>
+            </div>
           </section>
         )}
 
         <section
           aria-labelledby="care-navigator-title"
-          className="mb-8 md:mb-12 bg-secondary-dark text-center py-8 md:py-12 px-4 rounded-lg"
+          className="mb-6 md:mb-8 lg:mb-12 bg-secondary-dark text-center py-6 md:py-8 lg:py-12 px-4 mx-2 md:mx-0 rounded-lg"
         >
           <h2
             id="care-navigator-title"
-            className="text-2xl md:text-3xl font-bold text-white mb-4"
+            className="text-xl md:text-2xl lg:text-3xl font-bold text-white mb-3 md:mb-4"
           >
             Not Sure Where to Start?
           </h2>
-          <p className="text-secondary-text mb-6 md:mb-8 max-w-2xl mx-auto text-sm md:text-base">
+          <p className="text-secondary-text mb-4 md:mb-6 lg:mb-8 max-w-2xl mx-auto text-sm md:text-base px-2">
             Let our Care Navigator guide you to the right professional based on
             your needs.
           </p>
           <Link
             to="/care-navigator"
-            className="bg-accent-blue hover:bg-accent-blue-hover text-white font-bold py-2 px-6 md:py-3 md:px-8 rounded-lg text-base md:text-lg transition-transform transform hover:scale-105 inline-block focus:ring-2 focus:ring-offset-2 focus:ring-accent-blue focus:outline-none"
+            className="bg-accent-blue hover:bg-accent-blue-hover text-white font-bold py-2 px-6 md:py-3 md:px-8 rounded-lg text-sm md:text-base lg:text-lg transition-transform transform hover:scale-105 inline-block focus:ring-2 focus:ring-offset-2 focus:ring-accent-blue focus:outline-none"
             role="button"
             aria-label="Get help choosing the right healthcare professional"
           >
@@ -119,7 +121,7 @@ const PatientDashboard = () => {
 
         <section
           aria-label="Healthcare Services"
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6"
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-4 lg:gap-6 px-2 md:px-0"
         >
           <NewFeatureCard
             icon="🩺"
@@ -211,6 +213,13 @@ const PatientDashboard = () => {
             description="Get expert analysis from top specialists within 48 hours."
             link="/second-opinion-request"
             color="from-purple-600 to-purple-800"
+          />
+          <NewFeatureCard
+            icon="🏥"
+            title="Discharge Concierge"
+            description="Professional post-discharge care and home safety assessment."
+            link="/book-discharge-concierge"
+            color="from-cyan-600 to-cyan-800"
           />
         </section>
       </div>
