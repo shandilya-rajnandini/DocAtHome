@@ -169,14 +169,18 @@ exports.getMyAppointments = asyncHandler(async (req, res) => {
   }
 
   const appointments = await Appointment.find(query)
-    .populate("doctor", "name specialty")
-    .populate("patient", "name allergies chronicConditions");
+
+      .populate('doctor', 'name specialty')
+      .populate('patient', 'name allergies chronicConditions')
+      .populate('labTests');
+
 
   res.status(200).json({
-    success: true,
-    count: appointments.length,
-    data: appointments,
+      success: true,
+      count: appointments.length,
+      data: appointments
   });
+
 });
 
 // @desc    Update an appointment's status (e.g., confirm or cancel)
